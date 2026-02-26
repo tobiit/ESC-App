@@ -1,0 +1,12 @@
+# Ignore artifacts:
+build/
+tokens.json
+tokens/
+node_modules
+CHANGELOG.md
+token-package/dist-history.json
+token-package/package.json
+token-package/package-lock.json
+token-package/dist
+token-package/cdn
+token-package/responsive-integrated

@@ -1,0 +1,134 @@
+@import url('/allianz-design-tokens.css');
+
+@font-face {
+  font-family: 'Frutiger';
+  src: url('/font/Frutiger.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Frutiger';
+  src: url('/font/Frutiger_bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --core-font-family-primary: 'Frutiger', Arial, sans-serif;
+  --semantic-font-family-body: var(--core-font-family-primary);
+  --semantic-font-family-headline: var(--core-font-family-primary);
+  --semantic-font-family-utility: var(--core-font-family-primary);
+  font-family: var(--core-font-family-primary, Arial, sans-serif);
+  color: var(--core-color-darkblue-1000, #122b54);
+  background: var(--core-color-blue-100, #f0f7fc);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+body,
+button,
+input,
+select,
+textarea {
+  font-family: var(--core-font-family-primary, Arial, sans-serif);
+}
+
+.shell {
+  min-height: 100vh;
+  background: var(--core-color-blue-100, #f0f7fc);
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  background: var(--core-color-blue-900, #003781);
+  color: var(--core-color-white, #ffffff);
+}
+
+.layout {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 16px;
+  display: grid;
+  gap: 16px;
+}
+
+.card {
+  background: var(--core-color-white, #ffffff);
+  border: 1px solid var(--core-color-gray-300, #d0d4db);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.login {
+  max-width: 380px;
+  margin: 10vh auto;
+  display: grid;
+  gap: 10px;
+}
+
+.tabs {
+  display: flex;
+  gap: 8px;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin: 6px 0;
+}
+
+.actions,
+.inline {
+  display: flex;
+  gap: 8px;
+}
+
+input,
+select,
+button {
+  border: 1px solid var(--core-color-gray-400, #b6c5de);
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+
+button {
+  cursor: pointer;
+  background: var(--core-color-white, #fff);
+}
+
+button.primary {
+  background: var(--core-color-blue-800, #1a5393);
+  color: var(--core-color-white, #ffffff);
+}
+
+.hint {
+  color: var(--core-color-blue-900, #003781);
+}
+
+.error {
+  color: #a01414;
+}
+
+.toast {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: var(--core-color-darkblue-900, #1c3a6c);
+  color: var(--core-color-white, #fff);
+  padding: 10px 14px;
+  border-radius: 8px;
+}

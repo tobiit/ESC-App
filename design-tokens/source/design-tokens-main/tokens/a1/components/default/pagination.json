@@ -1,0 +1,62 @@
+{
+  "pagination": {
+    "internal": {
+      "label": {
+        "gap": {
+          "horizontal": {
+            "$type": "spacing",
+            "$value": "{core.dimension.75} - {semantic.internal.dimension.modifier.clamp-smaller.25}"
+          }
+        }
+      }
+    },
+    "button": {
+      "size": {
+        "$type": "sizing",
+        "$value": "{semantic.size.component.800}"
+      }
+    },
+    "label": {
+      "gap": {
+        "horizontal": {
+          "$type": "spacing",
+          "$value": "{semantic.gap.all.linear.200}"
+        }
+      }
+    },
+    "navigation": {
+      "gap": {
+        "horizontal": {
+          "$type": "spacing",
+          "$value": "{semantic.gap.all.linear.200}"
+        }
+      }
+    },
+    "controls": {
+      "gap": {
+        "horizontal": {
+          "$type": "spacing",
+          "$value": "{semantic.gap.all.linear.200}"
+        }
+      }
+    },
+    "grouped": {
+      "navigation": {
+        "gap": {
+          "horizontal": {
+            "$type": "spacing",
+            "$value": "{semantic.gap.all.linear.200}"
+          }
+        }
+      },
+      "label": {
+        "gap": {
+          "horizontal": {
+            "$type": "spacing",
+            "$value": "{semantic.gap.all.linear.400}"
+          }
+        }
+      }
+    }
+  }
+}

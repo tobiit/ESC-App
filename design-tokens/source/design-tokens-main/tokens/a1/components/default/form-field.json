@@ -1,0 +1,27 @@
+{
+  "form-field": {
+    "gap": {
+      "vertical": {
+        "$type": "spacing",
+        "$value": "{semantic.dimension.static.100}",
+        "$description": "Distance between label and input field as well as message or hint and input field"
+      }
+    },
+    "message": {
+      "inset": {
+        "vertical": {
+          "$type": "spacing",
+          "$value": "{semantic.dimension.static.50}"
+        }
+      }
+    },
+    "hint": {
+      "inset": {
+        "vertical": {
+          "$type": "spacing",
+          "$value": "{semantic.dimension.static.50}"
+        }
+      }
+    }
+  }
+}

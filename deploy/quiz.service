@@ -1,0 +1,12 @@
+[Unit]
+Description=Quiz App
+After=network.target
+
+[Service]
+WorkingDirectory=/var/www/quiz.basisadresse.de/htdocs
+ExecStart=/usr/bin/node /var/www/quiz.basisadresse.de/htdocs/server.js
+Restart=always
+Environment=NODE_ENV=production
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,21 @@
+{
+	"infile": "CHANGELOG.md",
+	"header": "# Token Changelog\nAll changes to the single source of truth (SSOT) A1 design token set will be documented in this file. For changes of the token builder (@allianz/a1-design-token-builder) a changelog can be found [here](https://github.developer.allianz.io/a1/design-tokens/blob/main/CHANGELOG.md).",
+	"releaseCommitMessageFormat": "chore(release): tokens-v{{currentTag}}",
+	"tagPrefix": "tokens-v",
+	"skip": {
+		"bump": true,
+		"commit": true,
+		"tag": true
+	},
+	"types": [
+		{ "type": "feat", "section": "Features" },
+		{ "type": "fix", "section": "Bug Fixes" },
+		{ "type": "docs", "section": "Documentation" },
+		{ "type": "refactor", "hidden": true },
+		{ "type": "chore", "hidden": true },
+		{ "type": "style", "hidden": true },
+		{ "type": "perf", "hidden": true },
+		{ "type": "test", "hidden": true }
+	]
+}

@@ -1,0 +1,53 @@
+{
+  "license-plate": {
+    "gap": {
+      "horizontal": {
+        "$type": "spacing",
+        "$value": "{semantic.dimension.static.200}"
+      }
+    },
+    "region": {
+      "inset": {
+        "horizontal": {
+          "$type": "spacing",
+          "$value": "{semantic.dimension.static.200}"
+        }
+      }
+    },
+    "season": {
+      "gap": {
+        "vertical": {
+          "$type": "spacing",
+          "$value": "{semantic.dimension.linear-25.50}"
+        }
+      },
+      "line-height": {
+        "$type": "lineHeights",
+        "$value": "{semantic.dimension.clamp-smaller-50.400}"
+      },
+      "font-size": {
+        "$type": "fontSizes",
+        "$value": "{semantic.dimension.clamp-smaller-50.300}"
+      },
+      "letter-spacing": {
+        "$type": "letterSpacing",
+        "$value": "{semantic.dimension.static.0}"
+      },
+      "font-weight": {
+        "$type": "fontWeights",
+        "$value": "{core.font-weight.150}"
+      },
+      "text": {
+        "$type": "typography",
+        "$value": {
+          "fontFamily": "{semantic.font-family.utility}",
+          "fontWeight": "{license-plate.season.font-weight}",
+          "lineHeight": "{license-plate.season.line-height}",
+          "fontSize": "{license-plate.season.font-size}",
+          "letterSpacing": "{license-plate.season.letter-spacing}",
+          "textCase": "{semantic.text-case.utility}"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "toggle-button": {
+    "inset": {
+      "horizontal": {
+        "$type": "spacing",
+        "$value": "{semantic.inset.horizontal.squish.component.1200}"
+      },
+      "vertical": {
+        "$type": "spacing",
+        "$value": "{semantic.inset.vertical.m.component.1200}"
+      }
+    }
+  }
+}

@@ -1,0 +1,28 @@
+Algorithm of the versioning
+
+- get the old version from the `token-package/package.json`
+- init `isNewVersionBump` with `false`.
+- loop over all newly generated output files of the `token-package/dist`
+  - check if the dist folder has a new hash by comparing new hash, with the last version history entry hash.
+    - if yes
+      - set according boolean flag `isNewVersionBump` to `true` that a new version bump must happen
+    - if no
+      - set according boolean flag `isNewVersionBump` to `false` that no version bump is happening and old version will be reused for that whole token output file build
+- Check the boolen flag `isNewVersionBump`
+  - If yes
+    - ask in user prompt for semver version bump (major, minor, patch)
+      - determine the version bump on base of the old `token-package/package.json` version
+    - loop over all newly generated output files of the `token-package/dist` folder
+      - add the new version to all output file names
+      - add a new file version history entry for all files that either have `fileChanged` or the `newFile` flag in the outputFileHistory.
+        - remove temporary flags `fileChanged` and `newFile` property from the respective file version history entries.
+  - If no
+    - Check if the `token-package/package.json` version was manually bumped or is still the same like in the `token-package/dist-history.json` package.version?
+      - If version in `token-package/package.json` is higher, it means the version in the `token-package/package.json` was manually bumped.
+        - loop over all newly generated output files of the `token-package/dist` folder.
+          - add the new version to all output file names.
+          - add the new version to `package.version` in the `token-package/dist-history.json`
+      - If it is the same version (same like in the `token-package/dist-history.json`)
+        - use the same distHistory with the unchanged versions.
+        - loop over all newly generated output files of the `token-package/dist`.
+          - add the unchanged version to all output files.

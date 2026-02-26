@@ -1,0 +1,154 @@
+{
+  "semantic": {
+    "color": {
+      "accent": {
+        "attention": {
+          "VAR_ACCENT_COLOR": {
+            "resting": {
+              "$type": "color",
+              "$value": "{semantic.color.accent.attention.purple.resting}"
+            },
+            "hover": {
+              "$type": "color",
+              "$value": "{semantic.color.accent.attention.purple.hover}"
+            },
+            "active": {
+              "$type": "color",
+              "$value": "{semantic.color.accent.attention.purple.active}"
+            },
+            "disabled": {
+              "$type": "color",
+              "$value": "{semantic.color.accent.attention.disabled}"
+            }
+          }
+        },
+        "subtle": {
+          "VAR_ACCENT_COLOR": {
+            "resting": {
+              "$type": "color",
+              "$value": "{semantic.color.accent.subtle.purple.resting}"
+            },
+            "hover": {
+              "$type": "color",
+              "$value": "{semantic.color.accent.subtle.purple.hover}"
+            },
+            "active": {
+              "$type": "color",
+              "$value": "{semantic.color.accent.subtle.purple.active}"
+            },
+            "disabled": {
+              "$type": "color",
+              "$value": "{semantic.color.accent.subtle.disabled}"
+            }
+          }
+        },
+        "attention-inverse": {
+          "VAR_ACCENT_COLOR": {
+            "resting": {
+              "$type": "color",
+              "$value": "{semantic.color.accent.attention-inverse.purple.resting}"
+            },
+            "hover": {
+              "$type": "color",
+              "$value": "{semantic.color.accent.attention-inverse.purple.hover}"
+            },
+            "active": {
+              "$type": "color",
+              "$value": "{semantic.color.accent.attention-inverse.purple.active}"
+            },
+            "disabled": {
+              "$type": "color",
+              "$value": "{semantic.color.accent.attention-inverse.disabled}"
+            }
+          }
+        },
+        "subtle-inverse": {
+          "VAR_ACCENT_COLOR": {
+            "resting": {
+              "$type": "color",
+              "$value": "{semantic.color.accent.subtle-inverse.purple.resting}"
+            },
+            "hover": {
+              "$type": "color",
+              "$value": "{semantic.color.accent.subtle-inverse.purple.hover}"
+            },
+            "active": {
+              "$type": "color",
+              "$value": "{semantic.color.accent.subtle-inverse.purple.active}"
+            },
+            "disabled": {
+              "$type": "color",
+              "$value": "{semantic.color.accent.subtle-inverse.disabled}"
+            }
+          }
+        }
+      },
+      "on-accent": {
+        "attention": {
+          "VAR_ACCENT_COLOR": {
+            "resting": {
+              "$type": "color",
+              "$value": "{semantic.color.on-accent.attention.resting}"
+            },
+            "hover": {
+              "$type": "color",
+              "$value": "{semantic.color.on-accent.attention.hover}"
+            },
+            "active": {
+              "$type": "color",
+              "$value": "{semantic.color.on-accent.attention.active}"
+            },
+            "disabled": {
+              "$type": "color",
+              "$value": "{semantic.color.on-accent.attention.disabled}"
+            }
+          }
+        },
+        "subtle": {
+          "VAR_ACCENT_COLOR": {
+            "resting": {
+              "$type": "color",
+              "$value": "{semantic.color.on-accent.subtle.purple.resting}"
+            },
+            "disabled": {
+              "$type": "color",
+              "$value": "{semantic.color.on-accent.subtle.disabled}"
+            }
+          }
+        },
+        "attention-inverse": {
+          "VAR_ACCENT_COLOR": {
+            "resting": {
+              "$type": "color",
+              "$value": "{semantic.color.on-accent.attention-inverse.resting}"
+            },
+            "hover": {
+              "$type": "color",
+              "$value": "{semantic.color.on-accent.attention-inverse.hover}"
+            },
+            "active": {
+              "$type": "color",
+              "$value": "{semantic.color.on-accent.attention-inverse.active}"
+            },
+            "disabled": {
+              "$type": "color",
+              "$value": "{semantic.color.on-accent.attention-inverse.disabled}"
+            }
+          }
+        },
+        "subtle-inverse": {
+          "VAR_ACCENT_COLOR": {
+            "resting": {
+              "$type": "color",
+              "$value": "{semantic.color.on-accent.subtle-inverse.purple.resting}"
+            },
+            "disabled": {
+              "$type": "color",
+              "$value": "{semantic.color.on-accent.subtle-inverse.disabled}"
+            }
+          }
+        }
+      }
+    }
+  }
+}

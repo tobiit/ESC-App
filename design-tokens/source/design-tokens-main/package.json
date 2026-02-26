@@ -1,0 +1,105 @@
+{
+	"$schema": "https://json.schemastore.org/package.json",
+	"name": "@allianz/a1-design-tokens-builder",
+	"version": "1.2.0",
+	"description": "The official source for Allianz design tokens for a variety of platforms and systems",
+	"author": {
+		"name": "Dario Soller",
+		"email": "dario.soller@allianz.de"
+	},
+	"license": "SEE LICENSE IN LICENSE",
+	"repository": {
+		"type": "git",
+		"url": "https://github.developer.allianz.io/a1/design-tokens"
+	},
+	"keywords": [
+		"Allianz",
+		"Studio",
+		"Allianz Studio",
+		"One Allianz",
+		"A1",
+		"Design Tokens",
+		"Design System"
+	],
+	"contributors": [
+		{
+			"name": "Christoph Merdes",
+			"email": "christoph.merdes@allianz.de"
+		}
+	],
+	"main": "build/design-tokens-builder/index.js",
+	"type": "module",
+	"files": [
+		"README.md",
+		"LICENSE",
+		"build/design-tokens-builder",
+		"tokens"
+	],
+	"scripts": {
+		"build:local": "npm run clean && npm run transpile:src && node build/design-tokens-builder/build.js",
+		"build:prod": "npm run transpile:src && node build/design-tokens-builder/build.js",
+		"build:feat": "npm run transpile:src && node build/design-tokens-builder/build.js 'ci-feature-branch'",
+		"build:builder:local": "npm run clean && tsc -p tsconfig.json --declaration --declarationMap false --sourceMap false",
+		"build:builder:prod": "tsc -p tsconfig.json --declaration --declarationMap false --sourceMap false",
+		"transpile:src": "tsc -p tsconfig.json",
+		"clean": "rm -rf build && rm -rf token-package/dist && rm -rf token-package/cdn",
+		"releaseTokenBuilder": "standard-version",
+		"localTokenBuilderPackageWrap": "npm pack",
+		"publishTokenBuilderPackage": "npm publish",
+		"test:unit": "jest --config jest.config.ts",
+		"lint:check": "eslint .",
+		"lint:fix": "eslint --fix .",
+		"format:check": "prettier --check .",
+		"format:fix": "prettier --write .",
+		"releaseTokenPackage": "cd token-package && npm run releasePackage",
+		"localTokenPackageWrap": "cd token-package && npm run localPackageTest",
+		"publishTokenPackage": "cd token-package && npm run publishPackage",
+		"publishFilesToCDN": "cd token-package && npm run publishFilesToCDN",
+		"syncTokenDistVersionCheck": "rm -rf ../design-tokens-dist-versions/dist && cp -R token-package/dist ../design-tokens-dist-versions",
+		"printTokenDistFolderStructure": "dree parse token-package/dist",
+		"printTokenCdnFolderStructure": "dree parse token-package/cdn",
+		"printTokenIntermediateBuild": "dree parse build/by-product/prepared-tokens",
+		"printTokenSsot": "dree parse tokens",
+		"printMigrations": "dree parse migrations",
+		"migrator": "cd migrations && ./migrator.sh"
+	},
+	"devDependencies": {
+		"@stylistic/eslint-plugin": "^5.6.1",
+		"@tokens-studio/types": "^0.5.2",
+		"@types/fs-extra": "^11.0.4",
+		"@types/jest": "^30.0.0",
+		"@types/lodash": "^4.17.20",
+		"@types/node": "^24.10.3",
+		"@types/prompts": "^2.4.9",
+		"@types/semver": "^7.7.1",
+		"@types/signale": "^1.4.7",
+		"@typescript-eslint/eslint-plugin": "^8.49.0",
+		"@typescript-eslint/parser": "^8.49.0",
+		"dree": "^5.1.5",
+		"eslint": "^9.39.1",
+		"eslint-config-prettier": "^10.1.8",
+		"eslint-plugin-import": "^2.32.0",
+		"eslint-plugin-jest": "^29.2.1",
+		"eslint-plugin-jsdoc": "^61.5.0",
+		"eslint-plugin-perfectionist": "^4.15.1",
+		"eslint-plugin-prefer-arrow": "^1.2.3",
+		"eslint-plugin-prettier": "^5.5.4",
+		"jest": "^30.2.0",
+		"prettier": "^3.7.4",
+		"standard-version": "^9.5.0",
+		"ts-jest": "^29.4.6",
+		"ts-node": "^10.9.2",
+		"typescript": "^5.9.3"
+	},
+	"dependencies": {
+		"@tokens-studio/sd-transforms": "^2.0.3",
+		"crypto": "^1.0.1",
+		"fs-extra": "^11.3.2",
+		"glob": "^13.0.0",
+		"lodash": "^4.17.21",
+		"prompts": "^2.4.2",
+		"semver": "^7.7.3",
+		"signale": "^1.4.0",
+		"style-dictionary": "^5.3.0"
+	}
+}

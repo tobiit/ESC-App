@@ -1,0 +1,61 @@
+{
+  "popover": {
+    "inset": {
+      "all": {
+        "$type": "spacing",
+        "$value": "{semantic.inset.all.surface.linear.600}",
+        "$description": "Distance between label and input field as well as message or hint and input field"
+      }
+    },
+    "offset": {
+      "all": {
+        "$type": "spacing",
+        "$value": "{semantic.dimension.static.200}"
+      }
+    },
+    "gap": {
+      "vertical": {
+        "$type": "spacing",
+        "$value": "{semantic.inset.all.surface.linear.400}"
+      }
+    },
+    "header": {
+      "control": {
+        "gap": {
+          "horizontal": {
+            "$type": "spacing",
+            "$value": "{semantic.gap.all.linear.600}"
+          }
+        }
+      },
+      "headline": {
+        "gap": {
+          "horizontal": {
+            "$type": "spacing",
+            "$value": "{semantic.gap.all.static.200}"
+          }
+        }
+      }
+    },
+    "footer": {
+      "actions": {
+        "gap": {
+          "all": {
+            "$type": "spacing",
+            "$value": "{semantic.gap.all.linear.300}"
+          }
+        }
+      }
+    },
+    "pointer": {
+      "width": {
+        "$type": "sizing",
+        "$value": "{semantic.dimension.static.400}"
+      },
+      "height": {
+        "$type": "sizing",
+        "$value": "({popover.pointer.width} / 2)"
+      }
+    }
+  }
+}

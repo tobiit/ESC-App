@@ -1,0 +1,4 @@
+# With the token-package/package.json#files property  we include the build/dist folder
+# For details see the official npm docs: https://docs.npmjs.com/cli/v8/configuring-npm/package-json#files
+
+*

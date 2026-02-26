@@ -1,0 +1,24 @@
+{
+  "dropdown": {
+    "item": {
+      "inset": {
+        "horizontal": {
+          "$type": "spacing",
+          "$value": "{semantic.inset.horizontal.square.component.1200}"
+        },
+        "vertical": {
+          "$type": "spacing",
+          "$value": "{semantic.inset.vertical.m.component.1200}"
+        }
+      }
+    },
+    "flyout": {
+      "inset": {
+        "vertical": {
+          "$type": "spacing",
+          "$value": "({dropdown.item.inset.horizontal} - {dropdown.item.inset.vertical})"
+        }
+      }
+    }
+  }
+}

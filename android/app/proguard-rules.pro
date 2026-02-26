@@ -1,0 +1,3 @@
+-keep class kotlinx.serialization.** { *; }
+-keep class com.escapp.mobile.model.** { *; }
+-dontwarn kotlinx.serialization.**

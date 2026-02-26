@@ -1,0 +1,124 @@
+{
+  "distFolderHistory": [
+    {
+      "version": "0.0.7",
+      "comment": "Adds icon, checkbox and radio button tokens",
+      "hash": "cc04b03a0d4476e1945bed12cb5b1972ea5900c62b5ea2dba8709febda26af7a",
+      "updated": "2023-06-30T08:57:12.462Z"
+    },
+    {
+      "version": "0.1.0",
+      "comment": "Refactoring token structure and token-transform library to be aligned with multi-dimensional theming best practices",
+      "hash": "3fdd96fe563e0ac37b11ee184446a5630d30550584755fd838218e3a65554bd5",
+      "updated": "2023-08-17T20:10:03.425Z"
+    },
+    {
+      "version": "0.2.0",
+      "comment": "Token set restructurs and breaking token renamings",
+      "hash": "c9d108b383c318c9b910beb1184bc9ca3e80359bb2cc71cbefc954e1e702000d",
+      "updated": "2023-09-28T15:05:03.960Z"
+    },
+    {
+      "version": "0.2.1",
+      "comment": "Fix missing alpha values",
+      "hash": "214ce229c67be91b05f542d52b9f153b58cb476576b7f43b52270d095e51cce9",
+      "updated": "2023-11-17T13:59:15.063Z"
+    },
+    {
+      "version": "0.3.0",
+      "comment": "Major reworked and updated token set with first animation tokens",
+      "hash": "12e22c5a281910e559bdf70aa8fee5a5bfa4b7079685f77dbf877c78d298580d",
+      "updated": "2023-12-05T15:00:14.733Z"
+    },
+    {
+      "version": "0.4.0",
+      "comment": "Breaking changes in Tag component and motion tokens, and multiple other updates i.e. in demo files",
+      "hash": "8c45bafed5900e44bfbf8188fce9d7ad1061ff26fbcd71ef56314640ce997856",
+      "updated": "2024-03-20T08:53:02.815Z"
+    },
+    {
+      "version": "0.4.1",
+      "comment": "Fixes wrong semantic surface hover color and fixes wrong demo file token CDN loading",
+      "hash": "5b992bbea52cea2f6bee9617edfe29c46923767ffc9ad59602e6a609d8a3e8f1",
+      "updated": "2024-03-20T22:22:15.627Z"
+    },
+    {
+      "version": "0.5.0",
+      "comment": "Refactor core grid tokens and fix dense component typography token values",
+      "hash": "91aa55c26bb03d99d5d53ac3cfa0c2f6fc48be71ae31122f7bff9322dfa01639",
+      "updated": "2024-07-03T10:18:23.679Z"
+    },
+    {
+      "version": "0.6.0",
+      "comment": "MAJOR Complete token set rework with component token reduction",
+      "hash": "d259ff75b69779257a1e892a0e6fcf0e9c2136c143e69a4f9373809e9a5c67f4",
+      "updated": "2025-03-07T15:11:32.914Z"
+    },
+    {
+      "version": "0.6.1",
+      "comment": "Fixed disabled colors and removing unsupported leftover tokens",
+      "hash": "66130f809bad72e1095e4a9f4371d468aecdb72d23dea2f0281bd7f9603580e3",
+      "updated": "2025-03-18T16:27:04.885Z"
+    },
+    {
+      "version": "0.6.2",
+      "comment": "Delete old unsupported border readonly color token leftovers",
+      "hash": "530796227f0e8dd0e459283c8e3745a09e5f0d4f58b86e3674fc1b33f5b6b58e",
+      "updated": "2025-03-18T22:54:59.747Z"
+    },
+    {
+      "version": "0.6.3",
+      "comment": "Least disabled color fixes and breakpoint value adjustments",
+      "hash": "89994f9e98bd91e69b2da61bc46fd2e69c845a335325d9651e588ddc191fa841",
+      "updated": "2025-05-21T09:00:32.356Z"
+    },
+    {
+      "version": "0.6.4",
+      "comment": "Fix wrong override of dark color values by light theme",
+      "hash": "7ef5ce9bb36a82db18ece4a2357e4111bf8b6dcad5145e4c99d0831b8b574c9a",
+      "updated": "2025-05-23T15:24:30.234Z"
+    },
+    {
+      "version": "0.7.0",
+      "comment": "icon size and action typography refactors",
+      "hash": "d529a73950e809f8195292e0fc0247c4a9f4f2210e2ae8369ee5f00f46b7228b",
+      "updated": "2025-06-02T10:07:25.568Z"
+    },
+    {
+      "version": "0.8.0",
+      "comment": "changed to input m/s, refactored accordion and license-plate tokens",
+      "hash": "5ccbac112fd58954f696e53cb52beea5a5bf50352059513ed7ff26b5414f57ee",
+      "updated": "2025-08-14T23:56:48.481Z"
+    },
+    {
+      "version": "0.8.1",
+      "comment": "No token changes, only fixing the missing dist folder in the NPM package",
+      "hash": "5ccbac112fd58954f696e53cb52beea5a5bf50352059513ed7ff26b5414f57ee",
+      "updated": "2025-09-24T12:08:23.827Z"
+    },
+    {
+      "version": "1.0.0",
+      "comment": "First major stable version of the A1 Design Tokens",
+      "hash": "555ae7db63fe4be6546842f9ffc439c88201f135221d701811baa38c2f955030",
+      "updated": "2025-10-31T15:16:46.514Z"
+    },
+    {
+      "version": "1.1.0",
+      "comment": "SCSS import path collision fix",
+      "hash": "b212a2db33d340e4b4d6c09840aff766bdca541fca444169a3c1fa3272e57e29",
+      "updated": "2025-11-18T12:55:55.516Z"
+    },
+    {
+      "version": "1.2.0",
+      "comment": "Mainly new grid and background emphasis tokens",
+      "hash": "9ba89c0b130e3b3a42a38b3b9d73974e65e5a6bba03cee6d4d3870305760b1e5",
+      "updated": "2025-12-17T15:34:25.905Z"
+    },
+    {
+      "version": "1.3.0",
+      "comment": "interactive media concept and dynamic responsive sizes",
+      "hash": "b191225ea33ec3cb4b0edc1c2c43d7c4f334ba75c85df20c9872495736b6ac14",
+      "updated": "2026-02-09T14:37:09.625Z"
+    }
+  ]
+}

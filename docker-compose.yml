@@ -1,0 +1,51 @@
+services:
+  mariadb:
+    image: docker.io/library/mariadb:11.4
+    container_name: escapp-mariadb
+    environment:
+      MARIADB_DATABASE: escapp
+      MARIADB_USER: escapp
+      MARIADB_PASSWORD: escapp
+      MARIADB_ROOT_PASSWORD: root
+      TZ: UTC
+    ports:
+      - "3306:3306"
+    volumes:
+      - mariadb_data:/var/lib/mysql
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: escapp-backend
+    environment:
+      PORT: 4000
+      NODE_ENV: development
+      DB_HOST: mariadb
+      DB_PORT: 3306
+      DB_USER: escapp
+      DB_PASSWORD: escapp
+      DB_NAME: escapp
+      JWT_ACCESS_SECRET: local-access-secret
+      JWT_REFRESH_SECRET: local-refresh-secret
+      ACCESS_TOKEN_TTL: 15m
+      REFRESH_TOKEN_TTL_DAYS: 30
+      CORS_ORIGIN: http://localhost:5173
+      ADMIN_BOOTSTRAP_USERNAME: admin
+      ADMIN_BOOTSTRAP_PASSWORD: admin123
+      ADMIN_BOOTSTRAP_DISPLAY_NAME: Administrator
+    ports:
+      - "4000:4000"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: escapp-frontend
+    environment:
+      VITE_API_URL: http://localhost:4000
+    ports:
+      - "5173:5173"
+
+volumes:
+  mariadb_data:

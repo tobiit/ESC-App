@@ -1,0 +1,20 @@
+{
+  "switch": {
+    "width": {
+      "$type": "sizing",
+      "$value": "({semantic.size.content.m} * 2)"
+    },
+    "knob": {
+      "size": {
+        "$type": "sizing",
+        "$value": "({semantic.size.content.m} - {switch.inset.all} * 2)"
+      }
+    },
+    "inset": {
+      "all": {
+        "$type": "spacing",
+        "$value": "{semantic.dimension.static.100}"
+      }
+    }
+  }
+}

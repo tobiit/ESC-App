@@ -1,0 +1,152 @@
+{
+  "list": {
+    "m": {
+      "gap": {
+        "vertical": {
+          "$type": "spacing",
+          "$value": "{semantic.dimension.linear-100.400}"
+        }
+      },
+      "item": {
+        "gap": {
+          "horizontal": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.clamp-smaller-100.300}"
+          }
+        },
+        "bullet": {
+          "inset": {
+            "top": {
+              "$type": "spacing",
+              "$value": "(({semantic.line-height.body.m} - {semantic.size.content.m}) / 2)"
+            }
+          }
+        }
+      },
+      "ordered": {
+        "item": {
+          "min-width": {
+            "$type": "sizing",
+            "$value": "{semantic.dimension.static.350}"
+          }
+        }
+      },
+      "level-2": {
+        "ordered": {
+          "inset": {
+            "start": {
+              "$type": "spacing",
+              "$value": "({list.m.ordered.item.min-width} + {list.m.item.gap.horizontal})"
+            }
+          }
+        },
+        "ordered-contained": {
+          "inset": {
+            "start": {
+              "$type": "spacing",
+              "$value": "({semantic.size.content.m} + {list.m.item.gap.horizontal})"
+            }
+          }
+        },
+        "unordered": {
+          "inset": {
+            "start": {
+              "$type": "spacing",
+              "$value": "({list.m.unordered.item.min-width} + {list.m.item.gap.horizontal})"
+            }
+          }
+        },
+        "icon": {
+          "inset": {
+            "start": {
+              "$type": "spacing",
+              "$value": "({semantic.size.content.m} + {list.m.item.gap.horizontal})"
+            }
+          }
+        }
+      },
+      "unordered": {
+        "item": {
+          "min-width": {
+            "$type": "sizing",
+            "$value": "{semantic.dimension.static.200}"
+          }
+        }
+      }
+    },
+    "s": {
+      "gap": {
+        "vertical": {
+          "$type": "spacing",
+          "$value": "{semantic.dimension.linear-100.300}"
+        }
+      },
+      "item": {
+        "gap": {
+          "horizontal": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.clamp-smaller-100.300}"
+          }
+        },
+        "bullet": {
+          "inset": {
+            "top": {
+              "$type": "spacing",
+              "$value": "(({semantic.line-height.body.s} - {semantic.size.content.s}) / 2)"
+            }
+          }
+        }
+      },
+      "level-2": {
+        "ordered": {
+          "inset": {
+            "start": {
+              "$type": "spacing",
+              "$value": "({list.s.ordered.item.min-width} + {list.s.item.gap.horizontal})"
+            }
+          }
+        },
+        "ordered-contained": {
+          "inset": {
+            "start": {
+              "$type": "spacing",
+              "$value": "({semantic.size.content.s} + {list.s.item.gap.horizontal})"
+            }
+          }
+        },
+        "unordered": {
+          "inset": {
+            "start": {
+              "$type": "spacing",
+              "$value": "({list.s.unordered.item.min-width} + {list.s.item.gap.horizontal})"
+            }
+          }
+        },
+        "icon": {
+          "inset": {
+            "start": {
+              "$type": "spacing",
+              "$value": "({semantic.size.content.s} + {list.s.item.gap.horizontal})"
+            }
+          }
+        }
+      },
+      "ordered": {
+        "item": {
+          "min-width": {
+            "$type": "sizing",
+            "$value": "{semantic.dimension.static.300}"
+          }
+        }
+      },
+      "unordered": {
+        "item": {
+          "min-width": {
+            "$type": "sizing",
+            "$value": "{semantic.dimension.static.200}"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "badge": {
+    "inset": {
+      "horizontal": {
+        "$type": "spacing",
+        "$value": "{semantic.inset.horizontal.square.content.m}"
+      },
+      "vertical": {
+        "$type": "spacing",
+        "$value": "{semantic.inset.vertical.s.content.m}"
+      }
+    },
+    "size": {
+      "$type": "sizing",
+      "$value": "{semantic.size.content.m}"
+    }
+  }
+}

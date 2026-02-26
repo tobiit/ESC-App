@@ -1,0 +1,25 @@
+node_modules/
+data/
+uploads/
+.DS_Store
+
+# Build artefacts
+dist/
+build/
+coverage/
+
+# Env and logs
+.env
+.env.*
+*.log
+
+# Android
+android/.gradle/
+android/**/build/
+android/local.properties
+
+# OS/editor
+.vscode/
+
+# Large local deployment binaries (not source code)
+deploy/cmdline-tools/

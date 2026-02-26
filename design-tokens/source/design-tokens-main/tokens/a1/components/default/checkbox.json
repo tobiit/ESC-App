@@ -1,0 +1,8 @@
+{
+  "checkbox": {
+    "size": {
+      "$type": "sizing",
+      "$value": "{semantic.size.content.m}"
+    }
+  }
+}

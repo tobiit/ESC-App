@@ -1,0 +1,50 @@
+@use 'sass:list';
+
+@mixin apply-design-tokens($color-scheme, $animation, $density, $selector) {
+	// Valid parameter values
+	$valid-color-schemes: ('light', 'dark');
+	$valid-densities: ('spacious', 'compact', 'dense');
+	$valid-animations: ('minimal', 'lively');
+
+	// Validate color-scheme parameter
+	@if not list.index($valid-color-schemes, $color-scheme) {
+		@error "Invalid color-scheme '#{$color-scheme}'. Must be one of: #{$valid-color-schemes}";
+	}
+
+	// Validate density parameter
+	@if not list.index($valid-densities, $density) {
+		@error "Invalid density '#{$density}'. Must be one of: #{$valid-densities}";
+	}
+
+	// Validate animation parameter
+	@if not list.index($valid-animations, $animation) {
+		@error "Invalid animation '#{$animation}'. Must be one of: #{$valid-animations}";
+	}
+
+	// Call the appropriate mixin based on the parameters
+	@if $color-scheme == 'light' and $animation == 'minimal' and $density == 'spacious' {
+		@include design-tokens-light-minimal-spacious($selector);
+	} @else if $color-scheme == 'light' and $animation == 'minimal' and $density == 'dense' {
+		@include design-tokens-light-minimal-dense($selector);
+	} @else if $color-scheme == 'light' and $animation == 'minimal' and $density == 'compact' {
+		@include design-tokens-light-minimal-compact($selector);
+	} @else if $color-scheme == 'light' and $animation == 'lively' and $density == 'spacious' {
+		@include design-tokens-light-lively-spacious($selector);
+	} @else if $color-scheme == 'light' and $animation == 'lively' and $density == 'dense' {
+		@include design-tokens-light-lively-dense($selector);
+	} @else if $color-scheme == 'light' and $animation == 'lively' and $density == 'compact' {
+		@include design-tokens-light-lively-compact($selector);
+	} @else if $color-scheme == 'dark' and $animation == 'minimal' and $density == 'spacious' {
+		@include design-tokens-dark-minimal-spacious($selector);
+	} @else if $color-scheme == 'dark' and $animation == 'minimal' and $density == 'dense' {
+		@include design-tokens-dark-minimal-dense($selector);
+	} @else if $color-scheme == 'dark' and $animation == 'minimal' and $density == 'compact' {
+		@include design-tokens-dark-minimal-compact($selector);
+	} @else if $color-scheme == 'dark' and $animation == 'lively' and $density == 'spacious' {
+		@include design-tokens-dark-lively-spacious($selector);
+	} @else if $color-scheme == 'dark' and $animation == 'lively' and $density == 'dense' {
+		@include design-tokens-dark-lively-dense($selector);
+	} @else if $color-scheme == 'dark' and $animation == 'lively' and $density == 'compact' {
+		@include design-tokens-dark-lively-compact($selector);
+	}
+}

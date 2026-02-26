@@ -1,0 +1,21 @@
+{
+	"infile": "CHANGELOG.md",
+	"header": "# Builder Changelog\nAll changes of the token build process will be documented in this file. See [@allianz/a1-design-token changelog](https://github.developer.allianz.io/a1/design-tokens/blob/main/token-package/CHANGELOG.md) for a detailed history of the A1 design tokens single source of truth (SSOT).",
+	"releaseCommitMessageFormat": "chore(release): builder-v{{currentTag}}",
+	"tagPrefix": "builder-v",
+	"skip": {
+		"bump": false,
+		"commit": true,
+		"tag": true
+	},
+	"types": [
+		{ "type": "feat_b", "section": "Features" },
+		{ "type": "fix_b", "section": "Bug Fixes" },
+		{ "type": "docs_b", "section": "Documentation" },
+		{ "type": "refactor_b", "section": "Refactors" },
+		{ "type": "chore_b", "hidden": true },
+		{ "type": "style_b", "hidden": true },
+		{ "type": "perf_b", "hidden": true },
+		{ "type": "test_b", "section": "Testing" }
+	]
+}

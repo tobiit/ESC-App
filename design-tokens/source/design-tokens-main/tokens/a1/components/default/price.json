@@ -1,0 +1,536 @@
+{
+  "price": {
+    "internal": {
+      "affix": {
+        "primary": {
+          "font-size": {
+            "ratio": {
+              "$type": "number",
+              "$value": "2.5",
+              "$description": "Defines the proportion of the size of the top or bottom text in the postfix in relation to the price font size"
+            }
+          },
+          "gap": {
+            "horizontal": {
+              "ratio": {
+                "$type": "number",
+                "$value": "12"
+              }
+            }
+          }
+        },
+        "secondary": {
+          "font-size": {
+            "ratio": {
+              "$type": "number",
+              "$value": "0.25",
+              "$description": "Defines the proportion of the size of the prefix and suffix text in relation to the price font size"
+            },
+            "treshold": {
+              "$type": "number",
+              "$value": "8"
+            }
+          },
+          "gap": {
+            "horizontal": {
+              "ratio": {
+                "$type": "number",
+                "$value": "0.8"
+              }
+            }
+          }
+        }
+      }
+    },
+    "affix": {
+      "primary": {
+        "2xl": {
+          "font-size": {
+            "$type": "fontSizes",
+            "$value": "({semantic.font-size.headline.2xl} / {price.internal.affix.primary.font-size.ratio})"
+          },
+          "line-height": {
+            "$type": "lineHeights",
+            "$value": "{price.affix.primary.2xl.font-size}"
+          },
+          "text": {
+            "$type": "typography",
+            "$value": {
+              "fontFamily": "{core.font-family.primary}",
+              "fontWeight": "{core.font-weight.200}",
+              "fontSize": "{price.affix.primary.2xl.font-size}",
+              "lineHeight": "{price.affix.primary.2xl.line-height}",
+              "letterSpacing": "{semantic.dimension.static.0}"
+            }
+          },
+          "inset": {
+            "vertical": {
+              "$type": "spacing",
+              "$value": "{price.affix.primary.2xl.line-height}"
+            }
+          },
+          "gap": {
+            "horizontal": {
+              "$type": "spacing",
+              "$value": "(round({semantic.font-size.headline.2xl} / {price.internal.affix.primary.gap.horizontal.ratio}))"
+            }
+          }
+        },
+        "3xl": {
+          "font-size": {
+            "$type": "fontSizes",
+            "$value": "({semantic.font-size.headline.3xl} / {price.internal.affix.primary.font-size.ratio})"
+          },
+          "line-height": {
+            "$type": "lineHeights",
+            "$value": "{price.affix.primary.3xl.font-size}"
+          },
+          "text": {
+            "$type": "typography",
+            "$value": {
+              "fontFamily": "{core.font-family.primary}",
+              "fontWeight": "{core.font-weight.200}",
+              "fontSize": "{price.affix.primary.3xl.font-size}",
+              "lineHeight": "{price.affix.primary.3xl.line-height}",
+              "letterSpacing": "{semantic.dimension.static.0}"
+            }
+          },
+          "inset": {
+            "vertical": {
+              "$type": "spacing",
+              "$value": "{price.affix.primary.3xl.line-height}"
+            }
+          },
+          "gap": {
+            "horizontal": {
+              "$type": "spacing",
+              "$value": "(round({semantic.font-size.headline.3xl} / {price.internal.affix.primary.gap.horizontal.ratio}))"
+            }
+          }
+        },
+        "4xl": {
+          "font-size": {
+            "$type": "fontSizes",
+            "$value": "({semantic.font-size.headline.4xl} / {price.internal.affix.primary.font-size.ratio})"
+          },
+          "line-height": {
+            "$type": "lineHeights",
+            "$value": "{price.affix.primary.4xl.font-size}"
+          },
+          "text": {
+            "$type": "typography",
+            "$value": {
+              "fontFamily": "{core.font-family.primary}",
+              "fontWeight": "{core.font-weight.200}",
+              "fontSize": "{price.affix.primary.4xl.font-size}",
+              "lineHeight": "{price.affix.primary.4xl.line-height}",
+              "letterSpacing": "{semantic.dimension.static.0}"
+            }
+          },
+          "inset": {
+            "vertical": {
+              "$type": "spacing",
+              "$value": "{price.affix.primary.4xl.line-height}"
+            }
+          },
+          "gap": {
+            "horizontal": {
+              "$type": "spacing",
+              "$value": "(round({semantic.font-size.headline.4xl} / {price.internal.affix.primary.gap.horizontal.ratio}))"
+            }
+          }
+        },
+        "5xl": {
+          "font-size": {
+            "$type": "fontSizes",
+            "$value": "({semantic.font-size.headline.5xl} / {price.internal.affix.primary.font-size.ratio})"
+          },
+          "line-height": {
+            "$type": "lineHeights",
+            "$value": "{price.affix.primary.5xl.font-size}"
+          },
+          "text": {
+            "$type": "typography",
+            "$value": {
+              "fontFamily": "{core.font-family.primary}",
+              "fontWeight": "{core.font-weight.200}",
+              "fontSize": "{price.affix.primary.5xl.font-size}",
+              "lineHeight": "{price.affix.primary.5xl.line-height}",
+              "letterSpacing": "{semantic.dimension.static.0}"
+            }
+          },
+          "inset": {
+            "vertical": {
+              "$type": "spacing",
+              "$value": "{price.affix.primary.5xl.line-height}"
+            }
+          },
+          "gap": {
+            "horizontal": {
+              "$type": "spacing",
+              "$value": "(round({semantic.font-size.headline.5xl} / {price.internal.affix.primary.gap.horizontal.ratio}))"
+            }
+          }
+        },
+        "6xl": {
+          "font-size": {
+            "$type": "fontSizes",
+            "$value": "({semantic.font-size.headline.6xl} / {price.internal.affix.primary.font-size.ratio})"
+          },
+          "line-height": {
+            "$type": "lineHeights",
+            "$value": "{price.affix.primary.6xl.font-size}"
+          },
+          "text": {
+            "$type": "typography",
+            "$value": {
+              "fontFamily": "{core.font-family.primary}",
+              "fontWeight": "{core.font-weight.200}",
+              "fontSize": "{price.affix.primary.6xl.font-size}",
+              "lineHeight": "{price.affix.primary.6xl.line-height}",
+              "letterSpacing": "{semantic.dimension.static.0}"
+            }
+          },
+          "inset": {
+            "vertical": {
+              "$type": "spacing",
+              "$value": "{price.affix.primary.6xl.line-height}"
+            }
+          },
+          "gap": {
+            "horizontal": {
+              "$type": "spacing",
+              "$value": "(round({semantic.font-size.headline.6xl} / {price.internal.affix.primary.gap.horizontal.ratio}))"
+            }
+          }
+        }
+      },
+      "secondary": {
+        "s": {
+          "font-size": {
+            "$type": "fontSizes",
+            "$value": "({semantic.font-size.headline.s} * {price.internal.affix.secondary.font-size.ratio} + {price.internal.affix.secondary.font-size.treshold})"
+          },
+          "line-height": {
+            "$type": "lineHeights",
+            "$value": "({price.affix.secondary.s.font-size} * {core.internal.font-size.primary.cap-height})"
+          },
+          "text": {
+            "$type": "typography",
+            "$value": {
+              "fontFamily": "{core.font-family.primary}",
+              "fontWeight": "{core.font-weight.150}",
+              "fontSize": "{price.affix.secondary.s.font-size}",
+              "lineHeight": "{price.affix.secondary.s.line-height}",
+              "letterSpacing": "{semantic.dimension.static.0}"
+            }
+          },
+          "inset": {
+            "bottom": {
+              "$type": "spacing",
+              "$value": "(({semantic.line-height.headline.s} - {semantic.font-size.headline.s} * {core.internal.font-size.primary.cap-height}) / 2)"
+            }
+          },
+          "gap": {
+            "horizontal": {
+              "$type": "spacing",
+              "$value": "(round({price.affix.secondary.s.inset.bottom} * {price.internal.affix.secondary.gap.horizontal.ratio}))"
+            },
+            "vertical": {
+              "$type": "spacing",
+              "$value": "{semantic.dimension.linear-25.50}"
+            }
+          }
+        },
+        "m": {
+          "font-size": {
+            "$type": "fontSizes",
+            "$value": "({semantic.font-size.headline.m} * {price.internal.affix.secondary.font-size.ratio} + {price.internal.affix.secondary.font-size.treshold})"
+          },
+          "line-height": {
+            "$type": "lineHeights",
+            "$value": "({price.affix.secondary.m.font-size} * {core.internal.font-size.primary.cap-height})"
+          },
+          "text": {
+            "$type": "typography",
+            "$value": {
+              "fontFamily": "{core.font-family.primary}",
+              "fontWeight": "{core.font-weight.150}",
+              "fontSize": "{price.affix.secondary.m.font-size}",
+              "lineHeight": "{price.affix.secondary.m.line-height}",
+              "letterSpacing": "{semantic.dimension.static.0}"
+            }
+          },
+          "inset": {
+            "bottom": {
+              "$type": "spacing",
+              "$value": "(({semantic.line-height.headline.m} - {semantic.font-size.headline.m} * {core.internal.font-size.primary.cap-height}) / 2)"
+            }
+          },
+          "gap": {
+            "horizontal": {
+              "$type": "spacing",
+              "$value": "(round({price.affix.secondary.m.inset.bottom} * {price.internal.affix.secondary.gap.horizontal.ratio}))"
+            },
+            "vertical": {
+              "$type": "spacing",
+              "$value": "{semantic.dimension.linear-25.50}"
+            }
+          }
+        },
+        "l": {
+          "font-size": {
+            "$type": "fontSizes",
+            "$value": "({semantic.font-size.headline.l} * {price.internal.affix.secondary.font-size.ratio} + {price.internal.affix.secondary.font-size.treshold})"
+          },
+          "line-height": {
+            "$type": "lineHeights",
+            "$value": "({price.affix.secondary.l.font-size} * {core.internal.font-size.primary.cap-height})"
+          },
+          "text": {
+            "$type": "typography",
+            "$value": {
+              "fontFamily": "{core.font-family.primary}",
+              "fontWeight": "{core.font-weight.150}",
+              "fontSize": "{price.affix.secondary.l.font-size}",
+              "lineHeight": "{price.affix.secondary.l.line-height}",
+              "letterSpacing": "{semantic.dimension.static.0}"
+            }
+          },
+          "inset": {
+            "bottom": {
+              "$type": "spacing",
+              "$value": "(({semantic.line-height.headline.l} - {semantic.font-size.headline.l} * {core.internal.font-size.primary.cap-height}) / 2)"
+            }
+          },
+          "gap": {
+            "horizontal": {
+              "$type": "spacing",
+              "$value": "(round({price.affix.secondary.l.inset.bottom} * {price.internal.affix.secondary.gap.horizontal.ratio}))"
+            },
+            "vertical": {
+              "$type": "spacing",
+              "$value": "{semantic.dimension.linear-25.50}"
+            }
+          }
+        },
+        "xl": {
+          "font-size": {
+            "$type": "fontSizes",
+            "$value": "({semantic.font-size.headline.xl} * {price.internal.affix.secondary.font-size.ratio} + {price.internal.affix.secondary.font-size.treshold})"
+          },
+          "line-height": {
+            "$type": "lineHeights",
+            "$value": "({price.affix.secondary.xl.font-size} * {core.internal.font-size.primary.cap-height})"
+          },
+          "text": {
+            "$type": "typography",
+            "$value": {
+              "fontFamily": "{core.font-family.primary}",
+              "fontWeight": "{core.font-weight.150}",
+              "fontSize": "{price.affix.secondary.xl.font-size}",
+              "lineHeight": "{price.affix.secondary.xl.line-height}",
+              "letterSpacing": "{semantic.dimension.static.0}"
+            }
+          },
+          "inset": {
+            "bottom": {
+              "$type": "spacing",
+              "$value": "(({semantic.line-height.headline.xl} - {semantic.font-size.headline.xl} * {core.internal.font-size.primary.cap-height}) / 2)"
+            }
+          },
+          "gap": {
+            "horizontal": {
+              "$type": "spacing",
+              "$value": "(round({price.affix.secondary.xl.inset.bottom} * {price.internal.affix.secondary.gap.horizontal.ratio}))"
+            },
+            "vertical": {
+              "$type": "spacing",
+              "$value": "{semantic.dimension.linear-25.50}"
+            }
+          }
+        },
+        "2xl": {
+          "font-size": {
+            "$type": "fontSizes",
+            "$value": "({semantic.font-size.headline.2xl} * {price.internal.affix.secondary.font-size.ratio} + {price.internal.affix.secondary.font-size.treshold})"
+          },
+          "line-height": {
+            "$type": "lineHeights",
+            "$value": "({price.affix.secondary.2xl.font-size} * {core.internal.font-size.primary.cap-height})"
+          },
+          "text": {
+            "$type": "typography",
+            "$value": {
+              "fontFamily": "{core.font-family.primary}",
+              "fontWeight": "{core.font-weight.150}",
+              "fontSize": "{price.affix.secondary.2xl.font-size}",
+              "lineHeight": "{price.affix.secondary.2xl.line-height}",
+              "letterSpacing": "{semantic.dimension.static.0}"
+            }
+          },
+          "inset": {
+            "bottom": {
+              "$type": "spacing",
+              "$value": "(({semantic.line-height.headline.2xl} - {semantic.font-size.headline.2xl} * {core.internal.font-size.primary.cap-height}) / 2)"
+            }
+          },
+          "gap": {
+            "horizontal": {
+              "$type": "spacing",
+              "$value": "(round({price.affix.secondary.2xl.inset.bottom} * {price.internal.affix.secondary.gap.horizontal.ratio}))"
+            },
+            "vertical": {
+              "$type": "spacing",
+              "$value": "{semantic.dimension.linear-25.50}"
+            }
+          }
+        },
+        "3xl": {
+          "font-size": {
+            "$type": "fontSizes",
+            "$value": "({semantic.font-size.headline.3xl} * {price.internal.affix.secondary.font-size.ratio} + {price.internal.affix.secondary.font-size.treshold})"
+          },
+          "line-height": {
+            "$type": "lineHeights",
+            "$value": "({price.affix.secondary.3xl.font-size} * {core.internal.font-size.primary.cap-height})"
+          },
+          "text": {
+            "$type": "typography",
+            "$value": {
+              "fontFamily": "{core.font-family.primary}",
+              "fontWeight": "{core.font-weight.150}",
+              "fontSize": "{price.affix.secondary.3xl.font-size}",
+              "lineHeight": "{price.affix.secondary.3xl.line-height}",
+              "letterSpacing": "{semantic.dimension.static.0}"
+            }
+          },
+          "inset": {
+            "bottom": {
+              "$type": "spacing",
+              "$value": "(({semantic.line-height.headline.3xl} - {semantic.font-size.headline.3xl} * {core.internal.font-size.primary.cap-height}) / 2)"
+            }
+          },
+          "gap": {
+            "horizontal": {
+              "$type": "spacing",
+              "$value": "(round({price.affix.secondary.3xl.inset.bottom} * {price.internal.affix.secondary.gap.horizontal.ratio}))"
+            },
+            "vertical": {
+              "$type": "spacing",
+              "$value": "{semantic.dimension.linear-25.50}"
+            }
+          }
+        },
+        "4xl": {
+          "font-size": {
+            "$type": "fontSizes",
+            "$value": "({semantic.font-size.headline.4xl} * {price.internal.affix.secondary.font-size.ratio} + {price.internal.affix.secondary.font-size.treshold})"
+          },
+          "line-height": {
+            "$type": "lineHeights",
+            "$value": "({price.affix.secondary.4xl.font-size} * {core.internal.font-size.primary.cap-height})"
+          },
+          "text": {
+            "$type": "typography",
+            "$value": {
+              "fontFamily": "{core.font-family.primary}",
+              "fontWeight": "{core.font-weight.150}",
+              "fontSize": "{price.affix.secondary.4xl.font-size}",
+              "lineHeight": "{price.affix.secondary.4xl.line-height}",
+              "letterSpacing": "{semantic.dimension.static.0}"
+            }
+          },
+          "inset": {
+            "bottom": {
+              "$type": "spacing",
+              "$value": "(({semantic.line-height.headline.4xl} - {semantic.font-size.headline.4xl} * {core.internal.font-size.primary.cap-height}) / 2)"
+            }
+          },
+          "gap": {
+            "horizontal": {
+              "$type": "spacing",
+              "$value": "(round({price.affix.secondary.4xl.inset.bottom} * {price.internal.affix.secondary.gap.horizontal.ratio}))"
+            },
+            "vertical": {
+              "$type": "spacing",
+              "$value": "{semantic.dimension.linear-25.50}"
+            }
+          }
+        },
+        "5xl": {
+          "font-size": {
+            "$type": "fontSizes",
+            "$value": "({semantic.font-size.headline.5xl} * {price.internal.affix.secondary.font-size.ratio} + {price.internal.affix.secondary.font-size.treshold})"
+          },
+          "line-height": {
+            "$type": "lineHeights",
+            "$value": "({price.affix.secondary.5xl.font-size} * {core.internal.font-size.primary.cap-height})"
+          },
+          "text": {
+            "$type": "typography",
+            "$value": {
+              "fontFamily": "{core.font-family.primary}",
+              "fontWeight": "{core.font-weight.150}",
+              "fontSize": "{price.affix.secondary.5xl.font-size}",
+              "lineHeight": "{price.affix.secondary.5xl.line-height}",
+              "letterSpacing": "{semantic.dimension.static.0}"
+            }
+          },
+          "inset": {
+            "bottom": {
+              "$type": "spacing",
+              "$value": "(({semantic.line-height.headline.5xl} - {semantic.font-size.headline.5xl} * {core.internal.font-size.primary.cap-height}) / 2)"
+            }
+          },
+          "gap": {
+            "horizontal": {
+              "$type": "spacing",
+              "$value": "(round({price.affix.secondary.5xl.inset.bottom} * {price.internal.affix.secondary.gap.horizontal.ratio}))"
+            },
+            "vertical": {
+              "$type": "spacing",
+              "$value": "{semantic.dimension.linear-25.50}"
+            }
+          }
+        },
+        "6xl": {
+          "font-size": {
+            "$type": "fontSizes",
+            "$value": "({semantic.font-size.headline.6xl} * {price.internal.affix.secondary.font-size.ratio} + {price.internal.affix.secondary.font-size.treshold})"
+          },
+          "line-height": {
+            "$type": "lineHeights",
+            "$value": "({price.affix.secondary.6xl.font-size} * {core.internal.font-size.primary.cap-height})"
+          },
+          "text": {
+            "$type": "typography",
+            "$value": {
+              "fontFamily": "{core.font-family.primary}",
+              "fontWeight": "{core.font-weight.150}",
+              "fontSize": "{price.affix.secondary.6xl.font-size}",
+              "lineHeight": "{price.affix.secondary.6xl.line-height}",
+              "letterSpacing": "{semantic.dimension.static.0}"
+            }
+          },
+          "inset": {
+            "bottom": {
+              "$type": "spacing",
+              "$value": "(({semantic.line-height.headline.6xl} - {semantic.font-size.headline.6xl} * {core.internal.font-size.primary.cap-height}) / 2)"
+            }
+          },
+          "gap": {
+            "horizontal": {
+              "$type": "spacing",
+              "$value": "(round({price.affix.secondary.6xl.inset.bottom} * {price.internal.affix.secondary.gap.horizontal.ratio}))"
+            },
+            "vertical": {
+              "$type": "spacing",
+              "$value": "{semantic.dimension.linear-25.50}"
+            }
+          }
+        }
+      }
+    }
+  }
+}

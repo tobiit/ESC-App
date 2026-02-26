@@ -1,0 +1,76 @@
+{
+  "tile": {
+    "gap": {
+      "vertical": {
+        "$type": "spacing",
+        "$value": "{semantic.dimension.static.200}"
+      },
+      "horizontal": {
+        "$type": "spacing",
+        "$value": "{semantic.inset.all.surface.linear.400}"
+      }
+    },
+    "vertical": {
+      "inset": {
+        "horizontal": {
+          "$type": "spacing",
+          "$value": "{semantic.inset.all.surface.linear.400}"
+        },
+        "vertical": {
+          "$type": "spacing",
+          "$value": "{semantic.inset.all.surface.linear.400}"
+        }
+      },
+      "icon": {
+        "inset": {
+          "horizontal": {
+            "$type": "spacing",
+            "$value": "{tile.vertical.inset.horizontal}"
+          },
+          "top": {
+            "$type": "spacing",
+            "$value": "({tile.vertical.inset.vertical} + {tile.vertical.inset.vertical} / 2)"
+          },
+          "bottom": {
+            "$type": "spacing",
+            "$value": "{tile.vertical.inset.vertical}"
+          }
+        },
+        "size": {
+          "$type": "sizing",
+          "$value": "{semantic.size.component.1000}"
+        }
+      },
+      "control": {
+        "offset": {
+          "top": {
+            "$type": "spacing",
+            "$value": "{tile.vertical.inset.vertical}"
+          },
+          "end": {
+            "$type": "spacing",
+            "$value": "{tile.vertical.inset.horizontal}"
+          }
+        }
+      }
+    },
+    "horizontal": {
+      "inset": {
+        "horizontal": {
+          "$type": "spacing",
+          "$value": "{semantic.inset.all.surface.linear.400}"
+        },
+        "vertical": {
+          "$type": "spacing",
+          "$value": "{semantic.inset.all.surface.linear.400}"
+        }
+      },
+      "icon": {
+        "size": {
+          "$type": "sizing",
+          "$value": "{semantic.size.component.800}"
+        }
+      }
+    }
+  }
+}

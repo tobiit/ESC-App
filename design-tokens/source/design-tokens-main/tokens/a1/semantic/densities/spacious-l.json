@@ -1,0 +1,223 @@
+{
+  "semantic": {
+    "internal": {
+      "font-size": {
+        "growth": {
+          "headline": {
+            "$type": "number",
+            "$value": "1.3"
+          }
+        }
+      },
+      "name": {
+        "breakpoint": {
+          "all": {
+            "$type": "text",
+            "$value": "L"
+          },
+          "clamp-smaller": {
+            "$type": "text",
+            "$value": "L"
+          },
+          "clamp-larger": {
+            "$type": "text",
+            "$value": "M"
+          }
+        }
+      },
+      "number": {
+        "grid": {
+          "columns": {
+            "content": {
+              "$type": "number",
+              "$value": "12"
+            },
+            "portal": {
+              "$type": "number",
+              "$value": "12"
+            }
+          }
+        }
+      }
+    },
+    "inset": {
+      "all": {
+        "surface": {
+          "responsive": {
+            "200": {
+              "$type": "spacing",
+              "$value": "{semantic.dimension.static.200}"
+            },
+            "300": {
+              "$type": "spacing",
+              "$value": "{semantic.dimension.static.300}"
+            },
+            "400": {
+              "$type": "spacing",
+              "$value": "{semantic.dimension.static.400}"
+            },
+            "600": {
+              "$type": "spacing",
+              "$value": "{semantic.dimension.static.600}"
+            },
+            "800": {
+              "$type": "spacing",
+              "$value": "{semantic.dimension.static.800}"
+            },
+            "1000": {
+              "$type": "spacing",
+              "$value": "{semantic.dimension.static.1000}"
+            },
+            "1200": {
+              "$type": "spacing",
+              "$value": "{semantic.dimension.static.1200}"
+            }
+          },
+          "linear-responsive": {
+            "200": {
+              "$type": "spacing",
+              "$value": "{semantic.dimension.linear-50.200}"
+            },
+            "300": {
+              "$type": "spacing",
+              "$value": "{semantic.dimension.linear-50.300}"
+            },
+            "400": {
+              "$type": "spacing",
+              "$value": "{semantic.dimension.linear-50.400}"
+            },
+            "600": {
+              "$type": "spacing",
+              "$value": "{semantic.dimension.linear-100.600}"
+            },
+            "800": {
+              "$type": "spacing",
+              "$value": "{semantic.dimension.linear-100.800}"
+            },
+            "1000": {
+              "$type": "spacing",
+              "$value": "{semantic.dimension.linear-200.1000}"
+            },
+            "1200": {
+              "$type": "spacing",
+              "$value": "{semantic.dimension.linear-200.1200}"
+            }
+          }
+        }
+      },
+      "horizontal": {
+        "grid": {
+          "default": {
+            "$type": "spacing",
+            "$value": "{core.dimension.1600}",
+            "$description": "Helper to provide the grid inset value based on the current breakpoint"
+          }
+        }
+      }
+    },
+    "gap": {
+      "all": {
+        "responsive": {
+          "100": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.static.100}"
+          },
+          "200": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.static.200}"
+          },
+          "300": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.static.300}"
+          },
+          "400": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.static.400}"
+          },
+          "600": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.static.600}"
+          },
+          "800": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.static.800}"
+          },
+          "1000": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.static.1000}"
+          },
+          "1200": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.static.1200}"
+          },
+          "1400": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.static.1400}"
+          },
+          "1600": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.static.1600}"
+          },
+          "2000": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.static.2000}"
+          },
+          "2400": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.static.2400}"
+          }
+        },
+        "linear-responsive": {
+          "100": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.linear-50.100}"
+          },
+          "200": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.linear-50.200}"
+          },
+          "300": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.linear-50.300}"
+          },
+          "400": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.linear-100.400}"
+          },
+          "600": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.linear-100.600}"
+          },
+          "800": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.linear-200.800}"
+          },
+          "1000": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.linear-200.1000}"
+          },
+          "1200": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.linear-300.1200}"
+          },
+          "1400": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.linear-300.1400}"
+          },
+          "1600": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.linear-400.1600}"
+          },
+          "2000": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.linear-400.2000}"
+          },
+          "2400": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.linear-400.2400}"
+          }
+        }
+      }
+    }
+  }
+}

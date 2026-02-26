@@ -1,0 +1,166 @@
+{
+  "core": {
+    "internal": {
+      "max-width": {
+        "breakpoint": {
+          "xs": {
+            "$type": "sizing",
+            "$value": "319",
+            "$description": "Needed to define breakpoint ranges in tools like Figma"
+          },
+          "s": {
+            "$type": "sizing",
+            "$value": "703",
+            "$description": "Needed to define breakpoint ranges in tools like Figma"
+          },
+          "m": {
+            "$type": "sizing",
+            "$value": "991",
+            "$description": "Needed to define breakpoint ranges in tools like Figma"
+          },
+          "l": {
+            "$type": "sizing",
+            "$value": "1279",
+            "$description": "Needed to define breakpoint ranges in tools like Figma"
+          },
+          "xl": {
+            "$type": "sizing",
+            "$value": "1471",
+            "$description": "Needed to define breakpoint ranges in tools like Figma"
+          },
+          "2xl": {
+            "$type": "sizing",
+            "$value": "1759",
+            "$description": "Needed to define breakpoint ranges in tools like Figma"
+          }
+        }
+      }
+    },
+    "size": {
+      "breakpoint": {
+        "xs": {
+          "$type": "sizing",
+          "$value": "0"
+        },
+        "s": {
+          "$type": "sizing",
+          "$value": "320"
+        },
+        "m": {
+          "$type": "sizing",
+          "$value": "704"
+        },
+        "l": {
+          "$type": "sizing",
+          "$value": "992"
+        },
+        "xl": {
+          "$type": "sizing",
+          "$value": "1280"
+        },
+        "2xl": {
+          "$type": "sizing",
+          "$value": "1472"
+        },
+        "3xl": {
+          "$type": "sizing",
+          "$value": "1760"
+        }
+      },
+      "grid": {
+        "point": {
+          "$type": "sizing",
+          "$value": "({core.internal.font-size.user-agent} / 4)",
+          "$description": "The 4-point grid system (1 rem which is by default 16px / 4 = 4) provides a structured approach to positioning and sizing ui elements. Key principle: any spacing between elements should be a multiple of 4. See also: https://www.designsystems.com/space-grids-and-layouts/."
+        },
+        "baseline": {
+          "$type": "sizing",
+          "$value": "{core.size.grid.point}",
+          "$description": "Definition of the baseline grid size (horizontal grid rows). Main usage is to align the lineheight of typographic styles to a definined vertical rythm."
+        }
+      }
+    },
+    "gap": {
+      "horizontal": {
+        "grid": {
+          "xs": {
+            "$type": "spacing",
+            "$value": "{core.dimension.400}",
+            "$description": "Space between vertical grid columns"
+          },
+          "s": {
+            "$type": "spacing",
+            "$value": "{core.dimension.400}",
+            "$description": "Space between vertical grid columns"
+          },
+          "m": {
+            "$type": "spacing",
+            "$value": "{core.dimension.800}",
+            "$description": "Space between vertical grid columns"
+          },
+          "l": {
+            "$type": "spacing",
+            "$value": "{core.dimension.800}",
+            "$description": "Space between vertical grid columns"
+          },
+          "xl": {
+            "$type": "spacing",
+            "$value": "{core.dimension.800}",
+            "$description": "Space between vertical grid columns"
+          },
+          "2xl": {
+            "$type": "spacing",
+            "$value": "{core.dimension.800}",
+            "$description": "Space between vertical grid columns"
+          },
+          "3xl": {
+            "$type": "spacing",
+            "$value": "{core.dimension.800}",
+            "$description": "Space between vertical grid columns"
+          }
+        }
+      }
+    },
+    "inset": {
+      "horizontal": {
+        "grid": {
+          "xs": {
+            "$type": "spacing",
+            "$value": "{core.dimension.600}",
+            "$description": "Left and right spacing of the grid"
+          },
+          "s": {
+            "$type": "spacing",
+            "$value": "{core.dimension.600}",
+            "$description": "Left and right spacing of the grid"
+          },
+          "m": {
+            "$type": "spacing",
+            "$value": "{core.dimension.1200}",
+            "$description": "Left and right spacing of the grid"
+          },
+          "l": {
+            "$type": "spacing",
+            "$value": "{core.dimension.1600}",
+            "$description": "Left and right spacing of the grid"
+          },
+          "xl": {
+            "$type": "spacing",
+            "$value": "{core.dimension.1600}",
+            "$description": "Left and right spacing of the grid"
+          },
+          "2xl": {
+            "$type": "spacing",
+            "$value": "{core.dimension.1600}",
+            "$description": "Left and right spacing of the grid"
+          },
+          "3xl": {
+            "$type": "spacing",
+            "$value": "{core.dimension.1600}",
+            "$description": "Left and right spacing of the grid"
+          }
+        }
+      }
+    }
+  }
+}

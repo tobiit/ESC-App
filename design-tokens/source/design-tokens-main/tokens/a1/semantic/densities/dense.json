@@ -1,0 +1,48 @@
+{
+  "semantic": {
+    "internal": {
+      "size": {
+        "component": {
+          "factor": {
+            "$type": "number",
+            "$value": "0.5"
+          },
+          "treshold": {
+            "$type": "number",
+            "$value": "{core.dimension.200}"
+          }
+        }
+      },
+      "dimension": {
+        "modifier": {
+          "linear": {
+            "factor": {
+              "$type": "number",
+              "$value": "2"
+            }
+          },
+          "clamp-larger": {
+            "factor": {
+              "$type": "number",
+              "$value": "1"
+            }
+          },
+          "clamp-smaller": {
+            "factor": {
+              "$type": "number",
+              "$value": "1"
+            }
+          }
+        }
+      },
+      "font-size": {
+        "growth": {
+          "headline": {
+            "$type": "number",
+            "$value": "1.105"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "rating": {
+    "star": {
+      "color": {
+        "$type": "color",
+        "$value": "{core.color.yellow.600}"
+      }
+    },
+    "interactive": {
+      "s": {
+        "gap": {
+          "horizontal": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.linear-50.200}"
+          }
+        },
+        "label": {
+          "gap": {
+            "vertical": {
+              "$type": "spacing",
+              "$value": "{semantic.dimension.linear-50.300}"
+            }
+          }
+        }
+      },
+      "m": {
+        "gap": {
+          "horizontal": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.linear-50.300}"
+          }
+        },
+        "label": {
+          "gap": {
+            "vertical": {
+              "$type": "spacing",
+              "$value": "{semantic.dimension.linear-50.300}"
+            }
+          }
+        }
+      }
+    },
+    "static": {
+      "s": {
+        "gap": {
+          "horizontal": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.linear-25.50}"
+          }
+        }
+      },
+      "m": {
+        "gap": {
+          "horizontal": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.linear-25.100}"
+          }
+        }
+      }
+    }
+  }
+}

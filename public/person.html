@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Person bearbeiten</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body class="page admin">
+    <div class="bg-shapes"></div>
+    <main class="shell">
+      <header class="brand">
+        <h1 id="personTitle">Person bearbeiten</h1>
+        <p>Bilder verwalten und neue hochladen.</p>
+      </header>
+
+      <section class="card">
+        <div class="row">
+          <a href="/admin.html" class="btn ghost">Zuruck</a>
+          <button id="refreshImages" class="btn ghost">Neu laden</button>
+        </div>
+        <div class="upload-panel">
+          <input id="uploadInput" type="file" multiple />
+          <div id="uploadDropzone" class="dropzone">Bilder hier ablegen</div>
+          <div id="uploadQueue" class="list"></div>
+          <button id="uploadSubmit" class="btn primary">Bilder hochladen</button>
+        </div>
+        <h3>Vorhandene Bilder</h3>
+        <div id="imageList" class="image-grid"></div>
+      </section>
+    </main>
+
+    <script type="module" src="/person.js"></script>
+  </body>
+</html>

@@ -1,0 +1,44 @@
+{
+  "name": "@allianz/a1-design-tokens",
+  "version": "1.3.0",
+  "description": "The official source for Allianz design tokens for a variety of platforms and systems",
+  "author": {
+    "name": "Christoph Merdes",
+    "email": "christoph.merdes@allianz.de"
+  },
+  "license": "SEE LICENSE IN LICENSE",
+  "repository": {
+    "type": "git",
+    "url": "https://github.developer.allianz.io/a1/design-tokens/tree/main/token-package"
+  },
+  "keywords": [
+    "Allianz",
+    "Studio",
+    "Allianz Studio",
+    "One Allianz",
+    "A1",
+    "Design Tokens",
+    "Design System"
+  ],
+  "contributors": [
+    {
+      "name": "Dario Soller",
+      "email": "dario.soller@allianz.de"
+    }
+  ],
+  "files": [
+    "README.md",
+    "LICENSE",
+    "dist-history.json",
+    "dist"
+  ],
+  "scripts": {
+    "releasePackage": "standard-version",
+    "publishPackage": "npm publish",
+    "publishFilesToCDN": "wrangler pages deploy token-package/cdn --project-name a1-design-tokens-test --no-bundle",
+    "localPackageTest": "npm pack"
+  },
+  "devDependencies": {
+    "standard-version": "^9.5.0"
+  }
+}

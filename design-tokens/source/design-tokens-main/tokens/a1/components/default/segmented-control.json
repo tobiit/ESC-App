@@ -1,0 +1,66 @@
+{
+  "segmented-control": {
+    "m": {
+      "gap": {
+        "horizontal": {
+          "$type": "spacing",
+          "$value": "{semantic.dimension.static.100}"
+        }
+      },
+      "inset": {
+        "all": {
+          "$type": "spacing",
+          "$value": "{semantic.dimension.static.100}"
+        }
+      },
+      "height": {
+        "$type": "sizing",
+        "$value": "{semantic.size.component.1200}"
+      },
+      "button": {
+        "inset": {
+          "horizontal": {
+            "$type": "spacing",
+            "$value": "{semantic.inset.horizontal.square.component.1000}"
+          },
+          "vertical": {
+            "$type": "spacing",
+            "$value": "(({segmented-control.m.height} - 2 * {segmented-control.m.inset.all} - {semantic.size.content.m}) / 2)",
+            "$description": "Substracts the component padding and text height from the size to derive the button inset"
+          }
+        }
+      }
+    },
+    "s": {
+      "gap": {
+        "horizontal": {
+          "$type": "spacing",
+          "$value": "{semantic.dimension.linear-25.100}"
+        }
+      },
+      "inset": {
+        "all": {
+          "$type": "spacing",
+          "$value": "{semantic.dimension.linear-25.100}"
+        }
+      },
+      "height": {
+        "$type": "sizing",
+        "$value": "{semantic.size.component.800}"
+      },
+      "button": {
+        "inset": {
+          "horizontal": {
+            "$type": "spacing",
+            "$value": "{semantic.inset.horizontal.square.component.800}"
+          },
+          "vertical": {
+            "$type": "spacing",
+            "$value": "(({segmented-control.s.height} - 2 * {segmented-control.s.inset.all} - {semantic.size.content.s}) / 2)",
+            "$description": "Substracts the component padding and text height from the size to derive the button inset"
+          }
+        }
+      }
+    }
+  }
+}

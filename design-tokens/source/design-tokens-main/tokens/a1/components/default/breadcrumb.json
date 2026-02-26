@@ -1,0 +1,10 @@
+{
+  "breadcrumb": {
+    "gap": {
+      "horizontal": {
+        "$type": "spacing",
+        "$value": "{semantic.gap.all.linear-responsive.200}"
+      }
+    }
+  }
+}

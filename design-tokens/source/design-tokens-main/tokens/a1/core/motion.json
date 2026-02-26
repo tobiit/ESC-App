@@ -1,0 +1,22 @@
+{
+  "core": {
+    "duration": {
+      "0": {
+        "$type": "other",
+        "$value": "0s"
+      },
+      "100": {
+        "$type": "other",
+        "$value": "0.1s"
+      },
+      "250": {
+        "$type": "other",
+        "$value": "0.25s"
+      },
+      "500": {
+        "$type": "other",
+        "$value": "0.5s"
+      }
+    }
+  }
+}

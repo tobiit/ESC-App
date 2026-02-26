@@ -1,0 +1,176 @@
+{
+  "core": {
+    "dimension": {
+      "0": {
+        "$type": "dimension",
+        "$value": "({core.size.grid.point} - {core.size.grid.point})"
+      },
+      "25": {
+        "$type": "dimension",
+        "$value": "({core.size.grid.point} * 0.25)"
+      },
+      "50": {
+        "$type": "dimension",
+        "$value": "({core.size.grid.point} * 0.5)"
+      },
+      "75": {
+        "$type": "dimension",
+        "$value": "({core.size.grid.point} * 0.75)"
+      },
+      "100": {
+        "$type": "dimension",
+        "$value": "{core.size.grid.point}"
+      },
+      "150": {
+        "$type": "dimension",
+        "$value": "({core.size.grid.point} * 1.5)"
+      },
+      "200": {
+        "$type": "dimension",
+        "$value": "({core.size.grid.point} * 2)"
+      },
+      "250": {
+        "$type": "dimension",
+        "$value": "({core.size.grid.point} * 2.5)"
+      },
+      "300": {
+        "$type": "dimension",
+        "$value": "({core.size.grid.point} * 3)"
+      },
+      "350": {
+        "$type": "dimension",
+        "$value": "({core.size.grid.point} * 3.5)"
+      },
+      "400": {
+        "$type": "dimension",
+        "$value": "({core.size.grid.point} * 4)"
+      },
+      "450": {
+        "$type": "dimension",
+        "$value": "({core.size.grid.point} * 4.5)"
+      },
+      "500": {
+        "$type": "dimension",
+        "$value": "({core.size.grid.point} * 5)"
+      },
+      "550": {
+        "$type": "dimension",
+        "$value": "({core.size.grid.point} * 5.5)"
+      },
+      "600": {
+        "$type": "dimension",
+        "$value": "({core.size.grid.point} * 6)"
+      },
+      "650": {
+        "$type": "dimension",
+        "$value": "({core.size.grid.point} * 6.5)"
+      },
+      "700": {
+        "$type": "dimension",
+        "$value": "({core.size.grid.point} * 7)"
+      },
+      "800": {
+        "$type": "dimension",
+        "$value": "({core.size.grid.point} * 8)"
+      },
+      "900": {
+        "$type": "dimension",
+        "$value": "({core.size.grid.point} * 9)"
+      },
+      "1000": {
+        "$type": "dimension",
+        "$value": "({core.size.grid.point} * 10)"
+      },
+      "1200": {
+        "$type": "dimension",
+        "$value": "{core.size.grid.point} * 12"
+      },
+      "1300": {
+        "$type": "dimension",
+        "$value": "({core.size.grid.point} * 13)"
+      },
+      "1400": {
+        "$type": "dimension",
+        "$value": "({core.size.grid.point} * 14)"
+      },
+      "1500": {
+        "$type": "dimension",
+        "$value": "({core.size.grid.point} * 15)"
+      },
+      "1600": {
+        "$type": "dimension",
+        "$value": "({core.size.grid.point} * 16)"
+      },
+      "2000": {
+        "$type": "dimension",
+        "$value": "({core.size.grid.point} * 20)"
+      },
+      "2400": {
+        "$type": "dimension",
+        "$value": "({core.size.grid.point} * 24)"
+      },
+      "4000": {
+        "$type": "dimension",
+        "$value": "({core.size.grid.point} * 40)"
+      }
+    },
+    "border-width": {
+      "100": {
+        "$type": "borderWidth",
+        "$value": "{core.dimension.25}"
+      },
+      "200": {
+        "$type": "borderWidth",
+        "$value": "{core.dimension.50}"
+      },
+      "300": {
+        "$type": "borderWidth",
+        "$value": "{core.dimension.75}"
+      },
+      "400": {
+        "$type": "borderWidth",
+        "$value": "{core.dimension.100}"
+      }
+    },
+    "border-radius": {
+      "0": {
+        "$type": "borderRadius",
+        "$value": "{core.dimension.0}"
+      },
+      "50": {
+        "$type": "borderRadius",
+        "$value": "{core.dimension.100}"
+      },
+      "100": {
+        "$type": "borderRadius",
+        "$value": "{core.dimension.200}"
+      },
+      "150": {
+        "$type": "borderRadius",
+        "$value": "{core.dimension.300}"
+      },
+      "200": {
+        "$type": "borderRadius",
+        "$value": "{core.dimension.400}"
+      }
+    },
+    "scaling": {
+      "25": {
+        "$type": "number",
+        "$value": "0.95"
+      },
+      "50": {
+        "$type": "number",
+        "$value": "0.975"
+      },
+      "75": {
+        "$type": "number",
+        "$value": "0.99"
+      },
+      "100": {
+        "$type": "number",
+        "$value": "1"
+      }
+    }
+  }
+}

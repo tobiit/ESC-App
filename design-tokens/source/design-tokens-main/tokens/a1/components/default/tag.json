@@ -1,0 +1,50 @@
+{
+  "tag": {
+    "height": {
+      "$type": "sizing",
+      "$value": "{semantic.size.component.800}"
+    },
+    "inset": {
+      "horizontal": {
+        "$type": "spacing",
+        "$value": "{semantic.inset.horizontal.square.component.800}"
+      },
+      "vertical": {
+        "$type": "spacing",
+        "$value": "{semantic.inset.vertical.s.component.800}"
+      }
+    },
+    "selected": {
+      "inset": {
+        "start": {
+          "$type": "spacing",
+          "$value": "({semantic.inset.horizontal.square.component.800} - {semantic.inset.horizontal.icon-adjustment.content.s})"
+        },
+        "end": {
+          "$type": "spacing",
+          "$value": "{semantic.inset.horizontal.square.component.800}"
+        },
+        "vertical": {
+          "$type": "spacing",
+          "$value": "{tag.inset.vertical}"
+        }
+      }
+    },
+    "deletable": {
+      "inset": {
+        "start": {
+          "$type": "spacing",
+          "$value": "{semantic.inset.horizontal.square.component.800}"
+        },
+        "end": {
+          "$type": "spacing",
+          "$value": "({semantic.inset.horizontal.square.component.800} - {semantic.inset.horizontal.icon-adjustment.content.s})"
+        },
+        "vertical": {
+          "$type": "spacing",
+          "$value": "{tag.inset.vertical}"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,15 @@
+Old,New,Comment
+--semantic-spacing-adjustment-icon-s,--semantic-spacing-icon-s-adjustment
+--semantic-spacing-adjustment-icon-m,--semantic-spacing-icon-m-adjustment
+--semantic-text-utility-action-s-resting-letter-spacing,--semantic.letter-spacing.utility.s
+--semantic-text-utility-action-s-resting-text-decoration,--semantic.text-decoration.action.resting
+--semantic-text-utility-action-s-hover-letter-spacing,--semantic.letter-spacing.utility.s
+--semantic-text-utility-action-s-hover-text-decoration,--semantic.text-decoration.action.hover
+--semantic-text-utility-action-s-active-letter-spacing,--semantic.letter-spacing.utility.s
+--semantic-text-utility-action-s-active-text-decoration,--semantic.text-decoration.action.active
+--semantic-text-utility-action-m-resting-letter-spacing,--semantic.letter-spacing.utility.m
+--semantic-text-utility-action-m-resting-text-decoration,--semantic.text-decoration.action.resting
+--semantic-text-utility-action-m-hover-letter-spacing,--semantic.letter-spacing.utility.m
+--semantic-text-utility-action-m-hover-text-decoration,--semantic.text-decoration.action.hover
+--semantic-text-utility-action-m-active-letter-spacing,--semantic.letter-spacing.utility.m
+--semantic-text-utility-action-m-active-text-decoration,--semantic.text-decoration.action.active

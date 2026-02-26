@@ -1,0 +1,37 @@
+{
+  "modal": {
+    "inset": {
+      "all": {
+        "$type": "spacing",
+        "$value": "{semantic.inset.all.surface.linear-responsive.800}",
+        "$description": "Distance between label and input field as well as message or hint and input field"
+      }
+    },
+    "header": {
+      "gap": {
+        "vertical": {
+          "$type": "spacing",
+          "$value": "{semantic.gap.all.linear-responsive.600}"
+        }
+      },
+      "control": {
+        "gap": {
+          "horizontal": {
+            "$type": "spacing",
+            "$value": "{semantic.gap.horizontal.content.contained.m}"
+          }
+        }
+      }
+    },
+    "footer": {
+      "actions": {
+        "gap": {
+          "all": {
+            "$type": "spacing",
+            "$value": "{semantic.gap.all.linear.400}"
+          }
+        }
+      }
+    }
+  }
+}

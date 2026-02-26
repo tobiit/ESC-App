@@ -1,0 +1,226 @@
+{
+  "semantic": {
+    "internal": {
+      "font-size": {
+        "growth": {
+          "headline": {
+            "$type": "number",
+            "$value": "1.25"
+          }
+        }
+      },
+      "name": {
+        "breakpoint": {
+          "all": {
+            "$type": "text",
+            "$value": "M"
+          },
+          "clamp-smaller": {
+            "$type": "text",
+            "$value": "XS"
+          },
+          "clamp-larger": {
+            "$type": "text",
+            "$value": "M"
+          }
+        }
+      },
+      "number": {
+        "grid": {
+          "columns": {
+            "content": {
+              "$type": "number",
+              "$value": "8"
+            },
+            "portal": {
+              "$type": "number",
+              "$value": "8"
+            }
+          }
+        }
+      }
+    },
+    "inset": {
+      "all": {
+        "surface": {
+          "responsive": {
+            "200": {
+              "$type": "spacing",
+              "$value": "{semantic.dimension.static.150}"
+            },
+            "300": {
+              "$type": "spacing",
+              "$value": "{semantic.dimension.static.250}"
+            },
+            "400": {
+              "$type": "spacing",
+              "$value": "{semantic.dimension.static.350}"
+            },
+            "600": {
+              "$type": "spacing",
+              "$value": "{semantic.dimension.static.500}"
+            },
+            "800": {
+              "$type": "spacing",
+              "$value": "{semantic.dimension.static.700}"
+            },
+            "1000": {
+              "$type": "spacing",
+              "$value": "{semantic.dimension.static.800}"
+            },
+            "1200": {
+              "$type": "spacing",
+              "$value": "{semantic.dimension.static.1000}"
+            }
+          },
+          "linear-responsive": {
+            "200": {
+              "$type": "spacing",
+              "$value": "{semantic.dimension.linear-50.150}"
+            },
+            "300": {
+              "$type": "spacing",
+              "$value": "{semantic.dimension.linear-50.250}"
+            },
+            "400": {
+              "$type": "spacing",
+              "$value": "{semantic.dimension.linear-50.350}"
+            },
+            "600": {
+              "$type": "spacing",
+              "$value": "{semantic.dimension.linear-50.500}"
+            },
+            "800": {
+              "$type": "spacing",
+              "$value": "{semantic.dimension.linear-100.700}"
+            },
+            "1000": {
+              "$type": "spacing",
+              "$value": "{semantic.dimension.linear-100.800}"
+            },
+            "1200": {
+              "$type": "spacing",
+              "$value": "{semantic.dimension.linear-200.1000}"
+            }
+          }
+        }
+      },
+      "horizontal": {
+        "grid": {
+          "default": {
+            "$type": "spacing",
+            "$value": "{core.dimension.1200}",
+            "$description": "Helper to provide the grid inset value based on the current breakpoint"
+          },
+          "functional": {
+            "$type": "spacing",
+            "$value": "{semantic.inset.all.surface.linear.800}",
+            "$description": "Helper to provide the grid inset value based on the current breakpoint"
+          }
+        }
+      }
+    },
+    "gap": {
+      "all": {
+        "responsive": {
+          "300": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.static.250}"
+          },
+          "400": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.static.350}"
+          },
+          "600": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.static.500}"
+          },
+          "800": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.static.700}"
+          },
+          "1000": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.static.800}"
+          },
+          "1200": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.static.1000}"
+          },
+          "1400": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.static.1200}"
+          },
+          "1600": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.static.1400}"
+          },
+          "2000": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.static.1600}"
+          },
+          "2400": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.static.2000}"
+          }
+        },
+        "linear-responsive": {
+          "300": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.linear-50.250}"
+          },
+          "400": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.linear-50.350}"
+          },
+          "600": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.linear-100.500}"
+          },
+          "800": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.linear-100.700}"
+          },
+          "1000": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.linear-200.800}"
+          },
+          "1200": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.linear-200.1000}"
+          },
+          "1400": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.linear-300.1200}"
+          },
+          "1600": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.linear-300.1400}"
+          },
+          "2000": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.linear-400.1600}"
+          },
+          "2400": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.linear-400.2000}"
+          }
+        }
+      },
+      "horizontal": {
+        "grid": {
+          "default": {
+            "$type": "spacing",
+            "$value": "{core.dimension.800}",
+            "$description": "Helper to provide the grid gap value based on the current breakpoint"
+          },
+          "functional": {
+            "$type": "spacing",
+            "$value": "{semantic.gap.all.linear.800}",
+            "$description": "Helper to provide the grid gap value based on the current breakpoint"
+          }
+        }
+      }
+    }
+  }
+}

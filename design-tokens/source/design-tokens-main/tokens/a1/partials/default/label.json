@@ -1,0 +1,18 @@
+{
+  "label": {
+    "m": {
+      "gap": {
+        "vertical": {
+          "$type": "spacing",
+          "$value": "{semantic.dimension.linear-50.100}",
+          "$description": "Vertical spacing between the label and the hint or other elements"
+        },
+        "horizontal": {
+          "$type": "spacing",
+          "$value": "{semantic.dimension.clamp-smaller-100.300}",
+          "$description": "Horizontal spacing between the label and control elements or other elements"
+        }
+      }
+    }
+  }
+}

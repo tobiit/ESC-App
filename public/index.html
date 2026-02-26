@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quiz Teilnahme</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body class="page participant">
+    <div class="bg-shapes"></div>
+    <main class="shell">
+      <header class="brand">
+        <h1>Wer ist das?</h1>
+        <p>Errate die Person anhand von Kinder- und Jugendbildern.</p>
+      </header>
+
+      <section id="login" class="card">
+        <h2>Quiz beitreten</h2>
+        <label class="field">
+          <span>Quizgruppen-Passwort</span>
+          <input id="groupPassword" type="text" placeholder="Passwort" />
+        </label>
+        <label class="field">
+          <span>Dein Name</span>
+          <input id="nickname" type="text" placeholder="Nickname" />
+        </label>
+        <button id="joinBtn" class="btn primary">Start</button>
+      </section>
+
+      <section id="waiting" class="card hidden">
+        <h2>Bitte warten</h2>
+        <p>Das Quiz ist noch nicht aktiv. Gleich geht es los.</p>
+      </section>
+
+      <section id="quiz" class="card hidden">
+        <div class="pin-row">
+          <input id="answerInput" type="text" placeholder="Name oder Bezeichnung" />
+          <button id="submitAnswer" class="btn primary">Absenden</button>
+        </div>
+        <div id="reveal" class="reveal hidden"></div>
+        <div class="gallery">
+          <button id="prevImg" class="btn ghost">Zur&uuml;ck</button>
+          <div class="image-wrap">
+            <img id="activeImg" alt="Quizbild" />
+          </div>
+          <button id="nextImg" class="btn ghost">Weiter</button>
+        </div>
+        <div class="gallery-controls">
+          <button id="zoomToggle" class="btn ghost">Lupe</button>
+          <span id="imgCounter" class="muted">1 / 1</span>
+        </div>
+        <div id="countdown" class="countdown hidden"></div>
+      </section>
+
+      <section id="results" class="card hidden">
+        <h2>L&ouml;sungen</h2>
+        <div id="resultsList" class="results"></div>
+        <button id="endQuiz" class="btn primary">Quiz beenden</button>
+      </section>
+
+      <section id="thanks" class="card hidden">
+        <h2>Vielen Dank f&uuml;r deine Teilnahme!</h2>
+        <p>Bis zum n&auml;chsten Quiz.</p>
+      </section>
+    </main>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>

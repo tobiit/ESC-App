@@ -1,0 +1,66 @@
+{
+  "semantic": {
+    "internal": {
+      "size": {
+        "component": {
+          "factor": {
+            "$type": "number",
+            "$value": "0.75"
+          },
+          "treshold": {
+            "$type": "number",
+            "$value": "{core.dimension.100}"
+          }
+        }
+      },
+      "dimension": {
+        "modifier": {
+          "linear": {
+            "factor": {
+              "$type": "number",
+              "$value": "1"
+            }
+          },
+          "clamp-larger": {
+            "factor": {
+              "$type": "number",
+              "$value": "0"
+            }
+          },
+          "clamp-smaller": {
+            "factor": {
+              "$type": "number",
+              "$value": "1"
+            }
+          }
+        }
+      },
+      "font-size": {
+        "base": {
+          "$type": "fontSizes",
+          "$value": "{core.internal.font-size.user-agent}"
+        },
+        "growth": {
+          "headline": {
+            "$type": "number",
+            "$value": "1.15"
+          }
+        }
+      },
+      "line-height": {
+        "cushion": {
+          "utility": {
+            "$type": "number",
+            "$value": "3"
+          }
+        }
+      }
+    },
+    "border-width": {
+      "focus": {
+        "$type": "borderWidth",
+        "$value": "{core.border-width.200}"
+      }
+    }
+  }
+}

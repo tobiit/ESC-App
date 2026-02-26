@@ -1,0 +1,98 @@
+{
+  "icon": {
+    "contained": {
+      "s": {
+        "size": {
+          "$type": "sizing",
+          "$value": "(ceil({semantic.size.component.800} * {semantic.internal.size.component.ratio.icon}))"
+        },
+        "surface": {
+          "size": {
+            "$type": "sizing",
+            "$value": "{semantic.size.component.800}"
+          }
+        }
+      },
+      "m": {
+        "size": {
+          "$type": "sizing",
+          "$value": "(ceil({semantic.size.component.1000} * {semantic.internal.size.component.ratio.icon}))"
+        },
+        "surface": {
+          "size": {
+            "$type": "sizing",
+            "$value": "{semantic.size.component.1000}"
+          }
+        }
+      },
+      "l": {
+        "size": {
+          "$type": "sizing",
+          "$value": "(ceil({semantic.size.component.1200} * {semantic.internal.size.component.ratio.icon}))"
+        },
+        "surface": {
+          "size": {
+            "$type": "sizing",
+            "$value": "{semantic.size.component.1200}"
+          }
+        }
+      },
+      "xl": {
+        "size": {
+          "$type": "sizing",
+          "$value": "(ceil({semantic.size.component.1600} * {semantic.internal.size.component.ratio.icon}))"
+        },
+        "surface": {
+          "size": {
+            "$type": "sizing",
+            "$value": "{semantic.size.component.1600}"
+          }
+        }
+      },
+      "2xl": {
+        "size": {
+          "$type": "sizing",
+          "$value": "(ceil({semantic.size.component.2000} * {semantic.internal.size.component.ratio.icon}))"
+        },
+        "surface": {
+          "size": {
+            "$type": "sizing",
+            "$value": "{semantic.size.component.2000}"
+          }
+        }
+      }
+    },
+    "plain": {
+      "s": {
+        "size": {
+          "$type": "sizing",
+          "$value": "{semantic.size.content.s}"
+        }
+      },
+      "m": {
+        "size": {
+          "$type": "sizing",
+          "$value": "{semantic.size.content.m}"
+        }
+      },
+      "l": {
+        "size": {
+          "$type": "sizing",
+          "$value": "{semantic.size.component.800}"
+        }
+      },
+      "xl": {
+        "size": {
+          "$type": "sizing",
+          "$value": "{semantic.size.component.1000}"
+        }
+      },
+      "2xl": {
+        "size": {
+          "$type": "sizing",
+          "$value": "{semantic.size.component.1400}"
+        }
+      }
+    }
+  }
+}

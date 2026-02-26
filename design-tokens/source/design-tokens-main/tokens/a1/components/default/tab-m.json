@@ -1,0 +1,10 @@
+{
+  "tab": {
+    "gap": {
+      "horizontal": {
+        "$type": "spacing",
+        "$value": "{semantic.dimension.linear-200.800}"
+      }
+    }
+  }
+}

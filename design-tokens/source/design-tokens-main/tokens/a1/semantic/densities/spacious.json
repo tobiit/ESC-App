@@ -1,0 +1,1947 @@
+{
+  "semantic": {
+    "internal": {
+      "size": {
+        "component": {
+          "factor": {
+            "$type": "number",
+            "$value": "1",
+            "$description": "Defines the shrinkage of a component in the density modes. Gets smaller with each density."
+          },
+          "treshold": {
+            "$type": "number",
+            "$value": "{core.dimension.0}",
+            "$description": "Prevents components getting too small in density modes. Grows with each density."
+          },
+          "growth": {
+            "$type": "number",
+            "$value": "{core.dimension.200}",
+            "$description": "Size distance between component sizes (e.g. component s + growth factor = component m)"
+          },
+          "ratio": {
+            "icon": {
+              "$type": "number",
+              "$value": "0.55"
+            },
+            "text": {
+              "$type": "number",
+              "$value": "0.45"
+            }
+          }
+        }
+      },
+      "dimension": {
+        "modifier": {
+          "linear": {
+            "25": {
+              "$type": "number",
+              "$value": "({core.dimension.25} * {semantic.internal.dimension.modifier.linear.factor})"
+            },
+            "50": {
+              "$type": "number",
+              "$value": "({core.dimension.50} * {semantic.internal.dimension.modifier.linear.factor})"
+            },
+            "100": {
+              "$type": "number",
+              "$value": "({core.dimension.100} * {semantic.internal.dimension.modifier.linear.factor})"
+            },
+            "200": {
+              "$type": "number",
+              "$value": "({core.dimension.200} * {semantic.internal.dimension.modifier.linear.factor})"
+            },
+            "300": {
+              "$type": "number",
+              "$value": "({core.dimension.300} * {semantic.internal.dimension.modifier.linear.factor})"
+            },
+            "400": {
+              "$type": "number",
+              "$value": "({core.dimension.400} * {semantic.internal.dimension.modifier.linear.factor})"
+            },
+            "factor": {
+              "$type": "number",
+              "$value": "0"
+            }
+          },
+          "clamp-larger": {
+            "25": {
+              "$type": "number",
+              "$value": "({core.dimension.25} * {semantic.internal.dimension.modifier.clamp-larger.factor})"
+            },
+            "50": {
+              "$type": "number",
+              "$value": "({core.dimension.50} * {semantic.internal.dimension.modifier.clamp-larger.factor})"
+            },
+            "100": {
+              "$type": "number",
+              "$value": "({core.dimension.100} * {semantic.internal.dimension.modifier.clamp-larger.factor})"
+            },
+            "200": {
+              "$type": "number",
+              "$value": "({core.dimension.200} * {semantic.internal.dimension.modifier.clamp-larger.factor})"
+            },
+            "300": {
+              "$type": "number",
+              "$value": "({core.dimension.300} * {semantic.internal.dimension.modifier.clamp-larger.factor})"
+            },
+            "400": {
+              "$type": "number",
+              "$value": "({core.dimension.400} * {semantic.internal.dimension.modifier.clamp-larger.factor})"
+            },
+            "factor": {
+              "$type": "number",
+              "$value": "0"
+            }
+          },
+          "clamp-smaller": {
+            "25": {
+              "$type": "number",
+              "$value": "({core.dimension.25} * {semantic.internal.dimension.modifier.clamp-smaller.factor})"
+            },
+            "50": {
+              "$type": "number",
+              "$value": "({core.dimension.50} * {semantic.internal.dimension.modifier.clamp-smaller.factor})"
+            },
+            "100": {
+              "$type": "number",
+              "$value": "({core.dimension.100} * {semantic.internal.dimension.modifier.clamp-smaller.factor})"
+            },
+            "200": {
+              "$type": "number",
+              "$value": "({core.dimension.200} * {semantic.internal.dimension.modifier.clamp-smaller.factor})"
+            },
+            "300": {
+              "$type": "number",
+              "$value": "({core.dimension.300} * {semantic.internal.dimension.modifier.clamp-smaller.factor})"
+            },
+            "400": {
+              "$type": "number",
+              "$value": "({core.dimension.400} * {semantic.internal.dimension.modifier.clamp-smaller.factor})"
+            },
+            "factor": {
+              "$type": "number",
+              "$value": "0"
+            }
+          }
+        }
+      },
+      "inset": {
+        "horizontal": {
+          "component": {
+            "ratio": {
+              "square": {
+                "$type": "number",
+                "$value": "3",
+                "$description": "Component inset = component size (height) / ratio."
+              },
+              "squish": {
+                "$type": "number",
+                "$value": "2",
+                "$description": "Component inset = component size (height) / ratio."
+              }
+            }
+          }
+        }
+      },
+      "font-size": {
+        "base": {
+          "$type": "fontSizes",
+          "$value": "({core.internal.font-size.user-agent} * 1.125)"
+        },
+        "shrinkage": {
+          "body": {
+            "$type": "number",
+            "$value": "1.15",
+            "$description": "Factor for font size decrease based on the previous calculated font size"
+          },
+          "utility": {
+            "$type": "number",
+            "$value": "1.15",
+            "$description": "Factor for font size decrease based on the previous calculated font size"
+          },
+          "headline": {
+            "$type": "number",
+            "$value": "1.15",
+            "$description": "Factor for font size decrease based on the previous calculated font size"
+          }
+        },
+        "growth": {
+          "body": {
+            "$type": "number",
+            "$value": "1.2",
+            "$description": "Factor for font size increase based on the previous calculated font size"
+          },
+          "utility": {
+            "$type": "number",
+            "$value": "1.2",
+            "$description": "Factor for font size increase based on the previous calculated font size"
+          },
+          "headline": {
+            "$type": "number",
+            "$value": "1.2",
+            "$description": "Factor for font size increase based on the previous calculated font size"
+          }
+        }
+      },
+      "line-height": {
+        "cushion": {
+          "body": {
+            "$type": "number",
+            "$value": "6",
+            "$description": "cushion relates to the 2 * 2px (or any other value) concept from https://kittygiraudel.com/2020/05/18/using-calc-to-figure-out-optimal-line-height/"
+          },
+          "utility": {
+            "$type": "number",
+            "$value": "4",
+            "$description": "cushion relates to the 2 * 2px (or any other value) concept from https://kittygiraudel.com/2020/05/18/using-calc-to-figure-out-optimal-line-height/"
+          },
+          "headline": {
+            "$type": "number",
+            "$value": "6",
+            "$description": "cushion relates to the 2 * 2px (or any other value) concept from https://kittygiraudel.com/2020/05/18/using-calc-to-figure-out-optimal-line-height/"
+          }
+        },
+        "baseline": {
+          "body": {
+            "$type": "number",
+            "$value": "({core.size.grid.baseline} / 2)",
+            "$description": "Baseline grid parameters for body text style"
+          },
+          "utility": {
+            "$type": "number",
+            "$value": "{core.size.grid.baseline}",
+            "$description": "Baseline grid parameters for utility text style"
+          },
+          "headline": {
+            "$type": "number",
+            "$value": "({core.size.grid.baseline} / 2)",
+            "$description": "Baseline grid parameters for headline text style"
+          }
+        },
+        "factor": {
+          "$type": "number",
+          "$value": "0.92",
+          "$description": "factor relates to the 2ex concept from https://kittygiraudel.com/2020/05/18/using-calc-to-figure-out-optimal-line-height/"
+        }
+      },
+      "font-weight": {
+        "headline": {
+          "smaller": {
+            "$type": "fontWeights",
+            "$value": "{core.font-weight.200}"
+          },
+          "larger": {
+            "$type": "fontWeights",
+            "$value": "{core.font-weight.150}"
+          }
+        },
+        "treshold": {
+          "$type": "number",
+          "$value": "28",
+          "$description": "Treshold describes the concept to move from bold to semibold headlines at a certrain treshold (font size 28 and larger)"
+        }
+      },
+      "letter-spacing": {
+        "base": {
+          "$type": "letterSpacing",
+          "$value": "0"
+        },
+        "increment": {
+          "$type": "number",
+          "$value": "0.5",
+          "$description": "Increment is the value the letter spacing gets reduced every time a treshhold is reached"
+        },
+        "treshold": {
+          "$type": "number",
+          "$value": "36",
+          "$description": "Letter spacing treshold is a concept to decrease the letter spacing every 36 font sizes by an increment"
+        }
+      },
+      "border-radius": {
+        "focus": {
+          "s": {
+            "$type": "borderRadius",
+            "$value": "({core.border-radius.50} + {semantic.offset.all.focus})",
+            "$description": "Mostly used for tools like Figma since the outline border radius is normally calculated in the browser."
+          },
+          "m": {
+            "$type": "borderRadius",
+            "$value": "({semantic.dimension.linear-25.200} + {semantic.offset.all.focus})",
+            "$description": "Mostly used for tools like Figma since the outline border radius is normally calculated in the browser."
+          },
+          "l": {
+            "$type": "borderRadius",
+            "$value": "({semantic.dimension.linear-50.300} + {semantic.offset.all.focus})",
+            "$description": "Mostly used for tools like Figma since the outline border radius is normally calculated in the browser."
+          }
+        }
+      },
+      "name": {
+        "breakpoint": {
+          "all": {
+            "$type": "text",
+            "$value": "XS",
+            "$description": "Current breakpoint name for usage in prototyping tools like Figma"
+          },
+          "clamp-smaller": {
+            "$type": "text",
+            "$value": "XS",
+            "$description": "Current breakpoint name for usage in prototyping tools like Figma"
+          },
+          "clamp-larger": {
+            "$type": "text",
+            "$value": "XS",
+            "$description": "Current breakpoint name for usage in prototyping tools like Figma"
+          }
+        }
+      },
+      "number": {
+        "grid": {
+          "columns": {
+            "content": {
+              "$type": "number",
+              "$value": "4"
+            },
+            "portal": {
+              "$type": "number",
+              "$value": "4"
+            }
+          }
+        }
+      }
+    },
+    "dimension": {
+      "static": {
+        "0": {
+          "$type": "dimension",
+          "$value": "{core.dimension.0}"
+        },
+        "25": {
+          "$type": "dimension",
+          "$value": "{core.dimension.25}"
+        },
+        "50": {
+          "$type": "dimension",
+          "$value": "{core.dimension.50}"
+        },
+        "100": {
+          "$type": "dimension",
+          "$value": "{core.dimension.100}"
+        },
+        "150": {
+          "$type": "dimension",
+          "$value": "{core.dimension.150}"
+        },
+        "200": {
+          "$type": "dimension",
+          "$value": "{core.dimension.200}"
+        },
+        "250": {
+          "$type": "dimension",
+          "$value": "{core.dimension.250}"
+        },
+        "300": {
+          "$type": "dimension",
+          "$value": "{core.dimension.300}"
+        },
+        "350": {
+          "$type": "dimension",
+          "$value": "{core.dimension.350}"
+        },
+        "400": {
+          "$type": "dimension",
+          "$value": "{core.dimension.400}"
+        },
+        "450": {
+          "$type": "dimension",
+          "$value": "{core.dimension.450}"
+        },
+        "500": {
+          "$type": "dimension",
+          "$value": "{core.dimension.500}"
+        },
+        "600": {
+          "$type": "dimension",
+          "$value": "{core.dimension.600}"
+        },
+        "700": {
+          "$type": "dimension",
+          "$value": "{core.dimension.700}"
+        },
+        "800": {
+          "$type": "dimension",
+          "$value": "{core.dimension.800}"
+        },
+        "900": {
+          "$type": "dimension",
+          "$value": "{core.dimension.900}"
+        },
+        "1000": {
+          "$type": "dimension",
+          "$value": "{core.dimension.1000}"
+        },
+        "1200": {
+          "$type": "dimension",
+          "$value": "{core.dimension.1200}"
+        },
+        "1400": {
+          "$type": "dimension",
+          "$value": "{core.dimension.1400}"
+        },
+        "1600": {
+          "$type": "dimension",
+          "$value": "{core.dimension.1600}"
+        },
+        "2000": {
+          "$type": "dimension",
+          "$value": "{core.dimension.2000}"
+        },
+        "2400": {
+          "$type": "dimension",
+          "$value": "{core.dimension.2400}"
+        }
+      },
+      "linear-25": {
+        "50": {
+          "$type": "dimension",
+          "$value": "({core.dimension.50} - {semantic.internal.dimension.modifier.linear.25})"
+        },
+        "100": {
+          "$type": "dimension",
+          "$value": "({core.dimension.100} - {semantic.internal.dimension.modifier.linear.25})"
+        },
+        "150": {
+          "$type": "dimension",
+          "$value": "({core.dimension.150} - {semantic.internal.dimension.modifier.linear.25})"
+        },
+        "200": {
+          "$type": "dimension",
+          "$value": "({core.dimension.200} - {semantic.internal.dimension.modifier.linear.25})"
+        }
+      },
+      "linear-50": {
+        "100": {
+          "$type": "dimension",
+          "$value": "({core.dimension.100} - {semantic.internal.dimension.modifier.linear.50})"
+        },
+        "150": {
+          "$type": "dimension",
+          "$value": "({core.dimension.150} - {semantic.internal.dimension.modifier.linear.50})"
+        },
+        "200": {
+          "$type": "dimension",
+          "$value": "({core.dimension.200} - {semantic.internal.dimension.modifier.linear.50})"
+        },
+        "250": {
+          "$type": "dimension",
+          "$value": "({core.dimension.250} - {semantic.internal.dimension.modifier.linear.50})"
+        },
+        "300": {
+          "$type": "dimension",
+          "$value": "({core.dimension.300} - {semantic.internal.dimension.modifier.linear.50})"
+        },
+        "350": {
+          "$type": "dimension",
+          "$value": "({core.dimension.350} - {semantic.internal.dimension.modifier.linear.50})"
+        },
+        "400": {
+          "$type": "dimension",
+          "$value": "({core.dimension.400} - {semantic.internal.dimension.modifier.linear.50})"
+        },
+        "450": {
+          "$type": "dimension",
+          "$value": "({core.dimension.450} - {semantic.internal.dimension.modifier.linear.50})"
+        },
+        "500": {
+          "$type": "dimension",
+          "$value": "({core.dimension.500} - {semantic.internal.dimension.modifier.linear.50})"
+        }
+      },
+      "linear-100": {
+        "200": {
+          "$type": "dimension",
+          "$value": "({core.dimension.200} - {semantic.internal.dimension.modifier.linear.100})"
+        },
+        "250": {
+          "$type": "dimension",
+          "$value": "({core.dimension.250} - {semantic.internal.dimension.modifier.linear.100})"
+        },
+        "300": {
+          "$type": "dimension",
+          "$value": "({core.dimension.300} - {semantic.internal.dimension.modifier.linear.100})"
+        },
+        "350": {
+          "$type": "dimension",
+          "$value": "({core.dimension.350} - {semantic.internal.dimension.modifier.linear.100})"
+        },
+        "400": {
+          "$type": "dimension",
+          "$value": "({core.dimension.400} - {semantic.internal.dimension.modifier.linear.100})"
+        },
+        "500": {
+          "$type": "dimension",
+          "$value": "({core.dimension.500} - {semantic.internal.dimension.modifier.linear.100})"
+        },
+        "600": {
+          "$type": "dimension",
+          "$value": "({core.dimension.600} - {semantic.internal.dimension.modifier.linear.100})"
+        },
+        "700": {
+          "$type": "dimension",
+          "$value": "({core.dimension.700} - {semantic.internal.dimension.modifier.linear.100})"
+        },
+        "800": {
+          "$type": "dimension",
+          "$value": "({core.dimension.800} - {semantic.internal.dimension.modifier.linear.100})"
+        },
+        "900": {
+          "$type": "dimension",
+          "$value": "({core.dimension.900} - {semantic.internal.dimension.modifier.linear.100})"
+        },
+        "1000": {
+          "$type": "dimension",
+          "$value": "({core.dimension.1000} - {semantic.internal.dimension.modifier.linear.100})"
+        }
+      },
+      "linear-200": {
+        "400": {
+          "$type": "dimension",
+          "$value": "({core.dimension.400} - {semantic.internal.dimension.modifier.linear.200})"
+        },
+        "600": {
+          "$type": "dimension",
+          "$value": "({core.dimension.600} - {semantic.internal.dimension.modifier.linear.200})"
+        },
+        "800": {
+          "$type": "dimension",
+          "$value": "({core.dimension.800} - {semantic.internal.dimension.modifier.linear.200})"
+        },
+        "1000": {
+          "$type": "dimension",
+          "$value": "({core.dimension.1000} - {semantic.internal.dimension.modifier.linear.200})"
+        },
+        "1200": {
+          "$type": "dimension",
+          "$value": "({core.dimension.1200} - {semantic.internal.dimension.modifier.linear.200})"
+        },
+        "1400": {
+          "$type": "dimension",
+          "$value": "({core.dimension.1400} - {semantic.internal.dimension.modifier.linear.200})"
+        },
+        "1600": {
+          "$type": "dimension",
+          "$value": "({core.dimension.1600} - {semantic.internal.dimension.modifier.linear.200})"
+        }
+      },
+      "linear-300": {
+        "1200": {
+          "$type": "dimension",
+          "$value": "({core.dimension.1200} - {semantic.internal.dimension.modifier.linear.300})"
+        },
+        "1400": {
+          "$type": "dimension",
+          "$value": "({core.dimension.1400} - {semantic.internal.dimension.modifier.linear.300})"
+        },
+        "1600": {
+          "$type": "dimension",
+          "$value": "({core.dimension.1600} - {semantic.internal.dimension.modifier.linear.300})"
+        },
+        "2000": {
+          "$type": "dimension",
+          "$value": "({core.dimension.2000} - {semantic.internal.dimension.modifier.linear.300})"
+        },
+        "2400": {
+          "$type": "dimension",
+          "$value": "({core.dimension.2400} - {semantic.internal.dimension.modifier.linear.300})"
+        }
+      },
+      "linear-400": {
+        "1600": {
+          "$type": "dimension",
+          "$value": "({core.dimension.1600} - {semantic.internal.dimension.modifier.linear.400})"
+        },
+        "2000": {
+          "$type": "dimension",
+          "$value": "({core.dimension.2000} - {semantic.internal.dimension.modifier.linear.400})"
+        },
+        "2400": {
+          "$type": "dimension",
+          "$value": "({core.dimension.2400} - {semantic.internal.dimension.modifier.linear.400})"
+        }
+      },
+      "clamp-smaller-25": {
+        "25": {
+          "$type": "dimension",
+          "$value": "({core.dimension.25} - {semantic.internal.dimension.modifier.clamp-smaller.25})"
+        },
+        "50": {
+          "$type": "dimension",
+          "$value": "({core.dimension.50} - {semantic.internal.dimension.modifier.clamp-smaller.25})"
+        },
+        "100": {
+          "$type": "dimension",
+          "$value": "({core.dimension.100} - {semantic.internal.dimension.modifier.clamp-smaller.25})"
+        },
+        "150": {
+          "$type": "dimension",
+          "$value": "({core.dimension.150} - {semantic.internal.dimension.modifier.clamp-smaller.25})"
+        },
+        "200": {
+          "$type": "dimension",
+          "$value": "({core.dimension.200} - {semantic.internal.dimension.modifier.clamp-smaller.25})"
+        }
+      },
+      "clamp-smaller-50": {
+        "50": {
+          "$type": "dimension",
+          "$value": "({core.dimension.50} - {semantic.internal.dimension.modifier.clamp-smaller.50})"
+        },
+        "100": {
+          "$type": "dimension",
+          "$value": "({core.dimension.100} - {semantic.internal.dimension.modifier.clamp-smaller.50})"
+        },
+        "150": {
+          "$type": "dimension",
+          "$value": "({core.dimension.150} - {semantic.internal.dimension.modifier.clamp-smaller.50})"
+        },
+        "200": {
+          "$type": "dimension",
+          "$value": "({core.dimension.200} - {semantic.internal.dimension.modifier.clamp-smaller.50})"
+        },
+        "250": {
+          "$type": "dimension",
+          "$value": "({core.dimension.250} - {semantic.internal.dimension.modifier.clamp-smaller.50})"
+        },
+        "300": {
+          "$type": "dimension",
+          "$value": "({core.dimension.300} - {semantic.internal.dimension.modifier.clamp-smaller.50})"
+        },
+        "350": {
+          "$type": "dimension",
+          "$value": "({core.dimension.350} - {semantic.internal.dimension.modifier.clamp-smaller.50})"
+        },
+        "400": {
+          "$type": "dimension",
+          "$value": "({core.dimension.400} - {semantic.internal.dimension.modifier.clamp-smaller.50})"
+        },
+        "450": {
+          "$type": "dimension",
+          "$value": "({core.dimension.450} - {semantic.internal.dimension.modifier.clamp-smaller.50})"
+        },
+        "500": {
+          "$type": "dimension",
+          "$value": "({core.dimension.500} - {semantic.internal.dimension.modifier.clamp-smaller.50})"
+        }
+      },
+      "clamp-smaller-100": {
+        "100": {
+          "$type": "dimension",
+          "$value": "({core.dimension.100} - {semantic.internal.dimension.modifier.clamp-smaller.100})"
+        },
+        "150": {
+          "$type": "dimension",
+          "$value": "({core.dimension.150} - {semantic.internal.dimension.modifier.clamp-smaller.100})"
+        },
+        "200": {
+          "$type": "dimension",
+          "$value": "({core.dimension.200} - {semantic.internal.dimension.modifier.clamp-smaller.100})"
+        },
+        "250": {
+          "$type": "dimension",
+          "$value": "({core.dimension.250} - {semantic.internal.dimension.modifier.clamp-smaller.100})"
+        },
+        "300": {
+          "$type": "dimension",
+          "$value": "({core.dimension.300} - {semantic.internal.dimension.modifier.clamp-smaller.100})"
+        },
+        "350": {
+          "$type": "dimension",
+          "$value": "({core.dimension.350} - {semantic.internal.dimension.modifier.clamp-smaller.100})"
+        },
+        "400": {
+          "$type": "dimension",
+          "$value": "({core.dimension.400} - {semantic.internal.dimension.modifier.clamp-smaller.100})"
+        },
+        "500": {
+          "$type": "dimension",
+          "$value": "({core.dimension.500} - {semantic.internal.dimension.modifier.clamp-smaller.100})"
+        },
+        "600": {
+          "$type": "dimension",
+          "$value": "({core.dimension.600} - {semantic.internal.dimension.modifier.clamp-smaller.100})"
+        },
+        "700": {
+          "$type": "dimension",
+          "$value": "({core.dimension.700} - {semantic.internal.dimension.modifier.clamp-smaller.100})"
+        },
+        "800": {
+          "$type": "dimension",
+          "$value": "({core.dimension.800} - {semantic.internal.dimension.modifier.clamp-smaller.100})"
+        },
+        "900": {
+          "$type": "dimension",
+          "$value": "({core.dimension.900} - {semantic.internal.dimension.modifier.clamp-smaller.100})"
+        },
+        "1000": {
+          "$type": "dimension",
+          "$value": "({core.dimension.1000} - {semantic.internal.dimension.modifier.clamp-smaller.100})"
+        }
+      },
+      "clamp-smaller-200": {
+        "200": {
+          "$type": "dimension",
+          "$value": "({core.dimension.200} - {semantic.internal.dimension.modifier.clamp-smaller.200})"
+        },
+        "400": {
+          "$type": "dimension",
+          "$value": "({core.dimension.400} - {semantic.internal.dimension.modifier.clamp-smaller.200})"
+        },
+        "600": {
+          "$type": "dimension",
+          "$value": "({core.dimension.600} - {semantic.internal.dimension.modifier.clamp-smaller.200})"
+        },
+        "800": {
+          "$type": "dimension",
+          "$value": "({core.dimension.800} - {semantic.internal.dimension.modifier.clamp-smaller.200})"
+        },
+        "1000": {
+          "$type": "dimension",
+          "$value": "({core.dimension.1000} - {semantic.internal.dimension.modifier.clamp-smaller.200})"
+        },
+        "1200": {
+          "$type": "dimension",
+          "$value": "({core.dimension.1200} - {semantic.internal.dimension.modifier.clamp-smaller.200})"
+        },
+        "1400": {
+          "$type": "dimension",
+          "$value": "({core.dimension.1400} - {semantic.internal.dimension.modifier.clamp-smaller.200})"
+        },
+        "1600": {
+          "$type": "dimension",
+          "$value": "({core.dimension.1600} - {semantic.internal.dimension.modifier.clamp-smaller.200})"
+        }
+      },
+      "clamp-smaller-300": {
+        "1200": {
+          "$type": "dimension",
+          "$value": "({core.dimension.1200} - {semantic.internal.dimension.modifier.clamp-smaller.300})"
+        },
+        "1400": {
+          "$type": "dimension",
+          "$value": "({core.dimension.1400} - {semantic.internal.dimension.modifier.clamp-smaller.300})"
+        },
+        "1600": {
+          "$type": "dimension",
+          "$value": "({core.dimension.1600} - {semantic.internal.dimension.modifier.clamp-smaller.300})"
+        },
+        "2000": {
+          "$type": "dimension",
+          "$value": "({core.dimension.2000} - {semantic.internal.dimension.modifier.clamp-smaller.300})"
+        },
+        "2400": {
+          "$type": "dimension",
+          "$value": "({core.dimension.2400} - {semantic.internal.dimension.modifier.clamp-smaller.300})"
+        }
+      },
+      "shadow": {
+        "first": {
+          "100": {
+            "x": {
+              "$type": "dimension",
+              "$value": "{core.dimension.0}"
+            },
+            "y": {
+              "$type": "dimension",
+              "$value": "{core.dimension.25}"
+            },
+            "blur": {
+              "$type": "dimension",
+              "$value": "{core.dimension.100}"
+            },
+            "spread": {
+              "$type": "dimension",
+              "$value": "{core.dimension.0}"
+            }
+          },
+          "200": {
+            "x": {
+              "$type": "dimension",
+              "$value": "{core.dimension.0}"
+            },
+            "y": {
+              "$type": "dimension",
+              "$value": "{core.dimension.50}"
+            },
+            "blur": {
+              "$type": "dimension",
+              "$value": "{core.dimension.200}"
+            },
+            "spread": {
+              "$type": "dimension",
+              "$value": "{core.dimension.0}"
+            }
+          },
+          "300": {
+            "x": {
+              "$type": "dimension",
+              "$value": "{core.dimension.0}"
+            },
+            "y": {
+              "$type": "dimension",
+              "$value": "{core.dimension.100}"
+            },
+            "blur": {
+              "$type": "dimension",
+              "$value": "{core.dimension.400}"
+            },
+            "spread": {
+              "$type": "dimension",
+              "$value": "{core.dimension.0}"
+            }
+          },
+          "400": {
+            "x": {
+              "$type": "dimension",
+              "$value": "{core.dimension.0}"
+            },
+            "y": {
+              "$type": "dimension",
+              "$value": "{core.dimension.200}"
+            },
+            "blur": {
+              "$type": "dimension",
+              "$value": "{core.dimension.800}"
+            },
+            "spread": {
+              "$type": "dimension",
+              "$value": "{core.dimension.0}"
+            }
+          },
+          "500": {
+            "x": {
+              "$type": "dimension",
+              "$value": "{core.dimension.0}"
+            },
+            "y": {
+              "$type": "dimension",
+              "$value": "{core.dimension.400}"
+            },
+            "blur": {
+              "$type": "dimension",
+              "$value": "{core.dimension.1600}"
+            },
+            "spread": {
+              "$type": "dimension",
+              "$value": "{core.dimension.0}"
+            }
+          }
+        },
+        "second": {
+          "100": {
+            "x": {
+              "$type": "dimension",
+              "$value": "{core.dimension.0}"
+            },
+            "y": {
+              "$type": "dimension",
+              "$value": "{core.dimension.100}"
+            },
+            "blur": {
+              "$type": "dimension",
+              "$value": "{core.dimension.400}"
+            },
+            "spread": {
+              "$type": "dimension",
+              "$value": "{core.dimension.0}"
+            }
+          },
+          "200": {
+            "x": {
+              "$type": "dimension",
+              "$value": "{core.dimension.0}"
+            },
+            "y": {
+              "$type": "dimension",
+              "$value": "{core.dimension.200}"
+            },
+            "blur": {
+              "$type": "dimension",
+              "$value": "{core.dimension.600}"
+            },
+            "spread": {
+              "$type": "dimension",
+              "$value": "{core.dimension.0}"
+            }
+          },
+          "300": {
+            "x": {
+              "$type": "dimension",
+              "$value": "{core.dimension.0}"
+            },
+            "y": {
+              "$type": "dimension",
+              "$value": "{core.dimension.400}"
+            },
+            "blur": {
+              "$type": "dimension",
+              "$value": "{core.dimension.800}"
+            },
+            "spread": {
+              "$type": "dimension",
+              "$value": "{core.dimension.0}"
+            }
+          },
+          "400": {
+            "x": {
+              "$type": "dimension",
+              "$value": "{core.dimension.0}"
+            },
+            "y": {
+              "$type": "dimension",
+              "$value": "{core.dimension.500}"
+            },
+            "blur": {
+              "$type": "dimension",
+              "$value": "{core.dimension.1000}"
+            },
+            "spread": {
+              "$type": "dimension",
+              "$value": "{core.dimension.0}"
+            }
+          },
+          "500": {
+            "x": {
+              "$type": "dimension",
+              "$value": "{core.dimension.0}"
+            },
+            "y": {
+              "$type": "dimension",
+              "$value": "{core.dimension.600}"
+            },
+            "blur": {
+              "$type": "dimension",
+              "$value": "{core.dimension.1200}"
+            },
+            "spread": {
+              "$type": "dimension",
+              "$value": "{core.dimension.0}"
+            }
+          }
+        }
+      }
+    },
+    "border-radius": {
+      "none": {
+        "$type": "borderRadius",
+        "$value": "{core.border-radius.0}"
+      },
+      "s": {
+        "$type": "borderRadius",
+        "$value": "{core.border-radius.50}"
+      },
+      "m": {
+        "$type": "borderRadius",
+        "$value": "{semantic.dimension.linear-25.200}"
+      },
+      "l": {
+        "$type": "borderRadius",
+        "$value": "{semantic.dimension.linear-50.300}"
+      },
+      "round": {
+        "$type": "borderRadius",
+        "$value": "999"
+      }
+    },
+    "border-width": {
+      "static": {
+        "$type": "borderWidth",
+        "$value": "{core.border-width.100}"
+      },
+      "action": {
+        "$type": "borderWidth",
+        "$value": "{core.border-width.100}"
+      },
+      "selected": {
+        "$type": "borderWidth",
+        "$value": "{core.border-width.200}"
+      },
+      "focus": {
+        "$type": "borderWidth",
+        "$value": "{core.border-width.300}"
+      },
+      "bar": {
+        "$type": "borderWidth",
+        "$value": "{core.border-width.400}"
+      }
+    },
+    "size": {
+      "content": {
+        "s": {
+          "$type": "sizing",
+          "$value": "{semantic.line-height.utility.s}",
+          "$description": "Content size S matches semantic utility line-height S and allows to align component dimensions, e.g. text-icon combination"
+        },
+        "m": {
+          "$type": "sizing",
+          "$value": "{semantic.line-height.utility.m}",
+          "$description": "Content size M matches semantic utility line-height M and allows to align component dimensions, e.g. text-icon combination, badge, checkbox, switch or radio-button"
+        },
+        "l": {
+          "$type": "sizing",
+          "$value": "{semantic.line-height.utility.l}",
+          "$description": "Content size L matches semantic utility line-height L and allows to align component dimensions, e.g. accordion item content"
+        }
+      },
+      "component": {
+        "800": {
+          "$type": "sizing",
+          "$value": "({semantic.internal.size.component.factor} *  ({semantic.internal.size.component.growth} * 4) + {semantic.internal.size.component.treshold})",
+          "$description": "Component sizes define a uniform height system to achieve a more consistent layout structure. Size 800 is used e.g for the button, tag or the avatar."
+        },
+        "1000": {
+          "$type": "sizing",
+          "$value": "({semantic.internal.size.component.factor} *  ({semantic.internal.size.component.growth} * 5) + {semantic.internal.size.component.treshold})",
+          "$description": "Component sizes define a uniform height system to achieve a more consistent layout structure. Size 1000 is used e.g. for illustrative icons or the avatar."
+        },
+        "1200": {
+          "$type": "sizing",
+          "$value": "({semantic.internal.size.component.factor} *  ({semantic.internal.size.component.growth} * 6) + {semantic.internal.size.component.treshold})",
+          "$description": "Component sizes define a uniform height system to achieve a more consistent layout structure. Size 1200 is used e.g. for the button, input field, dropdown or the avatar."
+        },
+        "1400": {
+          "$type": "sizing",
+          "$value": "({semantic.internal.size.component.factor} *  ({semantic.internal.size.component.growth} * 7) + {semantic.internal.size.component.treshold})",
+          "$description": "Component sizes define a uniform height system to achieve a more consistent layout structure. Size 1400 is used e.g. for the illustrative icon."
+        },
+        "1600": {
+          "$type": "sizing",
+          "$value": "({semantic.internal.size.component.factor} *  ({semantic.internal.size.component.growth} * 8) + {semantic.internal.size.component.treshold})",
+          "$description": "Component sizes define a uniform height system to achieve a more consistent layout structure. Size 1600 is used e.g. for the avatar or illustrative contained icon."
+        },
+        "1800": {
+          "$type": "sizing",
+          "$value": "({semantic.internal.size.component.factor} *  ({semantic.internal.size.component.growth} * 9) + {semantic.internal.size.component.treshold})",
+          "$description": "Component sizes define a uniform height system to achieve a more consistent layout structure."
+        },
+        "2000": {
+          "$type": "sizing",
+          "$value": "({semantic.internal.size.component.factor} *  ({semantic.internal.size.component.growth} * 10) + {semantic.internal.size.component.treshold})",
+          "$description": "Component sizes define a uniform height system to achieve a more consistent layout structure. Size 2000 is used e.g. for the avatar or illustrative contained icon."
+        }
+      }
+    },
+    "inset": {
+      "horizontal": {
+        "square": {
+          "content": {
+            "s": {
+              "$type": "spacing",
+              "$value": "(round({semantic.size.content.s} / {semantic.internal.inset.horizontal.component.ratio.square}))"
+            },
+            "m": {
+              "$type": "spacing",
+              "$value": "(round({semantic.size.content.m} / {semantic.internal.inset.horizontal.component.ratio.square}))"
+            }
+          },
+          "component": {
+            "800": {
+              "$type": "spacing",
+              "$value": "(round({semantic.size.component.800} / {semantic.internal.inset.horizontal.component.ratio.square}))"
+            },
+            "1000": {
+              "$type": "spacing",
+              "$value": "(round({semantic.size.component.1000} / {semantic.internal.inset.horizontal.component.ratio.square}))"
+            },
+            "1200": {
+              "$type": "spacing",
+              "$value": "(round({semantic.size.component.1200} / {semantic.internal.inset.horizontal.component.ratio.square}))"
+            },
+            "1400": {
+              "$type": "spacing",
+              "$value": "(round({semantic.size.component.1400} / {semantic.internal.inset.horizontal.component.ratio.square}))"
+            },
+            "1600": {
+              "$type": "spacing",
+              "$value": "(round({semantic.size.component.1600} / {semantic.internal.inset.horizontal.component.ratio.square}))"
+            },
+            "1800": {
+              "$type": "spacing",
+              "$value": "(round({semantic.size.component.1800} / {semantic.internal.inset.horizontal.component.ratio.square}))"
+            },
+            "2000": {
+              "$type": "spacing",
+              "$value": "(round({semantic.size.component.2000} / {semantic.internal.inset.horizontal.component.ratio.square}))"
+            }
+          }
+        },
+        "squish": {
+          "content": {
+            "s": {
+              "$type": "spacing",
+              "$value": "(round({semantic.size.content.s} / {semantic.internal.inset.horizontal.component.ratio.squish}))"
+            },
+            "m": {
+              "$type": "spacing",
+              "$value": "(round({semantic.size.content.m} / {semantic.internal.inset.horizontal.component.ratio.squish}))"
+            }
+          },
+          "component": {
+            "800": {
+              "$type": "spacing",
+              "$value": "(round({semantic.size.component.800} / {semantic.internal.inset.horizontal.component.ratio.squish}))"
+            },
+            "1000": {
+              "$type": "spacing",
+              "$value": "(round({semantic.size.component.1000} / {semantic.internal.inset.horizontal.component.ratio.squish}))"
+            },
+            "1200": {
+              "$type": "spacing",
+              "$value": "(round({semantic.size.component.1200} / {semantic.internal.inset.horizontal.component.ratio.squish}))"
+            },
+            "1400": {
+              "$type": "spacing",
+              "$value": "(round({semantic.size.component.1400} / {semantic.internal.inset.horizontal.component.ratio.squish}))"
+            },
+            "1600": {
+              "$type": "spacing",
+              "$value": "(round({semantic.size.component.1600} / {semantic.internal.inset.horizontal.component.ratio.squish}))"
+            },
+            "1800": {
+              "$type": "spacing",
+              "$value": "(round({semantic.size.component.1800} / {semantic.internal.inset.horizontal.component.ratio.squish}))"
+            },
+            "2000": {
+              "$type": "spacing",
+              "$value": "(round({semantic.size.component.2000} / {semantic.internal.inset.horizontal.component.ratio.squish}))"
+            }
+          }
+        },
+        "icon-adjustment": {
+          "content": {
+            "s": {
+              "$type": "spacing",
+              "$value": "{semantic.dimension.clamp-smaller-50.100}",
+              "$description": "Functional icons need a visual adjustment (reduction of inset) when placed inside component alongside text (icons have an invisible bounding box)."
+            },
+            "m": {
+              "$type": "spacing",
+              "$value": "{semantic.dimension.clamp-smaller-50.100}",
+              "$description": "Functional icons need a visual adjustment (reduction of inset) when placed inside component alongside text (icons have an invisible bounding box)."
+            }
+          }
+        },
+        "grid": {
+          "default": {
+            "$type": "spacing",
+            "$value": "{core.dimension.600}",
+            "$description": "Helper to provide the grid inset value based on the current breakpoint"
+          },
+          "functional": {
+            "$type": "spacing",
+            "$value": "{semantic.inset.all.surface.linear.600}",
+            "$description": "Helper to provide the grid inset value based on the current breakpoint"
+          }
+        }
+      },
+      "vertical": {
+        "s": {
+          "content": {
+            "s": {
+              "$type": "spacing",
+              "$value": "(round(({semantic.size.content.s} - {semantic.size.content.s}) / 2))"
+            },
+            "m": {
+              "$type": "spacing",
+              "$value": "(round(({semantic.size.content.m} - {semantic.size.content.s}) / 2))"
+            }
+          },
+          "component": {
+            "800": {
+              "$type": "spacing",
+              "$value": "(round(({semantic.size.component.800} - {semantic.size.content.s}) / 2))"
+            },
+            "1000": {
+              "$type": "spacing",
+              "$value": "(round(({semantic.size.component.1000} - {semantic.size.content.s}) / 2))"
+            },
+            "1200": {
+              "$type": "spacing",
+              "$value": "(round(({semantic.size.component.1200} - {semantic.size.content.s}) / 2))"
+            }
+          }
+        },
+        "m": {
+          "component": {
+            "800": {
+              "$type": "spacing",
+              "$value": "(round(({semantic.size.component.800} - {semantic.size.content.m}) / 2))"
+            },
+            "1000": {
+              "$type": "spacing",
+              "$value": "(round(({semantic.size.component.1000} - {semantic.size.content.m}) / 2))"
+            },
+            "1200": {
+              "$type": "spacing",
+              "$value": "(round(({semantic.size.component.1200} - {semantic.size.content.m}) / 2))"
+            },
+            "1400": {
+              "$type": "spacing",
+              "$value": "(round(({semantic.size.component.1400} - {semantic.size.content.m}) / 2))"
+            },
+            "1600": {
+              "$type": "spacing",
+              "$value": "(round(({semantic.size.component.1600} - {semantic.size.content.m}) / 2))"
+            },
+            "1800": {
+              "$type": "spacing",
+              "$value": "(round(({semantic.size.component.1800} - {semantic.size.content.m}) / 2))"
+            },
+            "2000": {
+              "$type": "spacing",
+              "$value": "(round(({semantic.size.component.2000} - {semantic.size.content.m}) / 2))"
+            }
+          }
+        },
+        "l": {
+          "component": {
+            "1400": {
+              "$type": "spacing",
+              "$value": "(round(({semantic.size.component.1400} - {semantic.size.content.l}) / 2))"
+            },
+            "1600": {
+              "$type": "spacing",
+              "$value": "(round(({semantic.size.component.1600} - {semantic.size.content.l}) / 2))"
+            },
+            "1800": {
+              "$type": "spacing",
+              "$value": "(round(({semantic.size.component.1800} - {semantic.size.content.l}) / 2))"
+            },
+            "2000": {
+              "$type": "spacing",
+              "$value": "(round(({semantic.size.component.2000} - {semantic.size.content.l}) / 2))"
+            }
+          }
+        }
+      },
+      "all": {
+        "surface": {
+          "static": {
+            "200": {
+              "$type": "spacing",
+              "$value": "{semantic.dimension.static.200}"
+            },
+            "300": {
+              "$type": "spacing",
+              "$value": "{semantic.dimension.static.300}"
+            },
+            "400": {
+              "$type": "spacing",
+              "$value": "{semantic.dimension.static.400}"
+            },
+            "600": {
+              "$type": "spacing",
+              "$value": "{semantic.dimension.static.600}"
+            },
+            "800": {
+              "$type": "spacing",
+              "$value": "{semantic.dimension.static.800}"
+            },
+            "1000": {
+              "$type": "spacing",
+              "$value": "{semantic.dimension.static.1000}"
+            },
+            "1200": {
+              "$type": "spacing",
+              "$value": "{semantic.dimension.static.1200}"
+            }
+          },
+          "responsive": {
+            "200": {
+              "$type": "spacing",
+              "$value": "{semantic.dimension.static.100}"
+            },
+            "300": {
+              "$type": "spacing",
+              "$value": "{semantic.dimension.static.200}"
+            },
+            "400": {
+              "$type": "spacing",
+              "$value": "{semantic.dimension.static.300}"
+            },
+            "600": {
+              "$type": "spacing",
+              "$value": "{semantic.dimension.static.400}"
+            },
+            "800": {
+              "$type": "spacing",
+              "$value": "{semantic.dimension.static.600}"
+            },
+            "1000": {
+              "$type": "spacing",
+              "$value": "{semantic.dimension.static.600}"
+            },
+            "1200": {
+              "$type": "spacing",
+              "$value": "{semantic.dimension.static.800}"
+            }
+          },
+          "linear": {
+            "200": {
+              "$type": "spacing",
+              "$value": "{semantic.dimension.linear-50.200}"
+            },
+            "300": {
+              "$type": "spacing",
+              "$value": "{semantic.dimension.linear-50.300}"
+            },
+            "400": {
+              "$type": "spacing",
+              "$value": "{semantic.dimension.linear-50.400}"
+            },
+            "600": {
+              "$type": "spacing",
+              "$value": "{semantic.dimension.linear-100.600}"
+            },
+            "800": {
+              "$type": "spacing",
+              "$value": "{semantic.dimension.linear-100.800}"
+            },
+            "1000": {
+              "$type": "spacing",
+              "$value": "{semantic.dimension.linear-200.1000}"
+            },
+            "1200": {
+              "$type": "spacing",
+              "$value": "{semantic.dimension.linear-200.1200}"
+            }
+          },
+          "linear-responsive": {
+            "200": {
+              "$type": "spacing",
+              "$value": "{semantic.dimension.linear-50.100}"
+            },
+            "300": {
+              "$type": "spacing",
+              "$value": "{semantic.dimension.linear-50.200}"
+            },
+            "400": {
+              "$type": "spacing",
+              "$value": "{semantic.dimension.linear-50.300}"
+            },
+            "600": {
+              "$type": "spacing",
+              "$value": "{semantic.dimension.linear-50.400}"
+            },
+            "800": {
+              "$type": "spacing",
+              "$value": "{semantic.dimension.linear-100.600}"
+            },
+            "1000": {
+              "$type": "spacing",
+              "$value": "{semantic.dimension.linear-100.600}"
+            },
+            "1200": {
+              "$type": "spacing",
+              "$value": "{semantic.dimension.linear-100.800}"
+            }
+          }
+        }
+      }
+    },
+    "gap": {
+      "all": {
+        "static": {
+          "100": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.static.100}"
+          },
+          "200": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.static.200}"
+          },
+          "300": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.static.300}"
+          },
+          "400": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.static.400}"
+          },
+          "600": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.static.600}"
+          },
+          "800": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.static.800}"
+          },
+          "1000": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.static.1000}"
+          },
+          "1200": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.static.1200}"
+          },
+          "1400": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.static.1400}"
+          },
+          "1600": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.static.1600}"
+          },
+          "2000": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.static.2000}"
+          },
+          "2400": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.static.2400}"
+          }
+        },
+        "responsive": {
+          "100": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.static.100}"
+          },
+          "200": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.static.200}"
+          },
+          "300": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.static.200}"
+          },
+          "400": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.static.300}"
+          },
+          "600": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.static.400}"
+          },
+          "800": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.static.600}"
+          },
+          "1000": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.static.600}"
+          },
+          "1200": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.static.800}"
+          },
+          "1400": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.static.1000}"
+          },
+          "1600": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.static.1200}"
+          },
+          "2000": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.static.1400}"
+          },
+          "2400": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.static.1600}"
+          }
+        },
+        "linear": {
+          "100": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.linear-50.100}"
+          },
+          "200": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.linear-50.200}"
+          },
+          "300": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.linear-50.300}"
+          },
+          "400": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.linear-100.400}"
+          },
+          "600": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.linear-100.600}"
+          },
+          "800": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.linear-200.800}"
+          },
+          "1000": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.linear-200.1000}"
+          },
+          "1200": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.linear-300.1200}"
+          },
+          "1400": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.linear-300.1400}"
+          },
+          "1600": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.linear-400.1600}"
+          },
+          "2000": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.linear-400.2000}"
+          },
+          "2400": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.linear-400.2400}"
+          }
+        },
+        "linear-responsive": {
+          "100": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.linear-50.100}"
+          },
+          "200": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.linear-50.200}"
+          },
+          "300": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.linear-50.200}"
+          },
+          "400": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.linear-100.300}"
+          },
+          "600": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.linear-100.400}"
+          },
+          "800": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.linear-100.600}"
+          },
+          "1000": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.linear-100.600}"
+          },
+          "1200": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.linear-200.800}"
+          },
+          "1400": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.linear-200.1000}"
+          },
+          "1600": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.linear-300.1200}"
+          },
+          "2000": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.linear-300.1400}"
+          },
+          "2400": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.linear-400.1600}"
+          }
+        }
+      },
+      "horizontal": {
+        "content": {
+          "plain": {
+            "s": {
+              "$type": "spacing",
+              "$value": "{core.dimension.100}",
+              "$description": "Gap between text (e.g. text and icon) for elements without surroundings (e.g. link)"
+            },
+            "m": {
+              "$type": "spacing",
+              "$value": "{core.dimension.100}",
+              "$description": "Gap between text (e.g. text and icon) for elements without surroundings (e.g. link)"
+            }
+          },
+          "contained": {
+            "s": {
+              "$type": "spacing",
+              "$value": "{semantic.dimension.linear-50.200}",
+              "$description": "Gap between text (e.g. text and icon) for elements with surroundings (e.g. button)"
+            },
+            "m": {
+              "$type": "spacing",
+              "$value": "{semantic.dimension.linear-50.200}",
+              "$description": "Gap between text (e.g. text and icon) for elements with surroundings (e.g. button)"
+            }
+          }
+        },
+        "grid": {
+          "default": {
+            "$type": "spacing",
+            "$value": "{core.dimension.400}",
+            "$description": "Helper to provide the grid gap value based on the current breakpoint"
+          },
+          "functional": {
+            "$type": "spacing",
+            "$value": "{semantic.gap.all.linear.400}",
+            "$description": "Helper to provide the grid gap value based on the current breakpoint"
+          }
+        }
+      }
+    },
+    "offset": {
+      "all": {
+        "focus": {
+          "$type": "spacing",
+          "$value": "{core.dimension.50}",
+          "$description": "Distance of the focus ring to the component"
+        }
+      }
+    },
+    "max-width": {
+      "content": {
+        "$type": "sizing",
+        "$value": "({core.size.breakpoint.2xl} - 2 * {core.inset.horizontal.grid.2xl})",
+        "$description": "Max-width for the content area of a website. Use from breakpoint 2xl on and larger, centered horizontally."
+      }
+    },
+    "font-size": {
+      "body": {
+        "s": {
+          "$type": "fontSizes",
+          "$value": "roundTo({semantic.font-size.body.m} / {semantic.internal.font-size.shrinkage.body})"
+        },
+        "m": {
+          "$type": "fontSizes",
+          "$value": "{semantic.internal.font-size.base}"
+        },
+        "l": {
+          "$type": "fontSizes",
+          "$value": "roundTo({semantic.font-size.body.m} * {semantic.internal.font-size.growth.body})"
+        }
+      },
+      "utility": {
+        "s": {
+          "$type": "fontSizes",
+          "$value": "roundTo({semantic.font-size.utility.m} / {semantic.internal.font-size.shrinkage.utility})"
+        },
+        "m": {
+          "$type": "fontSizes",
+          "$value": "{semantic.internal.font-size.base}"
+        },
+        "l": {
+          "$type": "fontSizes",
+          "$value": "roundTo({semantic.font-size.utility.m} * {semantic.internal.font-size.growth.utility})"
+        }
+      },
+      "headline": {
+        "s": {
+          "$type": "fontSizes",
+          "$value": "roundTo({semantic.font-size.headline.m} / {semantic.internal.font-size.shrinkage.headline})"
+        },
+        "m": {
+          "$type": "fontSizes",
+          "$value": "{semantic.internal.font-size.base}"
+        },
+        "l": {
+          "$type": "fontSizes",
+          "$value": "roundTo({semantic.font-size.headline.m} * {semantic.internal.font-size.growth.headline})"
+        },
+        "xl": {
+          "$type": "fontSizes",
+          "$value": "roundTo({semantic.font-size.headline.l} * {semantic.internal.font-size.growth.headline})"
+        },
+        "2xl": {
+          "$type": "fontSizes",
+          "$value": "roundTo({semantic.font-size.headline.xl} * {semantic.internal.font-size.growth.headline})"
+        },
+        "3xl": {
+          "$type": "fontSizes",
+          "$value": "roundTo({semantic.font-size.headline.2xl} * {semantic.internal.font-size.growth.headline})"
+        },
+        "4xl": {
+          "$type": "fontSizes",
+          "$value": "roundTo({semantic.font-size.headline.3xl} * {semantic.internal.font-size.growth.headline})"
+        },
+        "5xl": {
+          "$type": "fontSizes",
+          "$value": "roundTo({semantic.font-size.headline.4xl} * {semantic.internal.font-size.growth.headline})"
+        },
+        "6xl": {
+          "$type": "fontSizes",
+          "$value": "roundTo({semantic.font-size.headline.5xl} * {semantic.internal.font-size.growth.headline})"
+        }
+      }
+    },
+    "line-height": {
+      "body": {
+        "s": {
+          "$type": "lineHeights",
+          "$value": "(ceil(({semantic.font-size.body.s} * {semantic.internal.line-height.factor} + {semantic.internal.line-height.cushion.body}) / {semantic.internal.line-height.baseline.body}) * {semantic.internal.line-height.baseline.body})"
+        },
+        "m": {
+          "$type": "lineHeights",
+          "$value": "(ceil(({semantic.font-size.body.m} * {semantic.internal.line-height.factor} + {semantic.internal.line-height.cushion.body}) / {semantic.internal.line-height.baseline.body}) * {semantic.internal.line-height.baseline.body})"
+        },
+        "l": {
+          "$type": "lineHeights",
+          "$value": "(ceil(({semantic.font-size.body.l} * {semantic.internal.line-height.factor} + {semantic.internal.line-height.cushion.body}) / {semantic.internal.line-height.baseline.body}) * {semantic.internal.line-height.baseline.body})"
+        }
+      },
+      "utility": {
+        "s": {
+          "$type": "lineHeights",
+          "$value": "(ceil(({semantic.font-size.utility.s} * {semantic.internal.line-height.factor} + {semantic.internal.line-height.cushion.utility}) / {semantic.internal.line-height.baseline.utility}) * {semantic.internal.line-height.baseline.utility})"
+        },
+        "m": {
+          "$type": "lineHeights",
+          "$value": "(ceil(({semantic.font-size.utility.m} * {semantic.internal.line-height.factor} + {semantic.internal.line-height.cushion.utility}) / {semantic.internal.line-height.baseline.utility}) * {semantic.internal.line-height.baseline.utility})"
+        },
+        "l": {
+          "$type": "lineHeights",
+          "$value": "(ceil(({semantic.font-size.utility.l} * {semantic.internal.line-height.factor} + {semantic.internal.line-height.cushion.utility}) / {semantic.internal.line-height.baseline.utility}) * {semantic.internal.line-height.baseline.utility})"
+        }
+      },
+      "headline": {
+        "s": {
+          "$type": "lineHeights",
+          "$value": "(ceil(({semantic.font-size.headline.s} * {semantic.internal.line-height.factor} + {semantic.internal.line-height.cushion.headline}) / {semantic.internal.line-height.baseline.headline}) * {semantic.internal.line-height.baseline.headline})"
+        },
+        "m": {
+          "$type": "lineHeights",
+          "$value": "(ceil(({semantic.font-size.headline.m} * {semantic.internal.line-height.factor} + {semantic.internal.line-height.cushion.headline}) / {semantic.internal.line-height.baseline.headline}) * {semantic.internal.line-height.baseline.headline})"
+        },
+        "l": {
+          "$type": "lineHeights",
+          "$value": "(ceil(({semantic.font-size.headline.l} * {semantic.internal.line-height.factor} + {semantic.internal.line-height.cushion.headline}) / {semantic.internal.line-height.baseline.headline}) * {semantic.internal.line-height.baseline.headline})"
+        },
+        "xl": {
+          "$type": "lineHeights",
+          "$value": "(ceil(({semantic.font-size.headline.xl} * {semantic.internal.line-height.factor} + {semantic.internal.line-height.cushion.headline}) / {semantic.internal.line-height.baseline.headline}) * {semantic.internal.line-height.baseline.headline})"
+        },
+        "2xl": {
+          "$type": "lineHeights",
+          "$value": "(ceil(({semantic.font-size.headline.2xl} * {semantic.internal.line-height.factor} + {semantic.internal.line-height.cushion.headline}) / {semantic.internal.line-height.baseline.headline}) * {semantic.internal.line-height.baseline.headline})"
+        },
+        "3xl": {
+          "$type": "lineHeights",
+          "$value": "(ceil(({semantic.font-size.headline.3xl} * {semantic.internal.line-height.factor} + {semantic.internal.line-height.cushion.headline}) / {semantic.internal.line-height.baseline.headline}) * {semantic.internal.line-height.baseline.headline})"
+        },
+        "4xl": {
+          "$type": "lineHeights",
+          "$value": "(ceil(({semantic.font-size.headline.4xl} * {semantic.internal.line-height.factor} + {semantic.internal.line-height.cushion.headline}) / {semantic.internal.line-height.baseline.headline}) * {semantic.internal.line-height.baseline.headline})"
+        },
+        "5xl": {
+          "$type": "lineHeights",
+          "$value": "(ceil(({semantic.font-size.headline.5xl} * {semantic.internal.line-height.factor} + {semantic.internal.line-height.cushion.headline}) / {semantic.internal.line-height.baseline.headline}) * {semantic.internal.line-height.baseline.headline})"
+        },
+        "6xl": {
+          "$type": "lineHeights",
+          "$value": "(ceil(({semantic.font-size.headline.6xl} * {semantic.internal.line-height.factor} + {semantic.internal.line-height.cushion.headline}) / {semantic.internal.line-height.baseline.headline}) * {semantic.internal.line-height.baseline.headline})"
+        }
+      }
+    },
+    "font-family": {
+      "body": {
+        "$type": "fontFamilies",
+        "$value": "{core.font-family.primary}"
+      },
+      "utility": {
+        "$type": "fontFamilies",
+        "$value": "{core.font-family.primary}"
+      },
+      "headline": {
+        "$type": "fontFamilies",
+        "$value": "{core.font-family.primary}"
+      }
+    },
+    "font-weight": {
+      "body": {
+        "$type": "fontWeights",
+        "$value": "{core.font-weight.100}"
+      },
+      "utility": {
+        "default": {
+          "$type": "fontWeights",
+          "$value": "{core.font-weight.100}"
+        },
+        "attention": {
+          "$type": "fontWeights",
+          "$value": "{core.font-weight.200}"
+        }
+      },
+      "headline": {
+        "s": {
+          "$type": "fontWeights",
+          "$value": "({semantic.internal.font-weight.headline.smaller} - ({semantic.internal.font-weight.headline.smaller} - {semantic.internal.font-weight.headline.larger}) * min(floor({semantic.font-size.headline.s} / {semantic.internal.font-weight.treshold}), 1))"
+        },
+        "m": {
+          "$type": "fontWeights",
+          "$value": "({semantic.internal.font-weight.headline.smaller} - ({semantic.internal.font-weight.headline.smaller} - {semantic.internal.font-weight.headline.larger}) * min(floor({semantic.font-size.headline.m} / {semantic.internal.font-weight.treshold}), 1))"
+        },
+        "l": {
+          "$type": "fontWeights",
+          "$value": "({semantic.internal.font-weight.headline.smaller} - ({semantic.internal.font-weight.headline.smaller} - {semantic.internal.font-weight.headline.larger}) * min(floor({semantic.font-size.headline.l} / {semantic.internal.font-weight.treshold}), 1))"
+        },
+        "xl": {
+          "$type": "fontWeights",
+          "$value": "({semantic.internal.font-weight.headline.smaller} - ({semantic.internal.font-weight.headline.smaller} - {semantic.internal.font-weight.headline.larger}) * min(floor({semantic.font-size.headline.xl} / {semantic.internal.font-weight.treshold}), 1))"
+        },
+        "2xl": {
+          "$type": "fontWeights",
+          "$value": "({semantic.internal.font-weight.headline.smaller} - ({semantic.internal.font-weight.headline.smaller} - {semantic.internal.font-weight.headline.larger}) * min(floor({semantic.font-size.headline.2xl} / {semantic.internal.font-weight.treshold}), 1))"
+        },
+        "3xl": {
+          "$type": "fontWeights",
+          "$value": "({semantic.internal.font-weight.headline.smaller} - ({semantic.internal.font-weight.headline.smaller} - {semantic.internal.font-weight.headline.larger}) * min(floor({semantic.font-size.headline.3xl} / {semantic.internal.font-weight.treshold}), 1))"
+        },
+        "4xl": {
+          "$type": "fontWeights",
+          "$value": "({semantic.internal.font-weight.headline.smaller} - ({semantic.internal.font-weight.headline.smaller} - {semantic.internal.font-weight.headline.larger}) * min(floor({semantic.font-size.headline.4xl} / {semantic.internal.font-weight.treshold}), 1))"
+        },
+        "5xl": {
+          "$type": "fontWeights",
+          "$value": "({semantic.internal.font-weight.headline.smaller} - ({semantic.internal.font-weight.headline.smaller} - {semantic.internal.font-weight.headline.larger}) * min(floor({semantic.font-size.headline.5xl} / {semantic.internal.font-weight.treshold}), 1))"
+        },
+        "6xl": {
+          "$type": "fontWeights",
+          "$value": "({semantic.internal.font-weight.headline.smaller} - ({semantic.internal.font-weight.headline.smaller} - {semantic.internal.font-weight.headline.larger}) * min(floor({semantic.font-size.headline.6xl} / {semantic.internal.font-weight.treshold}), 1))"
+        }
+      }
+    },
+    "letter-spacing": {
+      "body": {
+        "s": {
+          "$type": "letterSpacing",
+          "$value": "({semantic.internal.letter-spacing.base} - {semantic.internal.letter-spacing.increment} * floor({semantic.font-size.body.s} / {semantic.internal.letter-spacing.treshold}))"
+        },
+        "m": {
+          "$type": "letterSpacing",
+          "$value": "({semantic.internal.letter-spacing.base} - {semantic.internal.letter-spacing.increment} * floor({semantic.font-size.body.m} / {semantic.internal.letter-spacing.treshold}))"
+        },
+        "l": {
+          "$type": "letterSpacing",
+          "$value": "({semantic.internal.letter-spacing.base} - {semantic.internal.letter-spacing.increment} * floor({semantic.font-size.body.l} / {semantic.internal.letter-spacing.treshold}))"
+        }
+      },
+      "utility": {
+        "s": {
+          "$type": "letterSpacing",
+          "$value": "({semantic.internal.letter-spacing.base} - {semantic.internal.letter-spacing.increment} * floor({semantic.font-size.utility.s} / {semantic.internal.letter-spacing.treshold}))"
+        },
+        "m": {
+          "$type": "letterSpacing",
+          "$value": "({semantic.internal.letter-spacing.base} - {semantic.internal.letter-spacing.increment} * floor({semantic.font-size.utility.m} / {semantic.internal.letter-spacing.treshold}))"
+        },
+        "l": {
+          "$type": "letterSpacing",
+          "$value": "({semantic.internal.letter-spacing.base} - {semantic.internal.letter-spacing.increment} * floor({semantic.font-size.utility.l} / {semantic.internal.letter-spacing.treshold}))"
+        }
+      },
+      "headline": {
+        "s": {
+          "$type": "letterSpacing",
+          "$value": "({semantic.internal.letter-spacing.base} - {semantic.internal.letter-spacing.increment} * floor({semantic.font-size.headline.s} / {semantic.internal.letter-spacing.treshold}))"
+        },
+        "m": {
+          "$type": "letterSpacing",
+          "$value": "({semantic.internal.letter-spacing.base} - {semantic.internal.letter-spacing.increment} * floor({semantic.font-size.headline.m} / {semantic.internal.letter-spacing.treshold}))"
+        },
+        "l": {
+          "$type": "letterSpacing",
+          "$value": "({semantic.internal.letter-spacing.base} - {semantic.internal.letter-spacing.increment} * floor({semantic.font-size.headline.l} / {semantic.internal.letter-spacing.treshold}))"
+        },
+        "xl": {
+          "$type": "letterSpacing",
+          "$value": "({semantic.internal.letter-spacing.base} - {semantic.internal.letter-spacing.increment} * floor({semantic.font-size.headline.xl} / {semantic.internal.letter-spacing.treshold}))"
+        },
+        "2xl": {
+          "$type": "letterSpacing",
+          "$value": "({semantic.internal.letter-spacing.base} - {semantic.internal.letter-spacing.increment} * floor({semantic.font-size.headline.2xl} / {semantic.internal.letter-spacing.treshold}))"
+        },
+        "3xl": {
+          "$type": "letterSpacing",
+          "$value": "({semantic.internal.letter-spacing.base} - {semantic.internal.letter-spacing.increment} * floor({semantic.font-size.headline.3xl} / {semantic.internal.letter-spacing.treshold}))"
+        },
+        "4xl": {
+          "$type": "letterSpacing",
+          "$value": "({semantic.internal.letter-spacing.base} - {semantic.internal.letter-spacing.increment} * floor({semantic.font-size.headline.4xl} / {semantic.internal.letter-spacing.treshold}))"
+        },
+        "5xl": {
+          "$type": "letterSpacing",
+          "$value": "({semantic.internal.letter-spacing.base} - {semantic.internal.letter-spacing.increment} * floor({semantic.font-size.headline.5xl} / {semantic.internal.letter-spacing.treshold}))"
+        },
+        "6xl": {
+          "$type": "letterSpacing",
+          "$value": "({semantic.internal.letter-spacing.base} - {semantic.internal.letter-spacing.increment} * floor({semantic.font-size.headline.6xl} / {semantic.internal.letter-spacing.treshold}))"
+        }
+      }
+    },
+    "text-case": {
+      "body": {
+        "$type": "textCase",
+        "$value": "{core.text-case.none}"
+      },
+      "utility": {
+        "$type": "textCase",
+        "$value": "{core.text-case.none}"
+      },
+      "headline": {
+        "s": {
+          "$type": "textCase",
+          "$value": "{core.text-case.none}"
+        },
+        "m": {
+          "$type": "textCase",
+          "$value": "{core.text-case.none}"
+        },
+        "l": {
+          "$type": "textCase",
+          "$value": "{core.text-case.none}"
+        },
+        "xl": {
+          "$type": "textCase",
+          "$value": "{core.text-case.none}"
+        },
+        "2xl": {
+          "$type": "textCase",
+          "$value": "{core.text-case.none}"
+        },
+        "3xl": {
+          "$type": "textCase",
+          "$value": "{core.text-case.none}"
+        },
+        "4xl": {
+          "$type": "textCase",
+          "$value": "{core.text-case.none}"
+        },
+        "5xl": {
+          "$type": "textCase",
+          "$value": "{core.text-case.none}"
+        },
+        "6xl": {
+          "$type": "textCase",
+          "$value": "{core.text-case.none}"
+        },
+        "eyebrow": {
+          "$type": "textCase",
+          "$value": "{core.text-case.uppercase}"
+        }
+      }
+    },
+    "text-decoration": {
+      "action": {
+        "none": {
+          "$type": "textDecoration",
+          "$value": "{core.text-decoration.none}"
+        },
+        "emphasis": {
+          "$type": "textDecoration",
+          "$value": "{core.text-decoration.underline}"
+        }
+      }
+    }
+  }
+}

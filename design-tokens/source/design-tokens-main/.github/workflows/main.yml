@@ -1,0 +1,217 @@
+name: Design Tokens CI/CD Workflow
+
+on:
+  workflow_dispatch:
+    inputs:
+      releaseNPM:
+        description: 'Release to NPM?'
+        required: true
+        default: 'false'
+      releaseCDN:
+        description: 'Release to CDN?'
+        required: true
+        default: 'false'
+      releaseBuilderNPM:
+        description: 'Release Builder to NPM?'
+        required: true
+        default: 'false'
+
+  push:
+    branches:
+      - '**'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+env:
+  TEST_CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+  TEST_CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+  TEST_CLOUDFLARE_R2_BUCKET: 'a1-cdn-test-bucket'
+  TEST_CLOUDFLARE_R2_BUCKET_ACCESS_KEY_ID: ${{ secrets.KXL_CLOUDFLARE_R2_BUCKET_ACCESS_KEY_ID }}
+  TEST_CLOUDFLARE_R2_BUCKET_ACCESS_KEY_SECRET: ${{ secrets.KXL_CLOUDFLARE_R2_BUCKET_ACCESS_KEY_SECRET }}
+  RCLONE_CONFIG_NAME: 'cloudflare_r2_bucket'
+  A1_GIT_READ_TOKEN: ${{ secrets.A1_GITHUB_READ_TOKEN }}
+  OM_CLOUDFLARE_API_TOKEN: ${{ secrets.OM_CLOUDFLARE_API_TOKEN }}
+  OM_CLOUDFLARE_ACCOUNT_ID: ${{ secrets.OM_CLOUDFLARE_ACCOUNT_ID }}
+  OM_CLOUDFLARE_PAGES_PROJECT: 'design-tokens'
+  OM_CLOUDFLARE_R2_BUCKET_PROD: 'platform-design-tokens-prod'
+  OM_CLOUDFLARE_R2_BUCKET_ACCESS_KEY_ID_PROD: ${{ secrets.OM_CLOUDFLARE_R2_BUCKET_ACCESS_KEY_ID_PROD }}
+  OM_CLOUDFLARE_R2_BUCKET_ACCESS_KEY_SECRET_PROD: ${{ secrets.OM_CLOUDFLARE_R2_BUCKET_ACCESS_KEY_SECRET_PROD }}
+  OM_CLOUDFLARE_R2_BUCKET_STG: 'platform-design-tokens-stg'
+  OM_CLOUDFLARE_R2_BUCKET_ACCESS_KEY_ID_STG: ${{ secrets.OM_CLOUDFLARE_R2_BUCKET_ACCESS_KEY_ID_STG }}
+  OM_CLOUDFLARE_R2_BUCKET_ACCESS_KEY_SECRET_STG: ${{ secrets.OM_CLOUDFLARE_R2_BUCKET_ACCESS_KEY_SECRET_STG }}
+  OM_CLOUDFLARE_R2_BUCKET_DEV: 'platform-design-tokens-dev'
+  OM_CLOUDFLARE_R2_BUCKET_ACCESS_KEY_ID_DEV: ${{ secrets.OM_CLOUDFLARE_R2_BUCKET_ACCESS_KEY_ID_DEV }}
+  OM_CLOUDFLARE_R2_BUCKET_ACCESS_KEY_SECRET_DEV: ${{ secrets.OM_CLOUDFLARE_R2_BUCKET_ACCESS_KEY_SECRET_DEV }}
+  OM_NPM_EMAIL: ${{ secrets.A1_DESIGN_NPM_EMAIL }}
+  OM_NPM_USER_NAME: ${{ secrets.A1_DESIGN_NPM_USER_NAME }}
+  OM_NPM_ALL_READ_WRITE_PW: ${{ secrets.A1_DESIGN_NPM_READ_WRITE }}
+  OM_NPM_PUBLISH_ENDPOINT: 'diartifactory.jfrog.io/artifactory/api/npm/a1-design/'
+  GDF_NPM_USER_NAME: ${{ secrets.GDF_NPM_USER_NAME }}
+  GDF_NPM_WRITE_AUTH_TOKEN: ${{ secrets.GDF_NPM_WRITE_AUTH_TOKEN }}
+  GDF_NPM_PUBLISH_ENDPOINT: 'nexus-gdf-crp2.devops-services.we1.azure.aztec.cloud.allianz/repository/npm-public-libraries/'
+  EXPECTED_NPM_PACKAGE_FILE_COUNT: 245
+
+jobs:
+  token-build:
+    runs-on: [adp-runner-small]
+    if: github.actor != 'dependabot[bot]' && github.api_url == 'https://github.developer.allianz.io/api/v3' # temporary workaround: skip this job when run on github.com or by Dependabot, as it doesn't have access to secrets.CLOUDFLARE_API_TOKEN. This `if` can be disabled when we have a technical user for the repo
+    steps:
+      - name: SETUP - Checkout Code
+        uses: actions/checkout@v4
+      - name: SETUP - Node.js Runtime
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+      - name: SETUP - Install Dependencies
+        run: |
+          echo "Github API URL is: ${{ github.api_url }}"
+          npm ci
+      - name: TEST - Run Prettier Formatting Checks
+        run: npm run format:check
+      - name: TEST - Run Code Linting
+        run: npm run lint:check
+      - name: TEST - Run Unit Tests
+        run: npm run test:unit
+      - name: BUILD - Build Design Token Asset Files
+        run: |
+          if [[ "${{ github.ref }}" == 'refs/heads/main' ]]; then
+            npm run build:prod
+          else
+            npm run build:feat
+          fi
+      - name: BUILD - Build Design Token Builder
+        if: github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch' && github.event.inputs.releaseBuilderNPM == 'true'
+        run: npm run build:builder:prod
+      - name: DEPLOY - VERIFICATION - Verify Package Contents and File Count Integrity
+        if: github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main'
+        run: |
+          cd ${{ github.workspace }}/token-package
+          PACK_OUTPUT=$(npm pack --dry-run 2>&1) # Run npm pack --dry-run and merge stderr into stdout for analysis
+          echo "--- Analyzing NPM package contents..."
+          # echo "$PACK_OUTPUT"
+
+          # 1. Check for the existence of the critical CSS file
+          CRITICAL_CSS_FILE="dist/allianz/a1/web/tokens-light-lively-spacious.css"
+          if ! echo "$PACK_OUTPUT" | grep -q "$CRITICAL_CSS_FILE"; then
+              echo "❌ ERROR: Critical file '$CRITICAL_CSS_FILE' is missing from the package!"
+              exit 1
+          fi
+          CRITICAL_SCSS_FILE="dist/allianz/a1/web/tokens-light-lively-spacious-mixins.scss"
+          if ! echo "$PACK_OUTPUT" | grep -q "$CRITICAL_SCSS_FILE"; then
+              echo "❌ ERROR: Critical file '$CRITICAL_SCSS_FILE' is missing from the package!"
+              exit 1
+          fi
+
+          # 2. Check that the total file count matches the expected number
+          FILE_COUNT=$(echo "$PACK_OUTPUT" | grep 'npm notice total files' | awk '{print $5}')
+          if [ -z "$FILE_COUNT" ]; then
+              echo "❌ ERROR: Could not determine total file count from npm pack output."
+              exit 1
+          fi
+          if [ "$FILE_COUNT" -ne "$EXPECTED_NPM_PACKAGE_FILE_COUNT" ]; then
+            echo "❌ ERROR: File count mismatch! Expected $EXPECTED_NPM_PACKAGE_FILE_COUNT files, but found $FILE_COUNT."
+            exit 1
+          fi
+
+          echo "✅ Verification successful! Critical file found and file count is correct ($FILE_COUNT)."
+      - name: DEPLOY - NPM - OneMarketing - Configure .npmrc for Artifactory package registry
+        if: github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch' && (github.event.inputs.releaseNPM == 'true' || github.event.inputs.releaseBuilderNPM == 'true')
+        run: |
+          echo "Github working directory is: ${{ github.workspace }}"
+          echo "Setting OneMarketing Artifactory .npmrc file configs"
+          npm config set registry https://${{ env.OM_NPM_PUBLISH_ENDPOINT }} --userconfig ${{ github.workspace }}/.npmrc
+          npm config set email ${{env.OM_NPM_EMAIL}} --userconfig ${{ github.workspace }}/.npmrc
+          npm config set //${{ env.OM_NPM_PUBLISH_ENDPOINT }}:_password ${{env.OM_NPM_ALL_READ_WRITE_PW}} --userconfig ${{ github.workspace }}/.npmrc
+          npm config set //${{ env.OM_NPM_PUBLISH_ENDPOINT }}:username ${{env.OM_NPM_USER_NAME}} --userconfig ${{ github.workspace }}/.npmrc
+          echo "Current NPM configurations for publishing are:"
+          npm config list
+      - name: DEPLOY - NPM - OneMarketing - Health Check of Artifactory package registry
+        if: github.ref == 'refs/heads/dev'
+        run: npm view @allianz/a1-design-tokens --userconfig ${{ github.workspace }}/.npmrc
+      - name: DEPLOY - NPM - OneMarketing - Publish NPM Tocken-Package to Artifactory package registry
+        if: github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch' && github.event.inputs.releaseNPM == 'true'
+        run: |
+          cd ${{ github.workspace }}/token-package
+          npm publish --userconfig ${{ github.workspace }}/.npmrc
+      - name: DEPLOY - NPM - OneMarketing - Publish NPM Design Token builder to Artifactory package registry
+        if: github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch' && github.event.inputs.releaseBuilderNPM == 'true'
+        run: npm publish --userconfig ${{ github.workspace }}/.npmrc
+      - name: DEPLOY - NPM - OneMarketing - Reset .npmrc Artifactory package registry config
+        if: github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch' && (github.event.inputs.releaseNPM == 'true' || github.event.inputs.releaseBuilderNPM == 'true')
+        run: |
+          echo "After publishing clean up in file ${{ github.workspace }}/.npmrc"
+          npm config delete registry --userconfig ${{ github.workspace }}/.npmrc
+          npm config delete email --userconfig ${{ github.workspace }}/.npmrc
+          npm config delete //${{ env.OM_NPM_PUBLISH_ENDPOINT }}:_password --userconfig ${{ github.workspace }}/.npmrc
+          npm config delete //${{ env.OM_NPM_PUBLISH_ENDPOINT }}:username --userconfig ${{ github.workspace }}/.npmrc
+      - name: DEPLOY - NPM - GDF - Configure .npmrc for Nexus package registry
+        if: github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch' && (github.event.inputs.releaseNPM == 'true' || github.event.inputs.releaseBuilderNPM == 'true')
+        run: |
+          echo "Github working directory is: ${{ github.workspace }}"
+          echo "Setting GDF Nexus .npmrc file configs"
+          npm config set registry https://${{ env.GDF_NPM_PUBLISH_ENDPOINT }} --userconfig ${{ github.workspace }}/.npmrc
+          npm config set email ${{env.GDF_NPM_USER_NAME}}@allianz.com --userconfig ${{ github.workspace }}/.npmrc
+          npm config set //${{ env.GDF_NPM_PUBLISH_ENDPOINT }}:_auth ${{env.GDF_NPM_WRITE_AUTH_TOKEN}} --userconfig ${{ github.workspace }}/.npmrc
+          echo "Current NPM configurations for publishing are:"
+          npm config list
+      - name: DEPLOY - NPM - GDF - Health Check of Nexus package registry
+        if: github.ref == 'refs/heads/dev'
+        run: npm view @allianz/a1-design-tokens --userconfig ${{ github.workspace }}/.npmrc
+      - name: DEPLOY - NPM - GDF - Publish NPM Token-Package to Nexus package registry
+        if: github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch' && github.event.inputs.releaseNPM == 'true'
+        run: |
+          cd ${{ github.workspace }}/token-package
+          npm publish --userconfig ${{ github.workspace }}/.npmrc
+      - name: DEPLOY - NPM - GDF - Publish NPM Design Token builder to Nexus package registry
+        if: github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch' && github.event.inputs.releaseBuilderNPM == 'true'
+        run: npm publish --userconfig ${{ github.workspace }}/.npmrc
+      - name: DEPLOY - NPM - GDF - Reset .npmrc Nexus package registry config
+        if: github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch' && (github.event.inputs.releaseNPM == 'true' || github.event.inputs.releaseBuilderNPM == 'true')
+        run: |
+          echo "After publishing clean up in file ${{ github.workspace }}/.npmrc"
+          npm config delete registry --userconfig ${{ github.workspace }}/.npmrc
+          npm config delete email --userconfig ${{ github.workspace }}/.npmrc
+          npm config delete //${{ env.GDF_NPM_PUBLISH_ENDPOINT }}:_auth --userconfig ${{ github.workspace }}/.npmrc
+      - name: DEPLOY - CDN - Cloudflare - Configure R2 Bucket (CDN) connection
+        if: github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch' && github.event.inputs.releaseCDN == 'true'
+        run: |
+          echo "Checking Access to the Cloudflare CDN"
+          echo -e "\n🎁 Installing rclone:"
+          unzip -t .github/workflows/libs/rclone-v1.70.3-linux-amd64.zip # Test file integrity
+          unzip .github/workflows/libs/rclone-v1.70.3-linux-amd64.zip # Unzip the binary
+
+          echo -e "\n🔦 Check rclone install:"
+          ls -a
+          rclone-v1.70.3-linux-amd64/rclone --version # Show the installed version
+
+          echo -e "\n🛠️ Configuring rclone:"
+          mkdir -p $HOME/.config/rclone
+          cat <<EOF > $HOME/.config/rclone/rclone.conf
+          [${{ env.RCLONE_CONFIG_NAME }}]
+          type = s3
+          provider = Cloudflare
+          env_auth = false
+          region = auto
+          endpoint = https://${{ env.OM_CLOUDFLARE_ACCOUNT_ID }}.r2.cloudflarestorage.com
+          access_key_id = ${{ env.OM_CLOUDFLARE_R2_BUCKET_ACCESS_KEY_ID_PROD }}
+          secret_access_key = ${{ env.OM_CLOUDFLARE_R2_BUCKET_ACCESS_KEY_SECRET_PROD }}
+          acl = private
+          #no_check_bucket = false # uses less transactions if true!
+          #no_head = false # uses less transactions if true!
+          #no_head_object = false # uses less transactions if true!
+          EOF
+          cat $HOME/.config/rclone/rclone.conf
+      - name: DEPLOY - CDN - Cloudflare - Health Check of R2 Bucket (CDN) connection
+        if: github.ref == 'refs/heads/dev'
+        run: |
+          echo -e "\n🗂️ R2 bucket files and folders:"
+          rclone-v1.70.3-linux-amd64/rclone tree --max-depth 1 ${{ env.RCLONE_CONFIG_NAME }}:${{env.OM_CLOUDFLARE_R2_BUCKET_PROD}} # List the contents of the bucket
+      - name: DEPLOY - CDN - Cloudflare - Deploy to R2 Bucket (CDN)
+        if: github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch' && github.event.inputs.releaseCDN == 'true'
+        run: |
+          echo -e "\n🤹‍♀️ Deploy token output asset files:"
+          rclone-v1.70.3-linux-amd64/rclone copy token-package/cdn/tokens ${{ env.RCLONE_CONFIG_NAME }}:${{env.OM_CLOUDFLARE_R2_BUCKET_PROD}} --verbose=2
+          echo -e "\n🗂️ R2 bucket files and folders:"
+          rclone-v1.70.3-linux-amd64/rclone tree ${{ env.RCLONE_CONFIG_NAME }}:${{env.OM_CLOUDFLARE_R2_BUCKET_PROD}} # List the contents of the bucket

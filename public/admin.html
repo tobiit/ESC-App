@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quiz Admin</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body class="page admin">
+    <div class="bg-shapes"></div>
+    <main class="shell">
+      <header class="brand">
+        <div class="row">
+          <div>
+            <h1>Quiz Administration</h1>
+            <p>Gruppen, Menschen, Moderation und Statistiken.</p>
+          </div>
+          <button id="adminLogout" class="btn ghost">Logout</button>
+        </div>
+      </header>
+
+      <section id="adminLogin" class="card">
+        <h2>Login</h2>
+        <label class="field">
+          <span>Admin-Passwort</span>
+          <input id="adminPassword" type="password" placeholder="Passwort" />
+        </label>
+        <button id="adminLoginBtn" class="btn primary">Anmelden</button>
+      </section>
+
+      <section id="adminApp" class="hidden">
+        <nav class="tabs">
+          <button data-tab="groups" class="tab active">Gruppen</button>
+          <button data-tab="people" class="tab">Menschen</button>
+          <button data-tab="uploads" class="tab">Bilder</button>
+          <button data-tab="moderation" class="tab">Moderation</button>
+          <button data-tab="stats" class="tab">Statistik</button>
+        </nav>
+
+        <div id="tab-groups" class="tab-panel">
+          <div class="card">
+            <h2>Quizgruppen</h2>
+            <div class="row">
+              <input id="newGroupName" type="text" placeholder="Gruppenname" />
+              <input id="newGroupPassword" type="text" placeholder="Passwort (optional)" />
+              <button id="createGroup" class="btn primary">Anlegen</button>
+            </div>
+            <div id="groupList" class="list"></div>
+          </div>
+        </div>
+
+        <div id="tab-people" class="tab-panel hidden">
+          <div class="card">
+            <h2>Menschen anlegen</h2>
+            <div class="row">
+              <input id="newPersonName" type="text" placeholder="Name" />
+              <button id="createPerson" class="btn primary">Anlegen</button>
+            </div>
+            <div id="peopleList" class="list"></div>
+          </div>
+
+          <div class="card">
+            <h2>Menschen Gruppen zuordnen</h2>
+            <div class="row">
+              <select id="assignGroup"></select>
+            </div>
+            <div id="assignPeople" class="list"></div>
+          </div>
+        </div>
+
+        <div id="tab-uploads" class="tab-panel hidden">
+          <div class="card">
+            <h2>Bilder verwalten</h2>
+            <div class="row">
+              <select id="uploadPerson"></select>
+              <button id="refreshImages" class="btn ghost">Neu laden</button>
+            </div>
+            <div class="upload-panel">
+              <input id="uploadInput" type="file" multiple />
+              <div id="uploadDropzone" class="dropzone">Bilder hier ablegen</div>
+              <div id="uploadQueue" class="list"></div>
+              <button id="uploadSubmit" class="btn primary">Bilder hochladen</button>
+            </div>
+            <h3>Vorhandene Bilder</h3>
+            <div id="imageList" class="image-grid"></div>
+          </div>
+        </div>
+
+        <div id="tab-moderation" class="tab-panel hidden">
+          <div class="card">
+            <h2>Moderation</h2>
+            <div class="row">
+              <select id="moderationGroup"></select>
+              <input id="autoSeconds" type="number" min="15" value="30" />
+              <button id="startAuto" class="btn primary">Auto Start</button>
+              <button id="startModerated" class="btn ghost">Moderiert Start</button>
+            </div>
+            <div id="moderationStatus" class="moderation"></div>
+            <div class="row">
+              <button id="revealBtn" class="btn ghost">Aufl&ouml;sung zeigen</button>
+              <button id="countdownBtn" class="btn ghost">Countdown starten</button>
+              <button id="nextBtn" class="btn primary">N&auml;chste Person</button>
+            </div>
+            <div id="moderationResults" class="list"></div>
+          </div>
+        </div>
+
+        <div id="tab-stats" class="tab-panel hidden">
+          <div class="card">
+            <h2>Quizsitzungen</h2>
+            <div id="sessionList" class="list"></div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script type="module" src="/admin.js"></script>
+  </body>
+</html>

@@ -1,0 +1,60 @@
+{
+  "accordion": {
+    "l": {
+      "item": {
+        "inset": {
+          "vertical": {
+            "$type": "spacing",
+            "$value": "{semantic.inset.vertical.l.component.1800}"
+          }
+        },
+        "headline": {
+          "gap": {
+            "horizontal": {
+              "$type": "spacing",
+              "$value": "{semantic.dimension.static.400}",
+              "$description": "Spacing between headline and optional slot (e.g. for icons)"
+            }
+          }
+        },
+        "header": {
+          "gap": {
+            "horizontal": {
+              "$type": "spacing",
+              "$value": "{semantic.dimension.static.800}",
+              "$description": "Spacing between headline and control"
+            }
+          }
+        }
+      }
+    },
+    "m": {
+      "item": {
+        "inset": {
+          "vertical": {
+            "$type": "spacing",
+            "$value": "{semantic.inset.vertical.m.component.1400}"
+          }
+        },
+        "headline": {
+          "gap": {
+            "horizontal": {
+              "$type": "spacing",
+              "$value": "{semantic.dimension.static.300}",
+              "$description": "Spacing between headline and optional slot (e.g. for icons)"
+            }
+          }
+        },
+        "header": {
+          "gap": {
+            "horizontal": {
+              "$type": "spacing",
+              "$value": "{semantic.dimension.static.600}",
+              "$description": "Spacing between headline and control"
+            }
+          }
+        }
+      }
+    }
+  }
+}

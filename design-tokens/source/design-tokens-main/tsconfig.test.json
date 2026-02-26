@@ -1,0 +1,14 @@
+{
+	"$schema": "https://json.schemastore.org/tsconfig.json",
+	"extends": "./tsconfig.base.json",
+	"compilerOptions": {
+		"rootDir": "./src",
+		"outDir": "./build/design-tokens-builder",
+		"module": "ES2022",
+		"moduleResolution": "Bundler",
+		"types": ["node", "jest"],
+		"baseUrl": "./src" // Added for module resolution
+	},
+	"include": ["src/**/*.spec.ts"],
+	"exclude": ["node_modules", "build", "tokens", "token-package"]
+}

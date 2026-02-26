@@ -1,0 +1,67 @@
+{
+  "core": {
+    "font-family": {
+      "primary": {
+        "$type": "fontFamilies",
+        "$value": "Allianz Neo"
+      }
+    },
+    "font-weight": {
+      "100": {
+        "$type": "fontWeights",
+        "$value": "400",
+        "$description": "Regular"
+      },
+      "150": {
+        "$type": "fontWeights",
+        "$value": "600",
+        "$description": "Semi-Bold"
+      },
+      "200": {
+        "$type": "fontWeights",
+        "$value": "700",
+        "$description": "Bold"
+      }
+    },
+    "internal": {
+      "font-size": {
+        "user-agent": {
+          "$type": "fontSizes",
+          "$value": "16",
+          "$description": "Value for 1 rem based on user's browser settings. Need for internal token since tools like Figma do not offer a rem-based sizing system."
+        },
+        "primary": {
+          "x-height": {
+            "$type": "number",
+            "$value": "0.448730625"
+          },
+          "cap-height": {
+            "$type": "number",
+            "$value": "0.66162125",
+            "$description": "0.66162125"
+          }
+        }
+      }
+    },
+    "text-decoration": {
+      "none": {
+        "$type": "textDecoration",
+        "$value": "none"
+      },
+      "underline": {
+        "$type": "textDecoration",
+        "$value": "underline"
+      }
+    },
+    "text-case": {
+      "none": {
+        "$type": "textCase",
+        "$value": "none"
+      },
+      "uppercase": {
+        "$type": "textCase",
+        "$value": "uppercase"
+      }
+    }
+  }
+}

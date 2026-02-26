@@ -1,0 +1,14 @@
+{
+  "radio-button": {
+    "selected": {
+      "border-width": {
+        "$type": "borderWidth",
+        "$value": "(({checkbox.size} / 4) + {semantic.border-width.action})"
+      }
+    },
+    "size": {
+      "$type": "sizing",
+      "$value": "{semantic.size.content.m}"
+    }
+  }
+}

@@ -1,0 +1,8 @@
+Old,New,Comment
+--accordion-l-item-gap,
+--accordion-m-item-gap,
+--input-field-gap,--input-field-m-gap
+--input-field-inset-horizontal,--input-field-m-inset-horizontal
+--input-field-inset-vertical,--input-field-m-inset-vertical
+--input-field-inset-all,--input-field-m-inset-all
+--input-field-min-height,--input-field-m-min-height

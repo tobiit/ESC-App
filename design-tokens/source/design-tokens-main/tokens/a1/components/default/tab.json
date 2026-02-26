@@ -1,0 +1,40 @@
+{
+  "tab": {
+    "gap": {
+      "horizontal": {
+        "$type": "spacing",
+        "$value": "{semantic.dimension.linear-100.600}"
+      }
+    },
+    "item": {
+      "inset": {
+        "bottom": {
+          "$type": "spacing",
+          "$value": "{semantic.dimension.clamp-smaller-100.300}"
+        }
+      },
+      "label": {
+        "gap": {
+          "horizontal": {
+            "$type": "spacing",
+            "$value": "{semantic.dimension.static.50}"
+          }
+        }
+      }
+    },
+    "mask": {
+      "inset": {
+        "horizontal": {
+          "$type": "spacing",
+          "$value": "{semantic.size.content.m}"
+        }
+      },
+      "fade": {
+        "width": {
+          "$type": "sizing",
+          "$value": "{semantic.size.content.m}"
+        }
+      }
+    }
+  }
+}

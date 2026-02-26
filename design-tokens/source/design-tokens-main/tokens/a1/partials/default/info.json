@@ -1,0 +1,8 @@
+{
+  "info": {
+    "size": {
+      "$type": "sizing",
+      "$value": "{semantic.font-size.body.m}"
+    }
+  }
+}

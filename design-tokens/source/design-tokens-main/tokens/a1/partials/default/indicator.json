@@ -1,0 +1,396 @@
+{
+  "indicator": {
+    "internal": {
+      "component": {
+        "size": {
+          "factor": {
+            "$type": "number",
+            "$value": "0.25",
+            "$description": "Together with the treshold, scales the indicator in relation to the component size"
+          },
+          "treshold": {
+            "$type": "number",
+            "$value": "{core.dimension.100}",
+            "$description": "Together with the factor, scales the indicator in relation to the component size"
+          }
+        },
+        "countless": {
+          "size": {
+            "factor": {
+              "$type": "number",
+              "$value": "0.175",
+              "$description": "Together with the treshold, scales the indicator in relation to the component size"
+            },
+            "treshold": {
+              "$type": "number",
+              "$value": "{core.dimension.100}",
+              "$description": "Together with the factor, scales the indicator in relation to the component size"
+            }
+          }
+        }
+      },
+      "content": {
+        "size": {
+          "factor": {
+            "$type": "number",
+            "$value": "0.25",
+            "$description": "Together with the treshold, scales the indicator in relation to the component size"
+          },
+          "treshold": {
+            "$type": "number",
+            "$value": "{core.dimension.250}",
+            "$description": "Together with the factor, scales the indicator in relation to the component size"
+          }
+        },
+        "countless": {
+          "size": {
+            "factor": {
+              "$type": "number",
+              "$value": "0.25",
+              "$description": "Together with the treshold, scales the indicator in relation to the component size"
+            },
+            "treshold": {
+              "$type": "number",
+              "$value": "{core.dimension.100}",
+              "$description": "Together with the factor, scales the indicator in relation to the component size"
+            }
+          }
+        }
+      },
+      "count": {
+        "font-size": {
+          "factor": {
+            "$type": "number",
+            "$value": "0.75"
+          }
+        },
+        "inset": {
+          "factor": {
+            "$type": "number",
+            "$value": "3",
+            "$description": "Calculates the padding left and right for count indicators with more than one character"
+          }
+        }
+      }
+    },
+    "component": {
+      "800": {
+        "size": {
+          "$type": "sizing",
+          "$value": "({semantic.size.component.800} * {indicator.internal.component.size.factor} + {indicator.internal.component.size.treshold})"
+        },
+        "line-height": {
+          "$type": "lineHeights",
+          "$value": "{indicator.component.800.size}"
+        },
+        "countless": {
+          "size": {
+            "$type": "sizing",
+            "$value": "(round({semantic.size.component.800} * {indicator.internal.component.countless.size.factor} + {indicator.internal.component.countless.size.treshold}))"
+          }
+        },
+        "font-size": {
+          "$type": "fontSizes",
+          "$value": "(ceil({indicator.internal.count.font-size.factor} * {indicator.component.800.size}))"
+        },
+        "text": {
+          "$type": "typography",
+          "$value": {
+            "fontFamily": "{core.font-family.primary}",
+            "fontWeight": "{core.font-weight.150}",
+            "fontSize": "{indicator.component.800.font-size}",
+            "lineHeight": "{indicator.component.800.line-height}"
+          }
+        },
+        "inset": {
+          "horizontal": {
+            "$type": "spacing",
+            "$value": "(roundTo({indicator.component.800.size} / {indicator.internal.count.inset.factor}, 1))"
+          }
+        }
+      },
+      "1000": {
+        "text": {
+          "$type": "typography",
+          "$value": {
+            "fontFamily": "{core.font-family.primary}",
+            "fontWeight": "{core.font-weight.150}",
+            "fontSize": "{indicator.component.1000.font-size}",
+            "lineHeight": "{indicator.component.1000.line-height}"
+          }
+        },
+        "size": {
+          "$type": "sizing",
+          "$value": "({semantic.size.component.1000} * {indicator.internal.component.size.factor} + {indicator.internal.component.size.treshold})"
+        },
+        "line-height": {
+          "$type": "lineHeights",
+          "$value": "{indicator.component.1000.size}"
+        },
+        "countless": {
+          "size": {
+            "$type": "sizing",
+            "$value": "(round({semantic.size.component.1000} * {indicator.internal.component.countless.size.factor} + {indicator.internal.component.countless.size.treshold}))"
+          }
+        },
+        "font-size": {
+          "$type": "fontSizes",
+          "$value": "(ceil({indicator.internal.count.font-size.factor} * {indicator.component.1000.size}))"
+        },
+        "inset": {
+          "horizontal": {
+            "$type": "spacing",
+            "$value": "(roundTo({indicator.component.1000.size} / {indicator.internal.count.inset.factor}, 1))"
+          }
+        }
+      },
+      "1200": {
+        "size": {
+          "$type": "sizing",
+          "$value": "({semantic.size.component.1200} * {indicator.internal.component.size.factor} + {indicator.internal.component.size.treshold})"
+        },
+        "line-height": {
+          "$type": "lineHeights",
+          "$value": "{indicator.component.1200.size}"
+        },
+        "countless": {
+          "size": {
+            "$type": "sizing",
+            "$value": "(round({semantic.size.component.1200} * {indicator.internal.component.countless.size.factor} + {indicator.internal.component.countless.size.treshold}))"
+          }
+        },
+        "font-size": {
+          "$type": "fontSizes",
+          "$value": "(ceil({indicator.internal.count.font-size.factor} * {indicator.component.1200.size}))"
+        },
+        "text": {
+          "$type": "typography",
+          "$value": {
+            "fontFamily": "{core.font-family.primary}",
+            "fontWeight": "{core.font-weight.150}",
+            "fontSize": "{indicator.component.1200.font-size}",
+            "lineHeight": "{indicator.component.1200.line-height}"
+          }
+        },
+        "inset": {
+          "horizontal": {
+            "$type": "spacing",
+            "$value": "(roundTo({indicator.component.1200.size} / {indicator.internal.count.inset.factor}, 1))"
+          }
+        }
+      },
+      "1400": {
+        "size": {
+          "$type": "sizing",
+          "$value": "({semantic.size.component.1400} * {indicator.internal.component.size.factor} + {indicator.internal.component.size.treshold})"
+        },
+        "line-height": {
+          "$type": "lineHeights",
+          "$value": "{indicator.component.1400.size}"
+        },
+        "countless": {
+          "size": {
+            "$type": "sizing",
+            "$value": "(round({semantic.size.component.1400} * {indicator.internal.component.countless.size.factor} + {indicator.internal.component.countless.size.treshold}))"
+          }
+        },
+        "font-size": {
+          "$type": "fontSizes",
+          "$value": "(ceil({indicator.internal.count.font-size.factor} * {indicator.component.1400.size}))"
+        },
+        "text": {
+          "$type": "typography",
+          "$value": {
+            "fontFamily": "{core.font-family.primary}",
+            "fontWeight": "{core.font-weight.150}",
+            "fontSize": "{indicator.component.1400.font-size}",
+            "lineHeight": "{indicator.component.1400.line-height}"
+          }
+        },
+        "inset": {
+          "horizontal": {
+            "$type": "spacing",
+            "$value": "(roundTo({indicator.component.1400.size} / {indicator.internal.count.inset.factor}, 1))"
+          }
+        }
+      },
+      "1600": {
+        "size": {
+          "$type": "sizing",
+          "$value": "({semantic.size.component.1600} * {indicator.internal.component.size.factor} + {indicator.internal.component.size.treshold})"
+        },
+        "line-height": {
+          "$type": "lineHeights",
+          "$value": "{indicator.component.1600.size}"
+        },
+        "countless": {
+          "size": {
+            "$type": "sizing",
+            "$value": "(round({semantic.size.component.1600} * {indicator.internal.component.countless.size.factor} + {indicator.internal.component.countless.size.treshold}))"
+          }
+        },
+        "font-size": {
+          "$type": "fontSizes",
+          "$value": "(ceil({indicator.internal.count.font-size.factor} * {indicator.component.1600.size}))"
+        },
+        "text": {
+          "$type": "typography",
+          "$value": {
+            "fontFamily": "{core.font-family.primary}",
+            "fontWeight": "{core.font-weight.150}",
+            "fontSize": "{indicator.component.1600.font-size}",
+            "lineHeight": "{indicator.component.1600.line-height}"
+          }
+        },
+        "inset": {
+          "horizontal": {
+            "$type": "spacing",
+            "$value": "(roundTo({indicator.component.1600.size} / {indicator.internal.count.inset.factor}, 1))"
+          }
+        }
+      },
+      "1800": {
+        "size": {
+          "$type": "sizing",
+          "$value": "({semantic.size.component.1800} * {indicator.internal.component.size.factor} + {indicator.internal.component.size.treshold})"
+        },
+        "line-height": {
+          "$type": "lineHeights",
+          "$value": "{indicator.component.1800.size}"
+        },
+        "countless": {
+          "size": {
+            "$type": "sizing",
+            "$value": "(round({semantic.size.component.1800} * {indicator.internal.component.countless.size.factor} + {indicator.internal.component.countless.size.treshold}))"
+          }
+        },
+        "font-size": {
+          "$type": "fontSizes",
+          "$value": "(ceil({indicator.internal.count.font-size.factor} * {indicator.component.1800.size}))"
+        },
+        "text": {
+          "$type": "typography",
+          "$value": {
+            "fontFamily": "{core.font-family.primary}",
+            "fontWeight": "{core.font-weight.150}",
+            "fontSize": "{indicator.component.1800.font-size}",
+            "lineHeight": "{indicator.component.1800.line-height}"
+          }
+        },
+        "inset": {
+          "horizontal": {
+            "$type": "spacing",
+            "$value": "(roundTo({indicator.component.1800.size} / {indicator.internal.count.inset.factor}, 1))"
+          }
+        }
+      },
+      "2000": {
+        "size": {
+          "$type": "sizing",
+          "$value": "({semantic.size.component.2000} * {indicator.internal.component.size.factor} + {indicator.internal.component.size.treshold})"
+        },
+        "line-height": {
+          "$type": "lineHeights",
+          "$value": "{indicator.component.2000.size}"
+        },
+        "countless": {
+          "size": {
+            "$type": "sizing",
+            "$value": "(round({semantic.size.component.2000} * {indicator.internal.component.countless.size.factor} + {indicator.internal.component.countless.size.treshold}))"
+          }
+        },
+        "font-size": {
+          "$type": "fontSizes",
+          "$value": "(ceil({indicator.internal.count.font-size.factor} * {indicator.component.2000.size}))"
+        },
+        "text": {
+          "$type": "typography",
+          "$value": {
+            "fontFamily": "{core.font-family.primary}",
+            "fontWeight": "{core.font-weight.150}",
+            "fontSize": "{indicator.component.2000.font-size}",
+            "lineHeight": "{indicator.component.2000.line-height}"
+          }
+        },
+        "inset": {
+          "horizontal": {
+            "$type": "spacing",
+            "$value": "(roundTo({indicator.component.2000.size} / {indicator.internal.count.inset.factor}, 1))"
+          }
+        }
+      }
+    },
+    "content": {
+      "s": {
+        "line-height": {
+          "$type": "lineHeights",
+          "$value": "{indicator.content.s.size}"
+        },
+        "size": {
+          "$type": "sizing",
+          "$value": "({semantic.size.content.s} * {indicator.internal.content.size.factor} + {indicator.internal.content.size.treshold})"
+        },
+        "countless": {
+          "size": {
+            "$type": "sizing",
+            "$value": "(round({semantic.size.content.s} * {indicator.internal.content.countless.size.factor} + {indicator.internal.content.countless.size.treshold}))"
+          }
+        },
+        "font-size": {
+          "$type": "fontSizes",
+          "$value": "(round({indicator.internal.count.font-size.factor} * {indicator.content.s.size}))"
+        },
+        "text": {
+          "$type": "typography",
+          "$value": {
+            "fontFamily": "{core.font-family.primary}",
+            "fontWeight": "{core.font-weight.150}",
+            "fontSize": "{indicator.content.s.font-size}",
+            "lineHeight": "{indicator.content.s.line-height}"
+          }
+        },
+        "inset": {
+          "horizontal": {
+            "$type": "spacing",
+            "$value": "(roundTo({indicator.content.s.size} / {indicator.internal.count.inset.factor}, 1))"
+          }
+        }
+      },
+      "m": {
+        "size": {
+          "$type": "sizing",
+          "$value": "({semantic.size.content.m} * {indicator.internal.content.size.factor} + {indicator.internal.content.size.treshold})"
+        },
+        "countless": {
+          "size": {
+            "$type": "sizing",
+            "$value": "(round({semantic.size.content.m} * {indicator.internal.content.countless.size.factor} + {indicator.internal.content.countless.size.treshold}))"
+          }
+        },
+        "line-height": {
+          "$type": "lineHeights",
+          "$value": "{indicator.content.m.size}"
+        },
+        "font-size": {
+          "$type": "fontSizes",
+          "$value": "(round({indicator.internal.count.font-size.factor} * {indicator.content.m.size}))"
+        },
+        "text": {
+          "$type": "typography",
+          "$value": {
+            "fontFamily": "{core.font-family.primary}",
+            "fontWeight": "{core.font-weight.150}",
+            "fontSize": "{indicator.content.m.font-size}",
+            "lineHeight": "{indicator.content.m.line-height}"
+          }
+        },
+        "inset": {
+          "horizontal": {
+            "$type": "spacing",
+            "$value": "(roundTo({indicator.content.m.size} / {indicator.internal.count.inset.factor}, 1))"
+          }
+        }
+      }
+    }
+  }
+}

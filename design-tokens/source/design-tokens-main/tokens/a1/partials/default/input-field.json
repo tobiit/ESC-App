@@ -1,0 +1,82 @@
+{
+  "input-field": {
+    "m": {
+      "gap": {
+        "horizontal": {
+          "$type": "spacing",
+          "$value": "{semantic.gap.horizontal.content.contained.m}"
+        }
+      },
+      "inset": {
+        "horizontal": {
+          "$type": "spacing",
+          "$value": "{semantic.inset.horizontal.square.component.1200}"
+        },
+        "vertical": {
+          "$type": "spacing",
+          "$value": "{semantic.inset.vertical.m.component.1200}"
+        }
+      },
+      "height": {
+        "$type": "sizing",
+        "$value": "{semantic.size.component.1200}",
+        "$description": "Fixed height for single line input fields"
+      },
+      "icon": {
+        "inset": {
+          "start": {
+            "$type": "spacing",
+            "$value": "{semantic.inset.horizontal.square.component.1200}"
+          },
+          "end": {
+            "$type": "spacing",
+            "$value": "{semantic.inset.horizontal.square.component.1200} - {semantic.inset.horizontal.icon-adjustment.content.m}"
+          },
+          "vertical": {
+            "$type": "spacing",
+            "$value": "{semantic.inset.vertical.m.component.1200}"
+          }
+        }
+      }
+    },
+    "s": {
+      "gap": {
+        "horizontal": {
+          "$type": "spacing",
+          "$value": "{semantic.gap.horizontal.content.contained.s}"
+        }
+      },
+      "height": {
+        "$type": "sizing",
+        "$value": "{semantic.size.component.800}",
+        "$description": "Fixed height for single line input fields"
+      },
+      "inset": {
+        "horizontal": {
+          "$type": "spacing",
+          "$value": "{semantic.inset.horizontal.square.component.800}"
+        },
+        "vertical": {
+          "$type": "spacing",
+          "$value": "{semantic.inset.vertical.m.component.800}"
+        }
+      },
+      "icon": {
+        "inset": {
+          "start": {
+            "$type": "spacing",
+            "$value": "{semantic.inset.horizontal.square.component.800}"
+          },
+          "end": {
+            "$type": "spacing",
+            "$value": "{semantic.inset.horizontal.square.component.800} - {semantic.inset.horizontal.icon-adjustment.content.m}"
+          },
+          "vertical": {
+            "$type": "spacing",
+            "$value": "{semantic.inset.vertical.m.component.800}"
+          }
+        }
+      }
+    }
+  }
+}

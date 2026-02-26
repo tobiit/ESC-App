@@ -1,0 +1,266 @@
+{
+  "button": {
+    "indicator-countless": {
+      "adjustment": {
+        "$type": "spacing",
+        "$value": "{semantic.dimension.static.50}"
+      }
+    },
+    "contained": {
+      "m": {
+        "inset": {
+          "horizontal": {
+            "$type": "spacing",
+            "$value": "{semantic.inset.horizontal.squish.component.1200}"
+          },
+          "vertical": {
+            "$type": "spacing",
+            "$value": "{semantic.inset.vertical.s.component.1200}"
+          }
+        },
+        "icon": {
+          "inset": {
+            "all": {
+              "$type": "spacing",
+              "$value": "{button.contained.m.inset.vertical}"
+            }
+          },
+          "indicator-countless": {
+            "offset": {
+              "start": {
+                "$type": "spacing",
+                "$value": "({button.contained.m.icon.inset.all} + ({semantic.size.content.s} / 2) + {button.indicator-countless.adjustment})"
+              },
+              "bottom": {
+                "$type": "spacing",
+                "$value": "({button.contained.m.icon.inset.all} + ({semantic.size.content.s} / 2) + {button.indicator-countless.adjustment})"
+              }
+            }
+          },
+          "indicator-count": {
+            "offset": {
+              "start": {
+                "$type": "spacing",
+                "$value": "({button.contained.m.icon.inset.all} + ({semantic.size.content.s} / 2))"
+              },
+              "bottom": {
+                "$type": "spacing",
+                "$value": "({button.contained.m.icon.inset.all} + ({semantic.size.content.s} / 2))"
+              }
+            }
+          }
+        },
+        "icon-before": {
+          "inset": {
+            "start": {
+              "$type": "spacing",
+              "$value": "({button.contained.m.inset.horizontal} - {semantic.inset.horizontal.icon-adjustment.content.s})"
+            },
+            "end": {
+              "$type": "spacing",
+              "$value": "{button.contained.m.inset.horizontal}"
+            },
+            "vertical": {
+              "$type": "spacing",
+              "$value": "{button.contained.m.inset.vertical}",
+              "$description": "Derives the vertical inset from the standard component sizes and the line-height of the applied text style"
+            }
+          }
+        },
+        "icon-after": {
+          "inset": {
+            "start": {
+              "$type": "spacing",
+              "$value": "{button.contained.m.inset.horizontal}"
+            },
+            "end": {
+              "$type": "spacing",
+              "$value": "({button.contained.m.inset.horizontal} - {semantic.inset.horizontal.icon-adjustment.content.s})"
+            },
+            "vertical": {
+              "$type": "spacing",
+              "$value": "{button.contained.m.inset.vertical}",
+              "$description": "Derives the vertical inset from the standard component sizes and the line-height of the applied text style"
+            }
+          }
+        }
+      },
+      "s": {
+        "inset": {
+          "horizontal": {
+            "$type": "spacing",
+            "$value": "{semantic.inset.horizontal.squish.component.800}"
+          },
+          "vertical": {
+            "$type": "spacing",
+            "$value": "{semantic.inset.vertical.s.component.800}"
+          }
+        },
+        "icon": {
+          "inset": {
+            "all": {
+              "$type": "spacing",
+              "$value": "{button.contained.s.inset.vertical}"
+            }
+          },
+          "indicator-countless": {
+            "offset": {
+              "start": {
+                "$type": "spacing",
+                "$value": "({button.contained.s.icon.inset.all} + ({semantic.size.content.s} / 2) + {button.indicator-countless.adjustment})"
+              },
+              "bottom": {
+                "$type": "spacing",
+                "$value": "({button.contained.s.icon.inset.all} + ({semantic.size.content.s} / 2) + {button.indicator-countless.adjustment})"
+              }
+            }
+          },
+          "indicator-count": {
+            "offset": {
+              "start": {
+                "$type": "spacing",
+                "$value": "({button.contained.s.icon.inset.all} + ({semantic.size.content.s} / 2))"
+              },
+              "bottom": {
+                "$type": "spacing",
+                "$value": "({button.contained.s.icon.inset.all} + ({semantic.size.content.s} / 2))"
+              }
+            }
+          }
+        },
+        "icon-before": {
+          "inset": {
+            "start": {
+              "$type": "spacing",
+              "$value": "({button.contained.s.inset.horizontal} - {semantic.inset.horizontal.icon-adjustment.content.s})"
+            },
+            "end": {
+              "$type": "spacing",
+              "$value": "{button.contained.s.inset.horizontal}"
+            },
+            "vertical": {
+              "$type": "spacing",
+              "$value": "{button.contained.s.inset.vertical}",
+              "$description": "Derives the vertical inset from the standard component sizes and the line-height of the applied text style"
+            }
+          }
+        },
+        "icon-after": {
+          "inset": {
+            "start": {
+              "$type": "spacing",
+              "$value": "{button.contained.s.inset.horizontal}"
+            },
+            "end": {
+              "$type": "spacing",
+              "$value": "({button.contained.s.inset.horizontal} - {semantic.inset.horizontal.icon-adjustment.content.s})"
+            },
+            "vertical": {
+              "$type": "spacing",
+              "$value": "{button.contained.s.inset.vertical}",
+              "$description": "Derives the vertical inset from the standard component sizes and the line-height of the applied text style"
+            }
+          }
+        }
+      },
+      "scaling": {
+        "resting": {
+          "$type": "number",
+          "$value": "{semantic.scaling.initial}"
+        },
+        "active": {
+          "$type": "number",
+          "$value": "{semantic.scaling.shrink.s}"
+        }
+      },
+      "transition": {
+        "duration": {
+          "$type": "other",
+          "$value": "{semantic.duration.dynamic.medium-to-fast}"
+        },
+        "easing": {
+          "$type": "other",
+          "$value": "{semantic.easing.default.change}"
+        }
+      }
+    },
+    "plain": {
+      "s": {
+        "icon": {
+          "indicator-countless": {
+            "offset": {
+              "start": {
+                "$type": "spacing",
+                "$value": "(({semantic.size.content.s} / 2) + {button.indicator-countless.adjustment})"
+              },
+              "bottom": {
+                "$type": "spacing",
+                "$value": "(({semantic.size.content.s} / 2) + {button.indicator-countless.adjustment})"
+              }
+            }
+          },
+          "indicator-count": {
+            "offset": {
+              "start": {
+                "$type": "spacing",
+                "$value": "{semantic.size.content.s} / 2"
+              },
+              "bottom": {
+                "$type": "spacing",
+                "$value": "{semantic.size.content.s} / 2"
+              }
+            }
+          }
+        }
+      },
+      "m": {
+        "icon": {
+          "indicator-countless": {
+            "offset": {
+              "start": {
+                "$type": "spacing",
+                "$value": "(({semantic.size.content.m} / 2) + {button.indicator-countless.adjustment})"
+              },
+              "bottom": {
+                "$type": "spacing",
+                "$value": "(({semantic.size.content.m} / 2) + {button.indicator-countless.adjustment})"
+              }
+            }
+          },
+          "indicator-count": {
+            "offset": {
+              "start": {
+                "$type": "spacing",
+                "$value": "({semantic.size.content.m} / 2)"
+              },
+              "bottom": {
+                "$type": "spacing",
+                "$value": "({semantic.size.content.m} / 2)"
+              }
+            }
+          }
+        }
+      },
+      "scaling": {
+        "resting": {
+          "$type": "number",
+          "$value": "{semantic.scaling.initial}"
+        },
+        "active": {
+          "$type": "number",
+          "$value": "{semantic.scaling.shrink.s}"
+        }
+      },
+      "transition": {
+        "duration": {
+          "$type": "other",
+          "$value": "{semantic.duration.dynamic.medium-to-fast}"
+        },
+        "easing": {
+          "$type": "other",
+          "$value": "{semantic.easing.default.change}"
+        }
+      }
+    }
+  }
+}

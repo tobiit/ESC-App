@@ -1,0 +1,30 @@
+{
+  "tooltip": {
+    "inset": {
+      "horizontal": {
+        "$type": "spacing",
+        "$value": "{semantic.inset.horizontal.square.content.m}"
+      },
+      "vertical": {
+        "$type": "spacing",
+        "$value": "{semantic.inset.vertical.s.content.m}"
+      }
+    },
+    "pointer": {
+      "width": {
+        "$type": "sizing",
+        "$value": "{semantic.dimension.static.300}"
+      },
+      "height": {
+        "$type": "sizing",
+        "$value": "({tooltip.pointer.width} / 2)"
+      }
+    },
+    "offset": {
+      "all": {
+        "$type": "spacing",
+        "$value": "{semantic.dimension.static.100}"
+      }
+    }
+  }
+}

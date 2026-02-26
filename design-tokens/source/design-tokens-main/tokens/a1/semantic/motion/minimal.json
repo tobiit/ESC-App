@@ -1,0 +1,36 @@
+{
+  "semantic": {
+    "scaling": {
+      "shrink": {
+        "s": {
+          "$type": "number",
+          "$value": "{core.scaling.100}"
+        },
+        "m": {
+          "$type": "number",
+          "$value": "{core.scaling.100}"
+        },
+        "l": {
+          "$type": "number",
+          "$value": "{core.scaling.100}"
+        }
+      }
+    },
+    "duration": {
+      "dynamic": {
+        "slow-to-fast": {
+          "$type": "other",
+          "$value": "{core.duration.100}"
+        },
+        "slow-to-medium": {
+          "$type": "other",
+          "$value": "{core.duration.250}"
+        },
+        "medium-to-fast": {
+          "$type": "other",
+          "$value": "{core.duration.100}"
+        }
+      }
+    }
+  }
+}

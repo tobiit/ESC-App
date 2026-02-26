@@ -1,0 +1,8 @@
+{
+  "divider": {
+    "height": {
+      "$type": "sizing",
+      "$value": "{semantic.dimension.static.25}"
+    }
+  }
+}
