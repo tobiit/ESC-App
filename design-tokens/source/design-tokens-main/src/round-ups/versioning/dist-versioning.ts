@@ -54,7 +54,7 @@ const prepareOutputFiles = async (files: string[], newVersion: string): Promise<
 		addMetaDataToFileHeaderComment(tokenOutputFullFilePath, newVersion);
 		const preparedOutputFileVersionCheckData: PreparedOutputFileVersionCheckData = prepareVersionCheckData(tokenOutputFullFilePath);
 		await handleCdnOutputFiles(tokenOutputFullFilePath, preparedOutputFileVersionCheckData, newVersion);
-		// handleCdnOutputFiles(tokenOutputFullFilePath, preparedOutputFileVersionCheckData, 'latest'); // currently disabled! For details see Jira ticket https://jmp.allianz.net/browse/A1-718
+		// handleCdnOutputFiles(tokenOutputFullFilePath, preparedOutputFileVersionCheckData, 'latest'); // currently disabled! For details see Jira ticket https://jmp.escapp.net/browse/A1-718
 	}
 	logger.success(`Finished minifying CDN assets.`);
 };

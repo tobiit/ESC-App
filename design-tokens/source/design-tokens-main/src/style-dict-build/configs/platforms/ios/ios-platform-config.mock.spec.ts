@@ -16,7 +16,7 @@ export const mockMockedSwiftOutputFileConfig = [
 ] as Array<File>;
 
 export const mockMockedTsTransformGroups = 'tokens-studio';
-export const mockMockedAllianzFileHeaderName = 'allianzFileHeader';
+export const mockMockedescappFileHeaderName = 'escappFileHeader';
 export const mockMockedPlatformsIos = 'ios';
 
 /**
@@ -25,7 +25,7 @@ export const mockMockedPlatformsIos = 'ios';
 export const createStandardIosPlatformConfigScenario = () => {
 	return {
 		outputFilePath: '/dist/tokens',
-		outputFileName: 'allianz-tokens',
+		outputFileName: 'escapp-tokens',
 		description: 'Standard iOS platform config with typical paths',
 	};
 };
@@ -127,7 +127,7 @@ export const createExpectedIosPlatformConfig = (outputFilePath: string): Platfor
 		buildPath: outputFilePath,
 		files: mockMockedSwiftOutputFileConfig,
 		options: {
-			fileHeader: mockMockedAllianzFileHeaderName,
+			fileHeader: mockMockedescappFileHeaderName,
 		},
 	};
 };

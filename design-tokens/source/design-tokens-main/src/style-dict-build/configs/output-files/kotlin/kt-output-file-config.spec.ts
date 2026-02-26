@@ -288,8 +288,8 @@ describe('ktOutputFileConfig', () => {
 			expect(result[0].filter).toBeTruthy();
 		});
 
-		it('should be designed for Allianz Android developers usage', () => {
-			const testPath = '/allianz/android/tokens';
+		it('should be designed for escapp Android developers usage', () => {
+			const testPath = '/escapp/android/tokens';
 			const result = ktOutputFileConfig(testPath);
 
 			// Verify it produces single Kotlin file with compose format

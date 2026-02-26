@@ -1,4 +1,4 @@
-@import url("/allianz-design-tokens.css");
+@import url("/escapp-design-tokens.css");
 
 :root {
   --bg: var(--core-color-blue-100, #f7f2e8);

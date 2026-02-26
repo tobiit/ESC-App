@@ -87,9 +87,9 @@ describe('Infer SCSS Mixin', () => {
 
 			// Should only process CSS files with exactly 3 dashes
 			expect(mockReadLinesFromFile).toHaveBeenCalledTimes(3);
-			expect(mockReadLinesFromFile).toHaveBeenCalledWith('token-package/dist/allianz/a1/web/test-file-name-here.css');
-			expect(mockReadLinesFromFile).toHaveBeenCalledWith('token-package/dist/allianz/a1/web/another-test-file-name.css');
-			expect(mockReadLinesFromFile).toHaveBeenCalledWith('token-package/dist/allianz/a1/web/valid-file-name-extension.css');
+			expect(mockReadLinesFromFile).toHaveBeenCalledWith('token-package/dist/escapp/a1/web/test-file-name-here.css');
+			expect(mockReadLinesFromFile).toHaveBeenCalledWith('token-package/dist/escapp/a1/web/another-test-file-name.css');
+			expect(mockReadLinesFromFile).toHaveBeenCalledWith('token-package/dist/escapp/a1/web/valid-file-name-extension.css');
 		});
 
 		it('should handle CSS files with media queries', async () => {
@@ -144,32 +144,32 @@ describe('Infer SCSS Mixin', () => {
 		it('should correctly identify files with exactly three dashes', () => {
 			// We can't directly test the private function, but we can verify through the main function behavior
 			mockLoadFilesFromFolder.mockResolvedValue([
-				'token-package/dist/allianz/a1/web/test-file-name-here.css',
-				'token-package/dist/allianz/a1/web/test-file.css',
-				'token-package/dist/allianz/a1/web/test-file-name-here-extra.css',
-				'token-package/dist/allianz/a1/web/no-dashes.css',
+				'token-package/dist/escapp/a1/web/test-file-name-here.css',
+				'token-package/dist/escapp/a1/web/test-file.css',
+				'token-package/dist/escapp/a1/web/test-file-name-here-extra.css',
+				'token-package/dist/escapp/a1/web/no-dashes.css',
 			]);
 			mockReadLinesFromFile.mockResolvedValue(mockCssLinesWithHeader);
 
 			return inferScssMixin(mockBrand, DesignSystemNames[mockDesignSystemName]).then(() => {
 				// Only files with exactly 3 dashes should be processed
 				expect(mockReadLinesFromFile).toHaveBeenCalledTimes(1);
-				expect(mockReadLinesFromFile).toHaveBeenCalledWith('token-package/dist/allianz/a1/web/test-file-name-here.css');
+				expect(mockReadLinesFromFile).toHaveBeenCalledWith('token-package/dist/escapp/a1/web/test-file-name-here.css');
 			});
 		});
 
 		it('should filter out non-CSS files', () => {
 			mockLoadFilesFromFolder.mockResolvedValue([
-				'token-package/dist/allianz/a1/web/test-file-name-here.css',
-				'token-package/dist/allianz/a1/web/test-file-name-here.json',
-				'token-package/dist/allianz/a1/web/test-file-name-here.txt',
+				'token-package/dist/escapp/a1/web/test-file-name-here.css',
+				'token-package/dist/escapp/a1/web/test-file-name-here.json',
+				'token-package/dist/escapp/a1/web/test-file-name-here.txt',
 			]);
 			mockReadLinesFromFile.mockResolvedValue(mockCssLinesWithHeader);
 
 			return inferScssMixin(mockBrand, DesignSystemNames[mockDesignSystemName]).then(() => {
 				// Only CSS files should be processed
 				expect(mockReadLinesFromFile).toHaveBeenCalledTimes(1);
-				expect(mockReadLinesFromFile).toHaveBeenCalledWith('token-package/dist/allianz/a1/web/test-file-name-here.css');
+				expect(mockReadLinesFromFile).toHaveBeenCalledWith('token-package/dist/escapp/a1/web/test-file-name-here.css');
 			});
 		});
 	});
@@ -189,7 +189,7 @@ describe('Infer SCSS Mixin', () => {
 
 			await inferScssMixin(mockBrand, DesignSystemNames[mockDesignSystemName]);
 
-			expect(mockPrepareFolder).toHaveBeenCalledWith('token-package/dist/allianz/a1/web');
+			expect(mockPrepareFolder).toHaveBeenCalledWith('token-package/dist/escapp/a1/web');
 		});
 
 		it('should generate correct SCSS content structure', async () => {
@@ -322,21 +322,21 @@ describe('Infer SCSS Mixin', () => {
 		});
 
 		it('should handle deep file paths correctly', async () => {
-			const deepPath = 'token-package/dist/allianz/a1/web/deep/nested/path/test-file-name-here.css';
+			const deepPath = 'token-package/dist/escapp/a1/web/deep/nested/path/test-file-name-here.css';
 			mockLoadFilesFromFolder.mockResolvedValue([deepPath]);
 			mockReadLinesFromFile.mockResolvedValue(mockCssLinesWithHeader);
 
 			await inferScssMixin(mockBrand, DesignSystemNames[mockDesignSystemName]);
 
-			expect(mockPrepareFolder).toHaveBeenCalledWith('token-package/dist/allianz/a1/web/deep/nested/path');
+			expect(mockPrepareFolder).toHaveBeenCalledWith('token-package/dist/escapp/a1/web/deep/nested/path');
 			expect(mockWriteFile).toHaveBeenCalledWith(
-				'token-package/dist/allianz/a1/web/deep/nested/path/test-file-name-here-mixins.scss',
+				'token-package/dist/escapp/a1/web/deep/nested/path/test-file-name-here-mixins.scss',
 				expect.any(String),
 			);
 		});
 
 		it('should handle file names with special characters', async () => {
-			const specialPath = 'token-package/dist/allianz/a1/web/test-file-name-here.css';
+			const specialPath = 'token-package/dist/escapp/a1/web/test-file-name-here.css';
 			mockLoadFilesFromFolder.mockResolvedValue([specialPath]);
 			mockReadLinesFromFile.mockResolvedValue(mockCssLinesWithHeader);
 
@@ -347,7 +347,7 @@ describe('Infer SCSS Mixin', () => {
 
 		it('should handle file paths without file names', async () => {
 			// This test covers the || '' fallback in extractFileName
-			const pathWithoutFileName = 'token-package/dist/allianz/a1/web/';
+			const pathWithoutFileName = 'token-package/dist/escapp/a1/web/';
 			mockLoadFilesFromFolder.mockResolvedValue([pathWithoutFileName]);
 
 			await inferScssMixin(mockBrand, DesignSystemNames[mockDesignSystemName]);
@@ -358,7 +358,7 @@ describe('Infer SCSS Mixin', () => {
 
 		it('should handle file names without dashes', async () => {
 			// This test covers the || [] fallback in hasExactlyThreeDashes when no dashes are found
-			const noDashFile = 'token-package/dist/allianz/a1/web/nodashes.css';
+			const noDashFile = 'token-package/dist/escapp/a1/web/nodashes.css';
 			mockLoadFilesFromFolder.mockResolvedValue([noDashFile]);
 
 			await inferScssMixin(mockBrand, DesignSystemNames[mockDesignSystemName]);
@@ -379,7 +379,7 @@ describe('Infer SCSS Mixin', () => {
 
 		it('should handle file paths that end with slash', async () => {
 			// This test covers the fileName || '' fallback in extractFileName
-			mockLoadFilesFromFolder.mockResolvedValue(['token-package/dist/allianz/a1/web/']);
+			mockLoadFilesFromFolder.mockResolvedValue(['token-package/dist/escapp/a1/web/']);
 
 			await inferScssMixin(mockBrand, DesignSystemNames[mockDesignSystemName]);
 
@@ -410,7 +410,7 @@ describe('Infer SCSS Mixin', () => {
 		it('should handle invalid file name types', async () => {
 			// This test specifically covers the typeof fileName !== 'string' check in hasExactlyThreeDashes
 			// by testing the scenario where extractFileName might be called with non-string input
-			const invalidFileName = 'token-package/dist/allianz/a1/web/123.css';
+			const invalidFileName = 'token-package/dist/escapp/a1/web/123.css';
 			mockLoadFilesFromFolder.mockResolvedValue([invalidFileName]);
 
 			await inferScssMixin(mockBrand, DesignSystemNames[mockDesignSystemName]);

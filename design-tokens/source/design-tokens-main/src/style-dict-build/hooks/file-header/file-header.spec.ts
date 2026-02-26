@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { Config, FileHeader } from 'style-dictionary/types';
 import { createDateFileHeaderPlaceholder, versionFileHeaderPlaceholder } from '../../../shared/index.js';
-import { allianzFileHeaderName, fileHeaderGenerator } from './file-header.js';
+import { escappFileHeaderName, fileHeaderGenerator } from './file-header.js';
 import {
 	createExpectedStandardFileHeader,
 	createFileHeaderWithBothParametersScenario,
@@ -15,7 +15,7 @@ import {
 	createMinimalMockConfig,
 	createMockConfig,
 	createStandardFileHeaderScenario,
-	mockAllianzFileHeaderName,
+	mockescappFileHeaderName,
 	mockCreateDateFileHeaderPlaceholder,
 	mockVersionFileHeaderPlaceholder,
 } from './file-header.mock.spec.js';
@@ -38,20 +38,20 @@ describe('file-header module', () => {
 		jest.clearAllMocks();
 	});
 
-	describe('allianzFileHeaderName', () => {
+	describe('escappFileHeaderName', () => {
 		it('should export the correct file header name', () => {
-			expect(allianzFileHeaderName).toBe(mockAllianzFileHeaderName);
-			expect(typeof allianzFileHeaderName).toBe('string');
+			expect(escappFileHeaderName).toBe(mockescappFileHeaderName);
+			expect(typeof escappFileHeaderName).toBe('string');
 		});
 
 		it('should be a non-empty string', () => {
-			expect(allianzFileHeaderName).toBeTruthy();
-			expect(allianzFileHeaderName.length).toBeGreaterThan(0);
+			expect(escappFileHeaderName).toBeTruthy();
+			expect(escappFileHeaderName.length).toBeGreaterThan(0);
 		});
 
 		it('should match the expected naming convention', () => {
-			expect(allianzFileHeaderName).toMatch(/^allianz/i);
-			expect(allianzFileHeaderName).toContain('FileHeader');
+			expect(escappFileHeaderName).toMatch(/^escapp/i);
+			expect(escappFileHeaderName).toContain('FileHeader');
 		});
 	});
 
@@ -151,7 +151,7 @@ describe('file-header module', () => {
 			it('should include copyright notice', () => {
 				const result = fileHeaderGenerator() as string[];
 
-				expect(result).toContain('Copyright (c) Allianz Group');
+				expect(result).toContain('Copyright (c) escapp Group');
 			});
 
 			it('should include generation warning', () => {
@@ -396,7 +396,7 @@ describe('file-header module', () => {
 
 				// Check the five lines of the disclaimer notice
 				expect(result[disclaimerIndex]).toBe('DISCLAIMER: While this major version represents a significant milestone in stability and');
-				expect(result[disclaimerIndex + 1]).toBe('reliability, the Allianz A1 Design Tokens will continue to evolve. We are committed to');
+				expect(result[disclaimerIndex + 1]).toBe('reliability, the escapp A1 Design Tokens will continue to evolve. We are committed to');
 				expect(result[disclaimerIndex + 2]).toBe(
 					'regularly expanding our A1 Design Token library to support additional components and use',
 				);

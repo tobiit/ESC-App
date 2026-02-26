@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { PlatformConfig } from 'style-dictionary';
 import { swiftOutputFileConfig } from '../../output-files/index.js';
 import { TsTransformGroups } from '../../../enums/index.js';
-import { allianzFileHeaderName } from '../../../hooks/index.js';
+import { escappFileHeaderName } from '../../../hooks/index.js';
 import { Platforms } from '../../../../shared/index.js';
 import { platformIosSwiftConfig } from './ios-platform-config.js';
 import {
@@ -16,7 +16,7 @@ import {
 	createStandardIosPlatformConfigScenario,
 	createUndefinedInputIosPlatformConfigScenario,
 	createUnicodePathIosPlatformConfigScenario,
-	mockMockedAllianzFileHeaderName,
+	mockMockedescappFileHeaderName,
 	mockMockedPlatformsIos,
 	mockMockedSwiftOutputFileConfig,
 	mockMockedTsTransformGroups,
@@ -47,7 +47,7 @@ jest.mock('../../../enums/index.js', () => {
 // Mock the hooks dependency
 jest.mock('../../../hooks/index.js', () => {
 	return {
-		allianzFileHeaderName: 'allianzFileHeader',
+		escappFileHeaderName: 'escappFileHeader',
 	};
 });
 
@@ -84,7 +84,7 @@ describe('platformIosSwiftConfig', () => {
 				buildPath: scenario.outputFilePath,
 				files: mockMockedSwiftOutputFileConfig,
 				options: {
-					fileHeader: mockMockedAllianzFileHeaderName,
+					fileHeader: mockMockedescappFileHeaderName,
 				},
 			});
 
@@ -104,7 +104,7 @@ describe('platformIosSwiftConfig', () => {
 				buildPath: scenario.outputFilePath,
 				files: mockMockedSwiftOutputFileConfig,
 				options: {
-					fileHeader: mockMockedAllianzFileHeaderName,
+					fileHeader: mockMockedescappFileHeaderName,
 				},
 			});
 
@@ -120,7 +120,7 @@ describe('platformIosSwiftConfig', () => {
 			expect(result.buildPath).toBe('');
 			expect(result.transformGroup).toBe(mockMockedTsTransformGroups);
 			expect(result.files).toBe(mockMockedSwiftOutputFileConfig);
-			expect(result.options?.fileHeader).toBe(mockMockedAllianzFileHeaderName);
+			expect(result.options?.fileHeader).toBe(mockMockedescappFileHeaderName);
 
 			expect(mockSwiftOutputFileConfig).toHaveBeenCalledWith(`${mockMockedPlatformsIos}/`);
 		});
@@ -180,7 +180,7 @@ describe('platformIosSwiftConfig', () => {
 			const testFileName = 'test-tokens';
 			const result = platformIosSwiftConfig(testOutputPath, testFileName);
 
-			expect(result.options?.fileHeader).toBe(mockMockedAllianzFileHeaderName);
+			expect(result.options?.fileHeader).toBe(mockMockedescappFileHeaderName);
 		});
 
 		it('should set buildPath to the provided outputFilePath', () => {
@@ -266,13 +266,13 @@ describe('platformIosSwiftConfig', () => {
 			expect(result.transformGroup).toBe(TsTransformGroups.tokensStudio);
 		});
 
-		it('should use allianzFileHeaderName from hooks', () => {
+		it('should use escappFileHeaderName from hooks', () => {
 			const outputPath = '/test/build';
 			const fileName = 'design-tokens';
 
 			const result = platformIosSwiftConfig(outputPath, fileName);
 
-			expect(result.options?.fileHeader).toBe(allianzFileHeaderName);
+			expect(result.options?.fileHeader).toBe(escappFileHeaderName);
 		});
 
 		it('should use Platforms.ios from shared enums', () => {
@@ -344,14 +344,14 @@ describe('platformIosSwiftConfig', () => {
 
 		it('should be designed for iOS/Swift token generation', () => {
 			const outputPath = '/ios/tokens';
-			const fileName = 'allianz-tokens';
+			const fileName = 'escapp-tokens';
 
 			const result = platformIosSwiftConfig(outputPath, fileName);
 
 			// Verify it's configured for iOS development
 			expect(result.transformGroup).toBe('tokens-studio');
 			expect(result.files).toBe(mockMockedSwiftOutputFileConfig);
-			expect(mockSwiftOutputFileConfig).toHaveBeenCalledWith('ios/allianz-tokens');
+			expect(mockSwiftOutputFileConfig).toHaveBeenCalledWith('ios/escapp-tokens');
 		});
 
 		it('should use tokens-studio transform group for iOS compatibility', () => {

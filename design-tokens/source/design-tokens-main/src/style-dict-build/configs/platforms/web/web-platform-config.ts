@@ -3,7 +3,7 @@ import { transforms } from 'style-dictionary/enums';
 import { cssOutputFileConfig, jsonWebOutputFileConfig, jsOutputFileConfig, scssOutputFileConfig } from '../../output-files/index.js';
 import { TsTransformGroups } from '../../../enums/index.js';
 import {
-	allianzFileHeaderName,
+	escappFileHeaderName,
 	cubicBezierWrapTransformName,
 	insetShorthandCalcFixTransformName,
 	lowerCaseLinearGradientTransformName,
@@ -28,7 +28,7 @@ export const platformWebJsConfig = (outputFilePath: string, outputFileName: stri
 		buildPath: outputFilePath,
 		files: jsOutputFileConfig(fullOutputFilePath),
 		options: {
-			fileHeader: allianzFileHeaderName,
+			fileHeader: escappFileHeaderName,
 		},
 	};
 	return platformConfig;
@@ -53,7 +53,7 @@ export const platformWebStyleConfig = (outputFilePath: string, outputFileName: s
 			...jsonWebOutputFileConfig(fullOutputFilePath),
 		],
 		options: {
-			fileHeader: allianzFileHeaderName,
+			fileHeader: escappFileHeaderName,
 		},
 	};
 	return platformConfig;

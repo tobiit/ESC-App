@@ -349,7 +349,7 @@ describe('Token Set Extension', () => {
 
 					await checkForTokenSetExtensionCaseAndPrepare(folderScenario.folderPath);
 
-					const expectedSrcPath = `node_modules/@allianz/a1-design-tokens-builder/${tokensSsotFolder}`;
+					const expectedSrcPath = `node_modules/@escapp/a1-design-tokens-builder/${tokensSsotFolder}`;
 					expect(mockLoadFilesFromFolder).toHaveBeenCalledWith(expectedSrcPath);
 				});
 			});

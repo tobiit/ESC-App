@@ -1,22 +1,22 @@
 {
 	"$schema": "https://json.schemastore.org/package.json",
-	"name": "@allianz/a1-design-tokens-builder",
+	"name": "@escapp/a1-design-tokens-builder",
 	"version": "1.2.0",
-	"description": "The official source for Allianz design tokens for a variety of platforms and systems",
+	"description": "The official source for escapp design tokens for a variety of platforms and systems",
 	"author": {
 		"name": "Dario Soller",
-		"email": "dario.soller@allianz.de"
+		"email": "dario.soller@escapp.de"
 	},
 	"license": "SEE LICENSE IN LICENSE",
 	"repository": {
 		"type": "git",
-		"url": "https://github.developer.allianz.io/a1/design-tokens"
+		"url": "https://github.developer.escapp.io/a1/design-tokens"
 	},
 	"keywords": [
-		"Allianz",
+		"escapp",
 		"Studio",
-		"Allianz Studio",
-		"One Allianz",
+		"escapp Studio",
+		"One escapp",
 		"A1",
 		"Design Tokens",
 		"Design System"
@@ -24,7 +24,7 @@
 	"contributors": [
 		{
 			"name": "Christoph Merdes",
-			"email": "christoph.merdes@allianz.de"
+			"email": "christoph.merdes@escapp.de"
 		}
 	],
 	"main": "build/design-tokens-builder/index.js",

@@ -40,7 +40,7 @@ export const mockMockedJsonWebOutputFileConfig = [
 ] as Array<File>;
 
 export const mockMockedTsTransformGroups = 'tokens-studio';
-export const mockMockedAllianzFileHeaderName = 'allianzFileHeader';
+export const mockMockedescappFileHeaderName = 'escappFileHeader';
 export const mockMockedPlatformsWeb = 'web';
 
 // Transform names from style-dictionary
@@ -60,7 +60,7 @@ export const mockMockedMetaInfoEnrichTransformName = 'a1/meta-info-enrich';
 export const createStandardWebJsPlatformConfigScenario = () => {
 	return {
 		outputFilePath: '/dist/web/js',
-		outputFileName: 'allianz-web-tokens',
+		outputFileName: 'escapp-web-tokens',
 		description: 'Standard web JS platform config with typical paths',
 	};
 };
@@ -71,7 +71,7 @@ export const createStandardWebJsPlatformConfigScenario = () => {
 export const createStandardWebStylePlatformConfigScenario = () => {
 	return {
 		outputFilePath: '/dist/web/styles',
-		outputFileName: 'allianz-style-tokens',
+		outputFileName: 'escapp-style-tokens',
 		description: 'Standard web style platform config with typical paths',
 	};
 };
@@ -191,7 +191,7 @@ export const createExpectedWebJsPlatformConfig = (outputFilePath: string): Platf
 		buildPath: outputFilePath,
 		files: mockMockedJsOutputFileConfig,
 		options: {
-			fileHeader: mockMockedAllianzFileHeaderName,
+			fileHeader: mockMockedescappFileHeaderName,
 		},
 	};
 };
@@ -213,7 +213,7 @@ export const createExpectedWebStylePlatformConfig = (outputFilePath: string): Pl
 		buildPath: outputFilePath,
 		files: [...mockMockedCssOutputFileConfig, ...mockMockedScssOutputFileConfig, ...mockMockedJsonWebOutputFileConfig],
 		options: {
-			fileHeader: mockMockedAllianzFileHeaderName,
+			fileHeader: mockMockedescappFileHeaderName,
 		},
 	};
 };

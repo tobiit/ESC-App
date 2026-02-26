@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { PlatformConfig } from 'style-dictionary';
 import { ktOutputFileConfig } from '../../output-files/index.js';
 import { TsTransformGroups } from '../../../enums/index.js';
-import { allianzFileHeaderName } from '../../../hooks/index.js';
+import { escappFileHeaderName } from '../../../hooks/index.js';
 import { Platforms } from '../../../../shared/index.js';
 import { platformAndroidConfig } from './android-platform-config.js';
 import {
@@ -16,7 +16,7 @@ import {
 	createStandardAndroidPlatformConfigScenario,
 	createUndefinedInputAndroidPlatformConfigScenario,
 	createUnicodePathAndroidPlatformConfigScenario,
-	mockMockedAllianzFileHeaderName,
+	mockMockedescappFileHeaderName,
 	mockMockedKtOutputFileConfig,
 	mockMockedPlatformsAndroid,
 	mockMockedTsTransformGroups,
@@ -47,7 +47,7 @@ jest.mock('../../../enums/index.js', () => {
 // Mock the hooks dependency
 jest.mock('../../../hooks/index.js', () => {
 	return {
-		allianzFileHeaderName: 'allianzFileHeader',
+		escappFileHeaderName: 'escappFileHeader',
 	};
 });
 
@@ -84,7 +84,7 @@ describe('platformAndroidConfig', () => {
 				buildPath: scenario.outputFilePath,
 				files: mockMockedKtOutputFileConfig,
 				options: {
-					fileHeader: mockMockedAllianzFileHeaderName,
+					fileHeader: mockMockedescappFileHeaderName,
 				},
 			});
 
@@ -104,7 +104,7 @@ describe('platformAndroidConfig', () => {
 				buildPath: scenario.outputFilePath,
 				files: mockMockedKtOutputFileConfig,
 				options: {
-					fileHeader: mockMockedAllianzFileHeaderName,
+					fileHeader: mockMockedescappFileHeaderName,
 				},
 			});
 
@@ -120,7 +120,7 @@ describe('platformAndroidConfig', () => {
 			expect(result.buildPath).toBe('');
 			expect(result.transformGroup).toBe(mockMockedTsTransformGroups);
 			expect(result.files).toBe(mockMockedKtOutputFileConfig);
-			expect(result.options?.fileHeader).toBe(mockMockedAllianzFileHeaderName);
+			expect(result.options?.fileHeader).toBe(mockMockedescappFileHeaderName);
 
 			expect(mockKtOutputFileConfig).toHaveBeenCalledWith(`${mockMockedPlatformsAndroid}/`);
 		});
@@ -180,7 +180,7 @@ describe('platformAndroidConfig', () => {
 			const testFileName = 'test-tokens';
 			const result = platformAndroidConfig(testOutputPath, testFileName);
 
-			expect(result.options?.fileHeader).toBe(mockMockedAllianzFileHeaderName);
+			expect(result.options?.fileHeader).toBe(mockMockedescappFileHeaderName);
 		});
 
 		it('should set buildPath to the provided outputFilePath', () => {
@@ -266,13 +266,13 @@ describe('platformAndroidConfig', () => {
 			expect(result.transformGroup).toBe(TsTransformGroups.tokensStudio);
 		});
 
-		it('should use allianzFileHeaderName from hooks', () => {
+		it('should use escappFileHeaderName from hooks', () => {
 			const outputPath = '/test/build';
 			const fileName = 'design-tokens';
 
 			const result = platformAndroidConfig(outputPath, fileName);
 
-			expect(result.options?.fileHeader).toBe(allianzFileHeaderName);
+			expect(result.options?.fileHeader).toBe(escappFileHeaderName);
 		});
 
 		it('should use Platforms.android from shared enums', () => {
@@ -344,14 +344,14 @@ describe('platformAndroidConfig', () => {
 
 		it('should be designed for Android/Kotlin token generation', () => {
 			const outputPath = '/android/tokens';
-			const fileName = 'allianz-tokens';
+			const fileName = 'escapp-tokens';
 
 			const result = platformAndroidConfig(outputPath, fileName);
 
 			// Verify it's configured for Android development
 			expect(result.transformGroup).toBe('tokens-studio');
 			expect(result.files).toBe(mockMockedKtOutputFileConfig);
-			expect(mockKtOutputFileConfig).toHaveBeenCalledWith('android/allianz-tokens');
+			expect(mockKtOutputFileConfig).toHaveBeenCalledWith('android/escapp-tokens');
 		});
 
 		it('should use tokens-studio transform group for Android compatibility', () => {

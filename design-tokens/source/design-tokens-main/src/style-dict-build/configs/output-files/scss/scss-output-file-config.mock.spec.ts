@@ -17,7 +17,7 @@ export const mockMockedExcludedTokensFilterName = 'mocked-filter-name';
  */
 export const createStandardScssConfigScenario = () => {
 	return {
-		input: '/dist/scss/allianz-theme',
+		input: '/dist/scss/escapp-theme',
 		description: 'Standard SCSS config with typical output path',
 	};
 };

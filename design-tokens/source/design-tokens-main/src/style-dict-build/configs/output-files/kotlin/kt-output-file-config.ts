@@ -2,7 +2,7 @@ import { File } from 'style-dictionary';
 import { formats } from 'style-dictionary/enums';
 import { excludedTokensFilterName } from '../../../hooks/index.js';
 
-// Used by the Allianz Android developers
+// Used by the escapp Android developers
 export const ktOutputFileConfig = (fullOutputFilePath: string): Array<File> => {
 	const files: Array<File> = [
 		{

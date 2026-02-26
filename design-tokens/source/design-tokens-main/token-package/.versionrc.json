@@ -1,6 +1,6 @@
 {
 	"infile": "CHANGELOG.md",
-	"header": "# Token Changelog\nAll changes to the single source of truth (SSOT) A1 design token set will be documented in this file. For changes of the token builder (@allianz/a1-design-token-builder) a changelog can be found [here](https://github.developer.allianz.io/a1/design-tokens/blob/main/CHANGELOG.md).",
+	"header": "# Token Changelog\nAll changes to the single source of truth (SSOT) A1 design token set will be documented in this file. For changes of the token builder (@escapp/a1-design-token-builder) a changelog can be found [here](https://github.developer.escapp.io/a1/design-tokens/blob/main/CHANGELOG.md).",
 	"releaseCommitMessageFormat": "chore(release): tokens-v{{currentTag}}",
 	"tagPrefix": "tokens-v",
 	"skip": {

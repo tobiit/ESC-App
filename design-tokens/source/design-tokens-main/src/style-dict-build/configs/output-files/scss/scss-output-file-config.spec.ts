@@ -293,8 +293,8 @@ describe('scssOutputFileConfig', () => {
 			expect(result[0].filter).toBe(mockMockedExcludedTokensFilterName);
 		});
 
-		it('should be designed for Allianz SCSS/Sass developers usage', () => {
-			const testPath = '/dist/scss/allianz-theme';
+		it('should be designed for escapp SCSS/Sass developers usage', () => {
+			const testPath = '/dist/scss/escapp-theme';
 			const result = scssOutputFileConfig(testPath);
 
 			// Should generate variables file for SCSS usage

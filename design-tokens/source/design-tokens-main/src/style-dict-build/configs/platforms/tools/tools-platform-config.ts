@@ -4,7 +4,7 @@ import { jsonToolsOutputFileConfig } from '../../output-files/index.js';
 import { TsTransformGroups } from '../../../enums/index.js';
 import { Platforms } from '../../../../shared/index.js';
 import { pumlOutputFileConfig } from '../../output-files/index.js';
-import { allianzFileHeaderName, pumlColorTransformName, pumlNameTransformName } from '../../../hooks/index.js';
+import { escappFileHeaderName, pumlColorTransformName, pumlNameTransformName } from '../../../hooks/index.js';
 
 export const platformToolsConfig = (outputFilePath: string, outputFileName: string): PlatformConfig => {
 	const fullOutputFilePath = `${Platforms.tools}/${outputFileName}`;
@@ -13,7 +13,7 @@ export const platformToolsConfig = (outputFilePath: string, outputFileName: stri
 		buildPath: outputFilePath,
 		files: [jsonToolsOutputFileConfig(fullOutputFilePath)],
 		options: {
-			fileHeader: allianzFileHeaderName,
+			fileHeader: escappFileHeaderName,
 		},
 	};
 	return platformConfig;
@@ -27,7 +27,7 @@ export const platformPumlConfig = (outputFilePath: string, outputFileName: strin
 		buildPath: outputFilePath,
 		files: pumlOutputFileConfig(fullOutputFilePath),
 		options: {
-			fileHeader: allianzFileHeaderName,
+			fileHeader: escappFileHeaderName,
 		},
 	};
 	return platformConfig;

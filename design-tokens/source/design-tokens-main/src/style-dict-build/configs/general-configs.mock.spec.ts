@@ -196,7 +196,7 @@ export const mockTokenSetFilePaths = [
 ];
 
 // Mock brand name
-export const mockBrandName = 'allianz';
+export const mockBrandName = 'escapp';
 
 // Mock design system name
 export const mockDesignSystemName = DesignSystemNames.a1;
@@ -219,7 +219,7 @@ export const mockOutputFileNames = {
 
 // Mock file paths
 export const mockFilePaths = {
-	outputPath: './build/design-tokens-builder/allianz/a1',
+	outputPath: './build/design-tokens-builder/escapp/a1',
 	artifactBuildPath: 'build/design-tokens-builder',
 	themeDefinitionFile: 'build/by-product/prepared-tokens/$themes.json',
 };
@@ -228,34 +228,34 @@ export const mockFilePaths = {
 export const mockPlatformWebStyleConfig = {
 	transformGroup: 'tokens-studio',
 	transforms: ['name/kebab'],
-	buildPath: './build/design-tokens-builder/allianz/',
+	buildPath: './build/design-tokens-builder/escapp/',
 	files: [],
 	options: {
-		fileHeader: 'allianz',
+		fileHeader: 'escapp',
 	},
 };
 
 export const mockPlatformWebJsConfig = {
 	transformGroup: 'tokens-studio',
 	transforms: ['name/camel'],
-	buildPath: './build/design-tokens-builder/allianz/',
+	buildPath: './build/design-tokens-builder/escapp/',
 	files: [],
 	options: {
-		fileHeader: 'allianz',
+		fileHeader: 'escapp',
 	},
 };
 
 export const mockPlatformAndroidConfig = {
 	transformGroup: 'tokens-studio',
 	transforms: ['name/snake'],
-	buildPath: './build/design-tokens-builder/allianz/',
+	buildPath: './build/design-tokens-builder/escapp/',
 	files: [],
 };
 
 export const mockPlatformIosSwiftConfig = {
 	transformGroup: 'tokens-studio',
 	transforms: ['name/pascal'],
-	buildPath: './build/design-tokens-builder/allianz/',
+	buildPath: './build/design-tokens-builder/escapp/',
 	files: [],
 };
 
@@ -278,9 +278,9 @@ export const createMockStyleDictionaryConfig = (brand: string, selectedTokenSets
 export const mockCompleteConfigResult = {
 	permutatedThemeNames: ['Light-Spacious XS-Lively', 'Light-Spacious XS-Minimal', 'Dark-Compact M-Lively'],
 	configs: [
-		createMockStyleDictionaryConfig('allianz', mockTokenSetFilePaths),
-		createMockStyleDictionaryConfig('allianz', mockTokenSetFilePaths),
-		createMockStyleDictionaryConfig('allianz', mockTokenSetFilePaths),
+		createMockStyleDictionaryConfig('escapp', mockTokenSetFilePaths),
+		createMockStyleDictionaryConfig('escapp', mockTokenSetFilePaths),
+		createMockStyleDictionaryConfig('escapp', mockTokenSetFilePaths),
 	],
 };
 

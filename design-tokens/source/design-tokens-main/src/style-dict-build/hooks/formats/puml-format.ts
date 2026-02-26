@@ -22,7 +22,7 @@ export const pumlFormat: Format = {
 	format: ({ dictionary, file }: FormatFnArguments): string => {
 		const constants: string[] = generatePumlConstants(dictionary.allTokens) as string[];
 
-		// Generate file header using the allianz header generator
+		// Generate file header using the escapp header generator
 		// and format it as PlantUML comments (lines starting with ')
 		const headerLines: string[] = fileHeaderGenerator() as string[];
 		const pumlHeader: string = headerLines.map((line: string) => `' ${line}`).join('\n');

@@ -291,8 +291,8 @@ describe('swiftOutputFileConfig', () => {
 			expect(result[0].filter).toBeTruthy();
 		});
 
-		it('should be designed for Allianz iOS developers usage', () => {
-			const testPath = '/allianz/ios/tokens';
+		it('should be designed for escapp iOS developers usage', () => {
+			const testPath = '/escapp/ios/tokens';
 			const result = swiftOutputFileConfig(testPath);
 
 			// Verify it produces single Swift file with enum format
@@ -319,7 +319,7 @@ describe('swiftOutputFileConfig', () => {
 		});
 
 		it('should be designed for iOS development with Swift enum structure', () => {
-			const testPath = '/dist/ios/allianz-theme';
+			const testPath = '/dist/ios/escapp-theme';
 			const result = swiftOutputFileConfig(testPath);
 
 			// Should generate Swift enum file for iOS usage

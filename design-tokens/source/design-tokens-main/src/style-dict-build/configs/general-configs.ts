@@ -15,7 +15,7 @@ import {
 } from '../../shared/index.js';
 import { TsTransformGroups } from '../enums/index.js';
 import {
-	allianzFileHeaderName,
+	escappFileHeaderName,
 	cubicBezierWrapTransform,
 	cubicBezierWrapTransformName,
 	excludedTokensFilter,
@@ -106,7 +106,7 @@ export const getStyleDictionaryConfig = (
 				[mathFunctionResolvePreprocessorName]: mathFunctionResolvePreprocessor,
 			},
 			fileHeaders: {
-				[allianzFileHeaderName]: fileHeaderGenerator,
+				[escappFileHeaderName]: fileHeaderGenerator,
 			},
 			filters: {
 				[excludedTokensFilterName]: excludedTokensFilter.filter,

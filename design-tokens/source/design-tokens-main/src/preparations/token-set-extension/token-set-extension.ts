@@ -11,7 +11,7 @@ import {
 } from '../../shared/index.js';
 
 const additionalErrorMessage =
-	'Stopped the build process, cause it would not be any difference to the original A1 design tokens. If this is intentional please just use the provided A1 design tokens. More infos under: https://github.developer.allianz.io/a1/design-tokens/blob/main/token-package/README.md';
+	'Stopped the build process, cause it would not be any difference to the original A1 design tokens. If this is intentional please just use the provided A1 design tokens. More infos under: https://github.developer.escapp.io/a1/design-tokens/blob/main/token-package/README.md';
 
 const checkForTokenExtensionPath = async (tokenSsotExtensionFolderPath: string): Promise<boolean> => {
 	// Check if the folder exists
@@ -36,7 +36,7 @@ const checkForTokenExtensionPath = async (tokenSsotExtensionFolderPath: string):
 };
 
 const copyOriginalA1TokenSsotFolderContent = async (destPath: string) => {
-	const srcPath = `node_modules/@allianz/a1-design-tokens-builder/${tokensSsotFolder}`;
+	const srcPath = `node_modules/@escapp/a1-design-tokens-builder/${tokensSsotFolder}`;
 	const originalA1TokenSsotFilePaths: string[] = await loadFilesFromFolder(srcPath);
 
 	originalA1TokenSsotFilePaths.forEach((originalA1TokenSsotFilePath: string) => {

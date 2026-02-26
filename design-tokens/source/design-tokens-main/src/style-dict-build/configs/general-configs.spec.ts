@@ -113,7 +113,7 @@ jest.mock('../enums/index.js', () => {
 
 jest.mock('../hooks/index.js', () => {
 	return {
-		allianzFileHeaderName: 'allianz',
+		escappFileHeaderName: 'escapp',
 		cubicBezierWrapTransform: { type: 'value', transform: jest.fn() },
 		cubicBezierWrapTransformName: 'cubic-bezier-wrap',
 		excludedTokensFilter: { filter: jest.fn() },
@@ -247,30 +247,30 @@ describe('general-configs', () => {
 			mockPlatformWebStyleConfig.mockReturnValue({
 				transformGroup: 'tokens-studio',
 				transforms: ['name/kebab'],
-				buildPath: './build/design-tokens-builder/allianz/',
+				buildPath: './build/design-tokens-builder/escapp/',
 				files: [],
-				options: { fileHeader: 'allianz' },
+				options: { fileHeader: 'escapp' },
 			});
 
 			mockPlatformWebJsConfig.mockReturnValue({
 				transformGroup: 'tokens-studio',
 				transforms: ['name/camel'],
-				buildPath: './build/design-tokens-builder/allianz/',
+				buildPath: './build/design-tokens-builder/escapp/',
 				files: [],
-				options: { fileHeader: 'allianz' },
+				options: { fileHeader: 'escapp' },
 			});
 
 			mockPlatformAndroidConfig.mockReturnValue({
 				transformGroup: 'tokens-studio',
 				transforms: ['name/snake'],
-				buildPath: './build/design-tokens-builder/allianz/',
+				buildPath: './build/design-tokens-builder/escapp/',
 				files: [],
 			});
 
 			mockPlatformIosSwiftConfig.mockReturnValue({
 				transformGroup: 'tokens-studio',
 				transforms: ['name/pascal'],
-				buildPath: './build/design-tokens-builder/allianz/',
+				buildPath: './build/design-tokens-builder/escapp/',
 				files: [],
 			});
 		});
@@ -345,7 +345,7 @@ describe('general-configs', () => {
 			const result = getStyleDictionaryConfig(scenario.brand, scenario.designSystemName, scenario.selectedTokenSets, scenario.themeName);
 
 			expect(result.hooks?.preprocessors).toHaveProperty('math-function-resolve');
-			expect(result.hooks?.fileHeaders).toHaveProperty('allianz');
+			expect(result.hooks?.fileHeaders).toHaveProperty('escapp');
 			expect(result.hooks?.filters).toHaveProperty('excluded-tokens');
 			expect(result.hooks?.formats).toHaveProperty('puml/constants');
 			expect(result.hooks?.transforms).toHaveProperty('transform-to-8-digit-hex-values');

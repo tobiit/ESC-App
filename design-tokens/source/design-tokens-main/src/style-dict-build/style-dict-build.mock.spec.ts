@@ -87,16 +87,16 @@ export const createMockConfig = (themeName: string): Config => {
 					jest.fn<(dictionary: PreprocessedTokens, options: Config | PlatformConfig) => PreprocessedTokens | Promise<PreprocessedTokens>>(),
 			},
 			fileHeaders: {
-				allianzFileHeader: jest
+				escappFileHeader: jest
 					.fn<FileHeader>()
 					.mockReturnValue([
 						'THIS FILE WAS GENERATED AUTOMATICALLY AND SHOULD NOT BE EDITED MANUALLY!',
 						'',
 						'Version test-version',
 						'Generated on test-date',
-						'Copyright (c) Allianz Group',
+						'Copyright (c) escapp Group',
 						'',
-						'ATTENTION: This is a very heavy work in progress version of the Allianz design tokens.',
+						'ATTENTION: This is a very heavy work in progress version of the escapp design tokens.',
 						'It is neither guaranteed that the completeness nor the naming, nor the values of this',
 						'design token set will change in future versions until it is regarded and announced as',
 						'stable.',
@@ -141,7 +141,7 @@ export const createMockConfig = (themeName: string): Config => {
 			web: {
 				transformGroup: 'tokens-studio',
 				transforms: ['name/kebab', 'a1/color/hex8', 'a1/cubic-bezier-wrap', 'a1/lower-case-linear-gradient', 'a1/inset-shorthand-calc-fix'],
-				buildPath: './token-package/dist/allianz/',
+				buildPath: './token-package/dist/escapp/',
 				files: [
 					{
 						destination: `web/tokens-${themeName.toLowerCase().replace(/\s+/g, '-')}.css`,
@@ -165,13 +165,13 @@ export const createMockConfig = (themeName: string): Config => {
 					},
 				],
 				options: {
-					fileHeader: 'allianzFileHeader',
+					fileHeader: 'escappFileHeader',
 				},
 			},
 			js: {
 				transformGroup: 'tokens-studio',
 				transforms: ['name/camel', 'a1/color/hex8', 'a1/cubic-bezier-wrap', 'a1/lower-case-linear-gradient', 'a1/inset-shorthand-calc-fix'],
-				buildPath: './token-package/dist/allianz/',
+				buildPath: './token-package/dist/escapp/',
 				files: [
 					{
 						destination: `web/tokens-${themeName.toLowerCase().replace(/\s+/g, '-')}.js`,
@@ -180,12 +180,12 @@ export const createMockConfig = (themeName: string): Config => {
 					},
 				],
 				options: {
-					fileHeader: 'allianzFileHeader',
+					fileHeader: 'escappFileHeader',
 				},
 			},
 			android: {
 				transformGroup: 'tokens-studio',
-				buildPath: './token-package/dist/allianz/',
+				buildPath: './token-package/dist/escapp/',
 				files: [
 					{
 						destination: `android/tokens-${themeName.toLowerCase().replace(/\s+/g, '-')}.kt`,
@@ -194,12 +194,12 @@ export const createMockConfig = (themeName: string): Config => {
 					},
 				],
 				options: {
-					fileHeader: 'allianzFileHeader',
+					fileHeader: 'escappFileHeader',
 				},
 			},
 			iosSwift: {
 				transformGroup: 'tokens-studio',
-				buildPath: './token-package/dist/allianz/',
+				buildPath: './token-package/dist/escapp/',
 				files: [
 					{
 						destination: `ios/tokens-${themeName.toLowerCase().replace(/\s+/g, '-')}.swift`,
@@ -208,7 +208,7 @@ export const createMockConfig = (themeName: string): Config => {
 					},
 				],
 				options: {
-					fileHeader: 'allianzFileHeader',
+					fileHeader: 'escappFileHeader',
 				},
 			},
 		},
@@ -236,7 +236,7 @@ export const createMockStyleDictionary = () => {
 
 // Scenario for successful style dictionary build
 export const createSuccessfulStyleDictionaryBuildScenario = () => {
-	const brand = 'allianz';
+	const brand = 'escapp';
 	const timeStart = new Date('2023-01-01T10:00:00.000Z');
 	const timeEnd = new Date('2023-01-01T10:05:30.000Z');
 
@@ -256,7 +256,7 @@ export const createSuccessfulStyleDictionaryBuildScenario = () => {
 
 // Scenario for style dictionary build with no themes
 export const createEmptyThemesStyleDictionaryBuildScenario = () => {
-	const brand = 'allianz';
+	const brand = 'escapp';
 	const timeStart = new Date('2023-01-01T10:00:00.000Z');
 	const timeEnd = new Date('2023-01-01T10:00:01.000Z');
 
@@ -276,7 +276,7 @@ export const createEmptyThemesStyleDictionaryBuildScenario = () => {
 
 // Scenario for initial registrations failure
 export const createInitialRegistrationsErrorScenario = () => {
-	const brand = 'allianz';
+	const brand = 'escapp';
 	const error = new Error('Registration failed');
 
 	return {
@@ -288,7 +288,7 @@ export const createInitialRegistrationsErrorScenario = () => {
 
 // Scenario for theme permutations failure
 export const createThemePermutationsErrorScenario = () => {
-	const brand = 'allianz';
+	const brand = 'escapp';
 	const error = new Error('Theme permutation failed');
 
 	return {
@@ -300,7 +300,7 @@ export const createThemePermutationsErrorScenario = () => {
 
 // Scenario for buildAllPlatforms failure
 export const createBuildAllPlatformsErrorScenario = () => {
-	const brand = 'allianz';
+	const brand = 'escapp';
 	const error = new Error('Build failed for platform');
 	const failingThemeIndex = 1;
 	const failingThemeName = mockPermutatedThemeNames[failingThemeIndex];
@@ -338,7 +338,7 @@ export const createCustomBrandStyleDictionaryBuildScenario = () => {
 
 // Scenario for single theme processing
 export const createSingleThemeStyleDictionaryBuildScenario = () => {
-	const brand = 'allianz';
+	const brand = 'escapp';
 	const singleThemeName = mockPermutatedThemeNames[0];
 	const singleConfig = mockConfigs[0];
 	const timeStart = new Date('2023-01-01T10:00:00.000Z');

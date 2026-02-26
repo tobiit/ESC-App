@@ -3,7 +3,7 @@ import path from "node:path";
 
 const projectRoot = process.cwd();
 const inputArg = process.argv[2] || "design-tokens/source/design-tokens-main/tokens";
-const outputArg = process.argv[3] || "public/allianz-design-tokens.css";
+const outputArg = process.argv[3] || "public/escapp-design-tokens.css";
 
 const inputPath = path.resolve(projectRoot, inputArg);
 const outputPath = path.resolve(projectRoot, outputArg);
@@ -108,7 +108,7 @@ function toCss(tokens) {
   }
 
   const lines = [
-    "/* Auto-generated from Allianz design token export. */",
+    "/* Auto-generated from escapp design token export. */",
     ":root {",
     ...[...unique.entries()].sort((a, b) => a[0].localeCompare(b[0])).map(([name, value]) => `  ${name}: ${value};`),
     "}",
@@ -158,7 +158,7 @@ async function run() {
     } else {
       const tokens = await loadTokensFromJsonFile(inputPath);
       if (tokens.length === 0) {
-        throw new Error("Keine Tokens im Export gefunden. Bitte JSON/CSS-Export aus der Allianz Token Doku verwenden.");
+        throw new Error("Keine Tokens im Export gefunden. Bitte JSON/CSS-Export aus der escapp Token Doku verwenden.");
       }
       css = toCss(tokens);
     }

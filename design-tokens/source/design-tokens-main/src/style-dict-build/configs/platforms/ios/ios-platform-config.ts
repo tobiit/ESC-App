@@ -1,7 +1,7 @@
 import { PlatformConfig } from 'style-dictionary';
 import { swiftOutputFileConfig } from '../../output-files/index.js';
 import { TsTransformGroups } from '../../../enums/ts-transform-groups.enum.js';
-import { allianzFileHeaderName } from '../../../hooks/index.js';
+import { escappFileHeaderName } from '../../../hooks/index.js';
 import { Platforms } from '../../../../shared/index.js';
 
 export const platformIosSwiftConfig = (outputFilePath: string, outputFileName: string): PlatformConfig => {
@@ -11,7 +11,7 @@ export const platformIosSwiftConfig = (outputFilePath: string, outputFileName: s
 		buildPath: outputFilePath,
 		files: swiftOutputFileConfig(fullOutputFilePath),
 		options: {
-			fileHeader: allianzFileHeaderName,
+			fileHeader: escappFileHeaderName,
 		},
 	};
 	return platformConfig;

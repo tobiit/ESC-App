@@ -254,7 +254,7 @@ cd /home/tobiit/code
 
 ### Tokens
 
-- Basis: `frontend/public/allianz-design-tokens.css`
+- Basis: `frontend/public/escapp-design-tokens.css`
 - Einbindung: `@import` in `frontend/src/styles.css`
 
 ### Schriftart Umstellung auf Frutiger

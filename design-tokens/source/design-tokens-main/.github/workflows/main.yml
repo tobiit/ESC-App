@@ -50,13 +50,13 @@ env:
   OM_NPM_PUBLISH_ENDPOINT: 'diartifactory.jfrog.io/artifactory/api/npm/a1-design/'
   GDF_NPM_USER_NAME: ${{ secrets.GDF_NPM_USER_NAME }}
   GDF_NPM_WRITE_AUTH_TOKEN: ${{ secrets.GDF_NPM_WRITE_AUTH_TOKEN }}
-  GDF_NPM_PUBLISH_ENDPOINT: 'nexus-gdf-crp2.devops-services.we1.azure.aztec.cloud.allianz/repository/npm-public-libraries/'
+  GDF_NPM_PUBLISH_ENDPOINT: 'nexus-gdf-crp2.devops-services.we1.azure.aztec.cloud.escapp/repository/npm-public-libraries/'
   EXPECTED_NPM_PACKAGE_FILE_COUNT: 245
 
 jobs:
   token-build:
     runs-on: [adp-runner-small]
-    if: github.actor != 'dependabot[bot]' && github.api_url == 'https://github.developer.allianz.io/api/v3' # temporary workaround: skip this job when run on github.com or by Dependabot, as it doesn't have access to secrets.CLOUDFLARE_API_TOKEN. This `if` can be disabled when we have a technical user for the repo
+    if: github.actor != 'dependabot[bot]' && github.api_url == 'https://github.developer.escapp.io/api/v3' # temporary workaround: skip this job when run on github.com or by Dependabot, as it doesn't have access to secrets.CLOUDFLARE_API_TOKEN. This `if` can be disabled when we have a technical user for the repo
     steps:
       - name: SETUP - Checkout Code
         uses: actions/checkout@v4
@@ -93,12 +93,12 @@ jobs:
           # echo "$PACK_OUTPUT"
 
           # 1. Check for the existence of the critical CSS file
-          CRITICAL_CSS_FILE="dist/allianz/a1/web/tokens-light-lively-spacious.css"
+          CRITICAL_CSS_FILE="dist/escapp/a1/web/tokens-light-lively-spacious.css"
           if ! echo "$PACK_OUTPUT" | grep -q "$CRITICAL_CSS_FILE"; then
               echo "❌ ERROR: Critical file '$CRITICAL_CSS_FILE' is missing from the package!"
               exit 1
           fi
-          CRITICAL_SCSS_FILE="dist/allianz/a1/web/tokens-light-lively-spacious-mixins.scss"
+          CRITICAL_SCSS_FILE="dist/escapp/a1/web/tokens-light-lively-spacious-mixins.scss"
           if ! echo "$PACK_OUTPUT" | grep -q "$CRITICAL_SCSS_FILE"; then
               echo "❌ ERROR: Critical file '$CRITICAL_SCSS_FILE' is missing from the package!"
               exit 1
@@ -129,7 +129,7 @@ jobs:
           npm config list
       - name: DEPLOY - NPM - OneMarketing - Health Check of Artifactory package registry
         if: github.ref == 'refs/heads/dev'
-        run: npm view @allianz/a1-design-tokens --userconfig ${{ github.workspace }}/.npmrc
+        run: npm view @escapp/a1-design-tokens --userconfig ${{ github.workspace }}/.npmrc
       - name: DEPLOY - NPM - OneMarketing - Publish NPM Tocken-Package to Artifactory package registry
         if: github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch' && github.event.inputs.releaseNPM == 'true'
         run: |
@@ -152,13 +152,13 @@ jobs:
           echo "Github working directory is: ${{ github.workspace }}"
           echo "Setting GDF Nexus .npmrc file configs"
           npm config set registry https://${{ env.GDF_NPM_PUBLISH_ENDPOINT }} --userconfig ${{ github.workspace }}/.npmrc
-          npm config set email ${{env.GDF_NPM_USER_NAME}}@allianz.com --userconfig ${{ github.workspace }}/.npmrc
+          npm config set email ${{env.GDF_NPM_USER_NAME}}@escapp.com --userconfig ${{ github.workspace }}/.npmrc
           npm config set //${{ env.GDF_NPM_PUBLISH_ENDPOINT }}:_auth ${{env.GDF_NPM_WRITE_AUTH_TOKEN}} --userconfig ${{ github.workspace }}/.npmrc
           echo "Current NPM configurations for publishing are:"
           npm config list
       - name: DEPLOY - NPM - GDF - Health Check of Nexus package registry
         if: github.ref == 'refs/heads/dev'
-        run: npm view @allianz/a1-design-tokens --userconfig ${{ github.workspace }}/.npmrc
+        run: npm view @escapp/a1-design-tokens --userconfig ${{ github.workspace }}/.npmrc
       - name: DEPLOY - NPM - GDF - Publish NPM Token-Package to Nexus package registry
         if: github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch' && github.event.inputs.releaseNPM == 'true'
         run: |
