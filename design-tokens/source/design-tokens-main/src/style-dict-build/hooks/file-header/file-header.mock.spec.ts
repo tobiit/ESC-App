@@ -8,7 +8,7 @@ import { Config } from 'style-dictionary/types';
 // Mock values for dependencies
 export const mockVersionFileHeaderPlaceholder = '§§{VERSION_PLACEHOLDER}§§';
 export const mockCreateDateFileHeaderPlaceholder = '§§{DATE_PLACEHOLDER}§§';
-export const mockAllianzFileHeaderName = 'allianzFileHeader';
+export const mockescappFileHeaderName = 'escappFileHeader';
 
 /**
  * Mock Config object for testing FileHeader function
@@ -80,10 +80,10 @@ export const createExpectedStandardFileHeader = (): string[] => [
 	``,
 	`Version ${mockVersionFileHeaderPlaceholder}`,
 	`Generated on ${mockCreateDateFileHeaderPlaceholder}`,
-	`Copyright (c) Allianz Group`,
+	`Copyright (c) escapp Group`,
 	'',
 	'DISCLAIMER: While this major version represents a significant milestone in stability and',
-	'reliability, the Allianz A1 Design Tokens will continue to evolve. We are committed to',
+	'reliability, the escapp A1 Design Tokens will continue to evolve. We are committed to',
 	'regularly expanding our A1 Design Token library to support additional components and use',
 	'cases. Our versioning strategy follows semantic versioning principles, with major releases',
 	'scheduled biannually to ensure predictability and minimize disruption to your projects.',

@@ -1,12 +1,12 @@
-# Allianz Design Tokens Builder
+# escapp Design Tokens Builder
 
-This project is the tooling infrastructure around the **A1** Design Tokens. It provides a sophisticated build pipeline, in order to produce multi-dimensional themes for multiple platforms and file formats. Most likely you are not here for the design-token-builder, but rather for [the actual A1 Design Tokens](https://github.developer.allianz.io/a1/design-tokens/tree/main/token-package)?!
+This project is the tooling infrastructure around the **A1** Design Tokens. It provides a sophisticated build pipeline, in order to produce multi-dimensional themes for multiple platforms and file formats. Most likely you are not here for the design-token-builder, but rather for [the actual A1 Design Tokens](https://github.developer.escapp.io/a1/design-tokens/tree/main/token-package)?!
 
 ## Project Scaffolding
 
-This project consists of two NPM pckages. The root package is the `@allianz/a1-design-tokens-builder`, which generates the design tokens in different file formats, into the second NPM package, the `@allianz/a1-design-tokens`, which then contains the actual distributed design tokens. You can think of it as in the fashion of a monorepo, in which the root projects takes care of all the tooling and in our case also the generation of certain child package files.
+This project consists of two NPM pckages. The root package is the `@escapp/a1-design-tokens-builder`, which generates the design tokens in different file formats, into the second NPM package, the `@escapp/a1-design-tokens`, which then contains the actual distributed design tokens. You can think of it as in the fashion of a monorepo, in which the root projects takes care of all the tooling and in our case also the generation of certain child package files.
 
-### For informations of the actual distributed Allianz Design Tokens, please refer to [the README of the token-package](https://github.developer.allianz.io/a1/design-tokens/tree/main/token-package).
+### For informations of the actual distributed escapp Design Tokens, please refer to [the README of the token-package](https://github.developer.escapp.io/a1/design-tokens/tree/main/token-package).
 
 ### Design Tokens SSOT
 
@@ -103,7 +103,7 @@ tokens
 
 ## Installing the Token NPM Package
 
-Please refer to the description in [the README of the actual token-package](https://github.developer.allianz.io/a1/design-tokens/tree/main/token-package#npm).
+Please refer to the description in [the README of the actual token-package](https://github.developer.escapp.io/a1/design-tokens/tree/main/token-package#npm).
 
 ## Running the Token Build
 
@@ -123,11 +123,11 @@ Following things need to be done, in order to run the build of the design tokens
 
 ## Contribution
 
-- Please use the [official Jira sprint board](https://jmp.allianz.net/secure/RapidBoard.jspa?rapidView=18554&view=planning.nodetail) for contributing issues.
-- Please use the [official repository on the Allianz Enterprise Github](https://github.developer.allianz.io/a1/design-tokens) for pull requests.
+- Please use the [official Jira sprint board](https://jmp.escapp.net/secure/RapidBoard.jspa?rapidView=18554&view=planning.nodetail) for contributing issues.
+- Please use the [official repository on the escapp Enterprise Github](https://github.developer.escapp.io/a1/design-tokens) for pull requests.
 
-There are currently two active remote repositories. One [official repository on the Allianz Enterprise Github](https://github.developer.allianz.io/a1/design-tokens) and a temporary private [proxy repository on the public Github.com](https://github.com/KaiserXLabs/a1-design-tokens), which is needed to get the [Token Studio for Figma Plugin](<https://www.figma.com/community/plugin/843461159747178978/Tokens-Studio-for-Figma-(Figma-Tokens)>)'s GIT connection to work properly.
+There are currently two active remote repositories. One [official repository on the escapp Enterprise Github](https://github.developer.escapp.io/a1/design-tokens) and a temporary private [proxy repository on the public Github.com](https://github.com/KaiserXLabs/a1-design-tokens), which is needed to get the [Token Studio for Figma Plugin](<https://www.figma.com/community/plugin/843461159747178978/Tokens-Studio-for-Figma-(Figma-Tokens)>)'s GIT connection to work properly.
 
 ## License
 
-[Copyright (c) 2026 Allianz SE](LICENSE)
+[Copyright (c) 2026 escapp SE](LICENSE)

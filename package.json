@@ -13,7 +13,7 @@
     "esc:down": "docker compose down",
     "esc:integration": "./scripts/integration-test.sh",
     "tokens:import": "node scripts/import-design-tokens.mjs",
-    "tokens:import:allianz": "node scripts/import-design-tokens.mjs design-tokens/source/design-tokens-main/tokens"
+    "tokens:import:escapp": "node scripts/import-design-tokens.mjs design-tokens/source/design-tokens-main/tokens"
   },
   "dependencies": {
     "connect-sqlite3": "^0.9.0",

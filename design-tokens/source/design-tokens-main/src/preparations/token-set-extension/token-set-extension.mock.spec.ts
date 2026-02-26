@@ -9,7 +9,7 @@ import { jest } from '@jest/globals';
 export const mockTokensSsotFolder = 'tokens';
 export const mockExtensionFolderPath = '/test/extension/path';
 export const mockDestPath = '/test/dest/path';
-export const mockSrcPath = `node_modules/@allianz/a1-design-tokens-builder/${mockTokensSsotFolder}`;
+export const mockSrcPath = `node_modules/@escapp/a1-design-tokens-builder/${mockTokensSsotFolder}`;
 
 // Mock file paths
 export const mockExtensionFilePaths = [
@@ -50,7 +50,7 @@ export const mockFolderDoesNotExist = false;
 
 // Mock additional error message
 export const mockAdditionalErrorMessage =
-	'Stopped the build process, cause it would not be any difference to the original A1 design tokens. If this is intentional please just use the provided A1 design tokens. More infos under: https://github.developer.allianz.io/a1/design-tokens/blob/main/token-package/README.md';
+	'Stopped the build process, cause it would not be any difference to the original A1 design tokens. If this is intentional please just use the provided A1 design tokens. More infos under: https://github.developer.escapp.io/a1/design-tokens/blob/main/token-package/README.md';
 
 // Mock error messages
 export const mockFolderNotExistErrorMessage = `The token SSOT extension folder does not exist under path: ${mockExtensionFolderPath}. ${mockAdditionalErrorMessage}`;

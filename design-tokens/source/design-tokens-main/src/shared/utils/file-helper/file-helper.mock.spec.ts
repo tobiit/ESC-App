@@ -10,11 +10,11 @@ import { jest } from '@jest/globals';
 // Get the mocked function for type-safe usage in tests
 export const mockGlob = jest.mocked(glob);
 
-export const mockBrand = 'allianz';
+export const mockBrand = 'escapp';
 export const mockDesignSystemName = 'a1';
 export const mockPlatform = 'web';
 export const mockFileNameCss = 'tokens.css';
-export const expectedArtifactPath = 'token-package/dist/allianz/a1/web/tokens.css';
+export const expectedArtifactPath = 'token-package/dist/escapp/a1/web/tokens.css';
 
 export const mockFileNameJson = 'button.json';
 export const mockFilePathParts = ['tokens', 'components', 'default'];

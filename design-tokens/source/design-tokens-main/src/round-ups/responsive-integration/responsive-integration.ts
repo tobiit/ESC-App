@@ -17,7 +17,7 @@ import { compareBreakpointFiles } from './helpers/index.js';
 
 /**
  * PSEUDO CODE ALGORITHM PROMPT
- * in the directory under token-package/dist/allianz/a1/web make a copy of all the files ending with "-xs.css" and remove the "-xs" from the file name. Use the loadFilesFromFolder function from src/shared/utils/file-helper.ts
+ * in the directory under token-package/dist/escapp/a1/web make a copy of all the files ending with "-xs.css" and remove the "-xs" from the file name. Use the loadFilesFromFolder function from src/shared/utils/file-helper.ts
  * Read all the files ending with "-xs.css" by using the NodeJS core library module "readline" and if necessary the fs-extra library, which is already installed as a dependency. If necessary create new helper functions in file src/shared/utils/file-helper.ts.
  * Compare each of them line by line with the corresponding file ending with "-m.css".
  * If the CSS variable name is not the same throw an error.

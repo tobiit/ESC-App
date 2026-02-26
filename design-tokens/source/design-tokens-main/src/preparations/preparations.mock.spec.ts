@@ -1097,7 +1097,7 @@ export const mockAllTokensPerModifier = {
 		'font-family': {
 			primary: {
 				type: 'fontFamilies',
-				value: 'Allianz Neo',
+				value: 'escapp Neo',
 			},
 		},
 		'font-weight': {

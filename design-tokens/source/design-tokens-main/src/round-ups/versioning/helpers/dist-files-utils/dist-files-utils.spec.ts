@@ -215,14 +215,14 @@ describe('Dist Files Utils', () => {
 		});
 
 		it('should handle file paths with different extensions', () => {
-			const jsFilePath = 'token-package/dist/allianz/a1/web/tokens-allianz.js';
+			const jsFilePath = 'token-package/dist/escapp/a1/web/tokens-escapp.js';
 			const result = extractTokenOutputFilePathParts(jsFilePath);
 
 			expect(result).toEqual({
-				tokenOutputFilePathParts: ['token-package', 'dist', 'allianz', 'a1', 'web', 'tokens-allianz.js'],
+				tokenOutputFilePathParts: ['token-package', 'dist', 'escapp', 'a1', 'web', 'tokens-escapp.js'],
 				platform: 'web',
-				brand: 'allianz',
-				file: 'tokens-allianz.js',
+				brand: 'escapp',
+				file: 'tokens-escapp.js',
 				designSystemName: 'a1',
 			});
 		});
@@ -266,10 +266,10 @@ describe('Dist Files Utils', () => {
 		it('should add version to file name for CDN and write minified content', async () => {
 			await handleCdnOutputFiles(mockTokenOutputFullFilePath, mockPreparedVersionCheckData, mockVersion);
 
-			expect(mockedPrepareFolder).toHaveBeenCalledWith('token-package/cdn/tokens/1.0.0/allianz/a1/web');
+			expect(mockedPrepareFolder).toHaveBeenCalledWith('token-package/cdn/tokens/1.0.0/escapp/a1/web');
 			expect(mockedCopyFile).toHaveBeenCalledWith(
 				mockTokenOutputFullFilePath,
-				'token-package/cdn/tokens/1.0.0/allianz/a1/web/tokens-allianz.1.0.0.css',
+				'token-package/cdn/tokens/1.0.0/escapp/a1/web/tokens-escapp.1.0.0.css',
 			);
 		});
 
@@ -285,10 +285,10 @@ describe('Dist Files Utils', () => {
 
 			await handleCdnOutputFiles(mockComplexFilePath, complexPreparedData, mockVersion);
 
-			expect(mockedPrepareFolder).toHaveBeenCalledWith('token-package/cdn/tokens/1.0.0/allianz/a1/web/components');
+			expect(mockedPrepareFolder).toHaveBeenCalledWith('token-package/cdn/tokens/1.0.0/escapp/a1/web/components');
 			expect(mockedCopyFile).toHaveBeenCalledWith(
 				mockComplexFilePath,
-				'token-package/cdn/tokens/1.0.0/allianz/a1/web/components/tokens-allianz-components.v2.1.0.0.css',
+				'token-package/cdn/tokens/1.0.0/escapp/a1/web/components/tokens-escapp-components.v2.1.0.0.css',
 			);
 		});
 
@@ -296,29 +296,29 @@ describe('Dist Files Utils', () => {
 			const differentVersion = '2.1.0';
 			await handleCdnOutputFiles(mockTokenOutputFullFilePath, mockPreparedVersionCheckData, differentVersion);
 
-			expect(mockedPrepareFolder).toHaveBeenCalledWith('token-package/cdn/tokens/2.1.0/allianz/a1/web');
+			expect(mockedPrepareFolder).toHaveBeenCalledWith('token-package/cdn/tokens/2.1.0/escapp/a1/web');
 			expect(mockedCopyFile).toHaveBeenCalledWith(
 				mockTokenOutputFullFilePath,
-				'token-package/cdn/tokens/2.1.0/allianz/a1/web/tokens-allianz.2.1.0.css',
+				'token-package/cdn/tokens/2.1.0/escapp/a1/web/tokens-escapp.2.1.0.css',
 			);
 		});
 
 		it('should handle files with no extension', async () => {
-			const noExtensionPath = 'token-package/dist/allianz/a1/web/tokens-allianz';
-			const noExtensionPathParts = ['token-package', 'dist', 'allianz', 'a1', 'web', 'tokens-allianz'];
+			const noExtensionPath = 'token-package/dist/escapp/a1/web/tokens-escapp';
+			const noExtensionPathParts = ['token-package', 'dist', 'escapp', 'a1', 'web', 'tokens-escapp'];
 			const noExtensionPreparedData = {
 				tokenOutputFullFilePath: noExtensionPath,
 				tokenOutputFilePathParts: noExtensionPathParts,
 				platform: mockPlatform,
 				brand: mockBrand,
-				file: 'tokens-allianz',
+				file: 'tokens-escapp',
 				initialDistVersion,
 			};
 
 			await handleCdnOutputFiles(noExtensionPath, noExtensionPreparedData, mockVersion);
 
-			expect(mockedPrepareFolder).toHaveBeenCalledWith('token-package/cdn/tokens/1.0.0/allianz/a1/web');
-			expect(mockedCopyFile).toHaveBeenCalledWith(noExtensionPath, 'token-package/cdn/tokens/1.0.0/allianz/a1/web/1.0.0.tokens-allianz');
+			expect(mockedPrepareFolder).toHaveBeenCalledWith('token-package/cdn/tokens/1.0.0/escapp/a1/web');
+			expect(mockedCopyFile).toHaveBeenCalledWith(noExtensionPath, 'token-package/cdn/tokens/1.0.0/escapp/a1/web/1.0.0.tokens-escapp');
 		});
 	});
 
@@ -421,10 +421,10 @@ describe('Dist Files Utils', () => {
 
 			await handleCdnOutputFiles(mockTokenOutputFullFilePath, versionCheckData, mockVersion);
 
-			expect(mockedPrepareFolder).toHaveBeenCalledWith('token-package/cdn/tokens/1.0.0/allianz/a1/web');
+			expect(mockedPrepareFolder).toHaveBeenCalledWith('token-package/cdn/tokens/1.0.0/escapp/a1/web');
 			expect(mockedCopyFile).toHaveBeenCalledWith(
 				mockTokenOutputFullFilePath,
-				'token-package/cdn/tokens/1.0.0/allianz/a1/web/tokens-allianz.1.0.0.css',
+				'token-package/cdn/tokens/1.0.0/escapp/a1/web/tokens-escapp.1.0.0.css',
 			);
 		});
 

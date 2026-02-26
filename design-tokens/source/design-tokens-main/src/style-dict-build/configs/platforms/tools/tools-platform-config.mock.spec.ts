@@ -10,7 +10,7 @@ import { File } from 'style-dictionary';
 export const mockMockedJsonToolsOutputFileConfig = [] as Array<File>;
 
 export const mockMockedTsTransformGroups = 'tokens-studio';
-export const mockMockedAllianzFileHeaderName = 'allianzFileHeader';
+export const mockMockedescappFileHeaderName = 'escappFileHeader';
 export const mockMockedPlatformsTools = 'tools';
 
 /**
@@ -19,7 +19,7 @@ export const mockMockedPlatformsTools = 'tools';
 export const createStandardToolsPlatformConfigScenario = () => {
 	return {
 		outputFilePath: '/dist/tools',
-		outputFileName: 'allianz-tools-tokens',
+		outputFileName: 'escapp-tools-tokens',
 		description: 'Standard tools platform config with typical paths',
 	};
 };
@@ -121,7 +121,7 @@ export const createExpectedToolsPlatformConfig = (outputFilePath: string): Platf
 		buildPath: outputFilePath,
 		files: [mockMockedJsonToolsOutputFileConfig],
 		options: {
-			fileHeader: mockMockedAllianzFileHeaderName,
+			fileHeader: mockMockedescappFileHeaderName,
 		},
 	};
 };

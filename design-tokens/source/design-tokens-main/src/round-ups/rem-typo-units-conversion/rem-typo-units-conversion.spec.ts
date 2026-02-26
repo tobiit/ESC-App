@@ -147,7 +147,7 @@ describe('runRemTypoUnitConversions', () => {
 
 	describe('successful conversion scenarios', () => {
 		it('should convert px to rem in CSS files', async () => {
-			const brand = 'allianz';
+			const brand = 'escapp';
 			mockCheckFolderExistence.mockReturnValue(true);
 			mockLoadFilesFromFolder.mockResolvedValue([mockCssFilePath]);
 			mockReadLinesFromFile.mockResolvedValue(mockCssContentWithTypography.split('\n'));
@@ -161,7 +161,7 @@ describe('runRemTypoUnitConversions', () => {
 		});
 
 		it('should convert px to rem in SCSS files', async () => {
-			const brand = 'allianz';
+			const brand = 'escapp';
 			mockCheckFolderExistence.mockReturnValue(true);
 			mockLoadFilesFromFolder.mockResolvedValue([mockScssFilePath]);
 			mockReadLinesFromFile.mockResolvedValue(mockScssContentWithTypography.split('\n'));
@@ -173,7 +173,7 @@ describe('runRemTypoUnitConversions', () => {
 		});
 
 		it('should convert px to rem in JS files', async () => {
-			const brand = 'allianz';
+			const brand = 'escapp';
 			mockCheckFolderExistence.mockReturnValue(true);
 			mockLoadFilesFromFolder.mockResolvedValue([mockJsFilePath]);
 			mockReadLinesFromFile.mockResolvedValue(mockJsContentWithTypography.split('\n'));
@@ -185,7 +185,7 @@ describe('runRemTypoUnitConversions', () => {
 		});
 
 		it('should convert px to rem in JSON files with simple structure', async () => {
-			const brand = 'allianz';
+			const brand = 'escapp';
 			mockCheckFolderExistence.mockReturnValue(true);
 			mockLoadFilesFromFolder.mockResolvedValue([mockJsonFilePath]);
 			setupJsonFileMock(mockJsonFilePath, JSON.parse(JSON.stringify(mockJsonDataSimple)));
@@ -197,7 +197,7 @@ describe('runRemTypoUnitConversions', () => {
 		});
 
 		it('should convert px to rem in JSON files with nested structure', async () => {
-			const brand = 'allianz';
+			const brand = 'escapp';
 			mockCheckFolderExistence.mockReturnValue(true);
 			mockLoadFilesFromFolder.mockResolvedValue([mockJsonFilePath]);
 			setupJsonFileMock(mockJsonFilePath, JSON.parse(JSON.stringify(mockJsonDataNested)));
@@ -208,7 +208,7 @@ describe('runRemTypoUnitConversions', () => {
 		});
 
 		it('should convert px to rem in JSON files with $value properties', async () => {
-			const brand = 'allianz';
+			const brand = 'escapp';
 			mockCheckFolderExistence.mockReturnValue(true);
 			mockLoadFilesFromFolder.mockResolvedValue([mockJsonFilePath]);
 			setupJsonFileMock(mockJsonFilePath, JSON.parse(JSON.stringify(mockJsonDataWithDollarValue)));
@@ -219,7 +219,7 @@ describe('runRemTypoUnitConversions', () => {
 		});
 
 		it('should convert px to rem in JSON files with camelCase keys', async () => {
-			const brand = 'allianz';
+			const brand = 'escapp';
 			mockCheckFolderExistence.mockReturnValue(true);
 			mockLoadFilesFromFolder.mockResolvedValue([mockJsonFilePath]);
 			setupJsonFileMock(mockJsonFilePath, JSON.parse(JSON.stringify(mockJsonDataCamelCase)));
@@ -230,7 +230,7 @@ describe('runRemTypoUnitConversions', () => {
 		});
 
 		it('should convert px to rem in JSON files with underscore_case keys', async () => {
-			const brand = 'allianz';
+			const brand = 'escapp';
 			mockCheckFolderExistence.mockReturnValue(true);
 			mockLoadFilesFromFolder.mockResolvedValue([mockJsonFilePath]);
 			setupJsonFileMock(mockJsonFilePath, JSON.parse(JSON.stringify(mockJsonDataUnderscoreCase)));
@@ -241,7 +241,7 @@ describe('runRemTypoUnitConversions', () => {
 		});
 
 		it('should convert px to rem in JSON files with arrays', async () => {
-			const brand = 'allianz';
+			const brand = 'escapp';
 			mockCheckFolderExistence.mockReturnValue(true);
 			mockLoadFilesFromFolder.mockResolvedValue([mockJsonFilePath]);
 			setupJsonFileMock(mockJsonFilePath, JSON.parse(JSON.stringify(mockJsonDataWithArray)));
@@ -252,7 +252,7 @@ describe('runRemTypoUnitConversions', () => {
 		});
 
 		it('should convert px to rem in JSON files with text keyword', async () => {
-			const brand = 'allianz';
+			const brand = 'escapp';
 			mockCheckFolderExistence.mockReturnValue(true);
 			mockLoadFilesFromFolder.mockResolvedValue([mockJsonFilePath]);
 			setupJsonFileMock(mockJsonFilePath, JSON.parse(JSON.stringify(mockJsonDataWithTextKeyword)));
@@ -263,7 +263,7 @@ describe('runRemTypoUnitConversions', () => {
 		});
 
 		it('should convert decimal px values to rem', async () => {
-			const brand = 'allianz';
+			const brand = 'escapp';
 			mockCheckFolderExistence.mockReturnValue(true);
 			mockLoadFilesFromFolder.mockResolvedValue([mockJsonFilePath]);
 			setupJsonFileMock(mockJsonFilePath, JSON.parse(JSON.stringify(mockJsonDataDecimal)));
@@ -274,7 +274,7 @@ describe('runRemTypoUnitConversions', () => {
 		});
 
 		it('should convert zero px values to rem', async () => {
-			const brand = 'allianz';
+			const brand = 'escapp';
 			mockCheckFolderExistence.mockReturnValue(true);
 			mockLoadFilesFromFolder.mockResolvedValue([mockJsonFilePath]);
 			setupJsonFileMock(mockJsonFilePath, JSON.parse(JSON.stringify(mockJsonDataZero)));
@@ -285,7 +285,7 @@ describe('runRemTypoUnitConversions', () => {
 		});
 
 		it('should handle mixed typography and non-typography properties', async () => {
-			const brand = 'allianz';
+			const brand = 'escapp';
 			mockCheckFolderExistence.mockReturnValue(true);
 			mockLoadFilesFromFolder.mockResolvedValue([mockJsonFilePath]);
 			setupJsonFileMock(mockJsonFilePath, JSON.parse(JSON.stringify(mockJsonDataMixed)));
@@ -296,7 +296,7 @@ describe('runRemTypoUnitConversions', () => {
 		});
 
 		it('should handle complex nested structures correctly', async () => {
-			const brand = 'allianz';
+			const brand = 'escapp';
 			mockCheckFolderExistence.mockReturnValue(true);
 			mockLoadFilesFromFolder.mockResolvedValue([mockJsonFilePath]);
 			setupJsonFileMock(mockJsonFilePath, JSON.parse(JSON.stringify(mockJsonDataComplexNested)));
@@ -307,7 +307,7 @@ describe('runRemTypoUnitConversions', () => {
 		});
 
 		it('should process multiple files of different types', async () => {
-			const brand = 'allianz';
+			const brand = 'escapp';
 			mockCheckFolderExistence.mockReturnValue(true);
 			mockLoadFilesFromFolder.mockResolvedValue(mockFileList);
 			mockReadLinesFromFile
@@ -325,7 +325,7 @@ describe('runRemTypoUnitConversions', () => {
 		});
 
 		it('should convert px to rem in JSON files with $type fontSize', async () => {
-			const brand = 'allianz';
+			const brand = 'escapp';
 			mockCheckFolderExistence.mockReturnValue(true);
 			mockLoadFilesFromFolder.mockResolvedValue([mockJsonFilePath]);
 			setupJsonFileMock(mockJsonFilePath, JSON.parse(JSON.stringify(mockJsonDataWithFontSizeType)));
@@ -336,7 +336,7 @@ describe('runRemTypoUnitConversions', () => {
 		});
 
 		it('should convert px to rem in JSON files with $type lineHeight', async () => {
-			const brand = 'allianz';
+			const brand = 'escapp';
 			mockCheckFolderExistence.mockReturnValue(true);
 			mockLoadFilesFromFolder.mockResolvedValue([mockJsonFilePath]);
 			setupJsonFileMock(mockJsonFilePath, JSON.parse(JSON.stringify(mockJsonDataWithLineHeightType)));
@@ -347,7 +347,7 @@ describe('runRemTypoUnitConversions', () => {
 		});
 
 		it('should convert px to rem in JSON files with originalType letterSpacing', async () => {
-			const brand = 'allianz';
+			const brand = 'escapp';
 			mockCheckFolderExistence.mockReturnValue(true);
 			mockLoadFilesFromFolder.mockResolvedValue([mockJsonFilePath]);
 			setupJsonFileMock(mockJsonFilePath, JSON.parse(JSON.stringify(mockJsonDataWithLetterSpacingOriginalType)));
@@ -358,7 +358,7 @@ describe('runRemTypoUnitConversions', () => {
 		});
 
 		it('should convert negative px values to rem', async () => {
-			const brand = 'allianz';
+			const brand = 'escapp';
 			mockCheckFolderExistence.mockReturnValue(true);
 			mockLoadFilesFromFolder.mockResolvedValue([mockJsonFilePath]);
 			setupJsonFileMock(mockJsonFilePath, JSON.parse(JSON.stringify(mockJsonDataNegative)));
@@ -369,7 +369,7 @@ describe('runRemTypoUnitConversions', () => {
 		});
 
 		it('should convert all typography types (fontSize, lineHeight, letterSpacing) in one structure', async () => {
-			const brand = 'allianz';
+			const brand = 'escapp';
 			mockCheckFolderExistence.mockReturnValue(true);
 			mockLoadFilesFromFolder.mockResolvedValue([mockJsonFilePath]);
 			setupJsonFileMock(mockJsonFilePath, JSON.parse(JSON.stringify(mockJsonDataWithAllTypographyTypes)));
@@ -382,7 +382,7 @@ describe('runRemTypoUnitConversions', () => {
 
 	describe('files without typography properties', () => {
 		it('should not modify CSS files without typography properties', async () => {
-			const brand = 'allianz';
+			const brand = 'escapp';
 			mockCheckFolderExistence.mockReturnValue(true);
 			mockLoadFilesFromFolder.mockResolvedValue([mockCssFilePath]);
 			mockReadLinesFromFile.mockResolvedValue(mockCssContentWithoutTypography.split('\n'));
@@ -393,7 +393,7 @@ describe('runRemTypoUnitConversions', () => {
 		});
 
 		it('should not modify JSON files without typography properties', async () => {
-			const brand = 'allianz';
+			const brand = 'escapp';
 			mockCheckFolderExistence.mockReturnValue(true);
 			mockLoadFilesFromFolder.mockResolvedValue([mockJsonFilePath]);
 			const noTypographyDataCopy = JSON.parse(JSON.stringify(mockJsonDataNoTypography));
@@ -405,7 +405,7 @@ describe('runRemTypoUnitConversions', () => {
 		});
 
 		it('should not modify non-string values in JSON files', async () => {
-			const brand = 'allianz';
+			const brand = 'escapp';
 			mockCheckFolderExistence.mockReturnValue(true);
 			mockLoadFilesFromFolder.mockResolvedValue([mockJsonFilePath]);
 			const nonStringDataCopy = JSON.parse(JSON.stringify(mockJsonDataNonString));
@@ -417,7 +417,7 @@ describe('runRemTypoUnitConversions', () => {
 		});
 
 		it('should not modify values with other units in JSON files', async () => {
-			const brand = 'allianz';
+			const brand = 'escapp';
 			mockCheckFolderExistence.mockReturnValue(true);
 			mockLoadFilesFromFolder.mockResolvedValue([mockJsonFilePath]);
 			const otherUnitsDataCopy = JSON.parse(JSON.stringify(mockJsonDataOtherUnits));
@@ -429,7 +429,7 @@ describe('runRemTypoUnitConversions', () => {
 		});
 
 		it('should not modify JSON files with non-typography $type', async () => {
-			const brand = 'allianz';
+			const brand = 'escapp';
 			mockCheckFolderExistence.mockReturnValue(true);
 			mockLoadFilesFromFolder.mockResolvedValue([mockJsonFilePath]);
 			const nonTypographyTypeCopy = JSON.parse(JSON.stringify(mockJsonDataWithNonTypographyType));
@@ -441,7 +441,7 @@ describe('runRemTypoUnitConversions', () => {
 		});
 
 		it('should still convert when studio.tokens is not an object', async () => {
-			const brand = 'allianz';
+			const brand = 'escapp';
 			mockCheckFolderExistence.mockReturnValue(true);
 			mockLoadFilesFromFolder.mockResolvedValue([mockJsonFilePath]);
 			setupJsonFileMock(mockJsonFilePath, JSON.parse(JSON.stringify(mockJsonDataWithInvalidStudioTokens)));
@@ -452,7 +452,7 @@ describe('runRemTypoUnitConversions', () => {
 		});
 
 		it('should still convert when studio.tokens is null', async () => {
-			const brand = 'allianz';
+			const brand = 'escapp';
 			mockCheckFolderExistence.mockReturnValue(true);
 			mockLoadFilesFromFolder.mockResolvedValue([mockJsonFilePath]);
 			setupJsonFileMock(mockJsonFilePath, JSON.parse(JSON.stringify(mockJsonDataWithNullStudioTokens)));
@@ -463,7 +463,7 @@ describe('runRemTypoUnitConversions', () => {
 		});
 
 		it('should not convert when studio.tokens is null and no fontSize $type', async () => {
-			const brand = 'allianz';
+			const brand = 'escapp';
 			mockCheckFolderExistence.mockReturnValue(true);
 			mockLoadFilesFromFolder.mockResolvedValue([mockJsonFilePath]);
 			const dataCopy = JSON.parse(JSON.stringify(mockJsonDataWithNullStudioTokensNoFontSizeType));
@@ -475,7 +475,7 @@ describe('runRemTypoUnitConversions', () => {
 		});
 
 		it('should traverse nested objects without $type in else branch', async () => {
-			const brand = 'allianz';
+			const brand = 'escapp';
 			mockCheckFolderExistence.mockReturnValue(true);
 			mockLoadFilesFromFolder.mockResolvedValue([mockJsonFilePath]);
 			const nestedDataCopy = JSON.parse(JSON.stringify(mockJsonDataNestedObjectWithoutType));
@@ -487,7 +487,7 @@ describe('runRemTypoUnitConversions', () => {
 		});
 
 		it('should handle null values in arrays', async () => {
-			const brand = 'allianz';
+			const brand = 'escapp';
 			mockCheckFolderExistence.mockReturnValue(true);
 			mockLoadFilesFromFolder.mockResolvedValue([mockJsonFilePath]);
 			setupJsonFileMock(mockJsonFilePath, JSON.parse(JSON.stringify(mockJsonDataWithNullInArray)));
@@ -498,7 +498,7 @@ describe('runRemTypoUnitConversions', () => {
 		});
 
 		it('should handle null values in object properties', async () => {
-			const brand = 'allianz';
+			const brand = 'escapp';
 			const expected = {
 				// eslint-disable-next-line @typescript-eslint/naming-convention
 				'font-size': {
@@ -524,7 +524,7 @@ describe('runRemTypoUnitConversions', () => {
 		});
 
 		it('should skip inherited properties from prototype chain', async () => {
-			const brand = 'allianz';
+			const brand = 'escapp';
 			mockCheckFolderExistence.mockReturnValue(true);
 			mockLoadFilesFromFolder.mockResolvedValue([mockJsonFilePath]);
 			setupJsonFileMock(mockJsonFilePath, createObjectWithInheritedProps());
@@ -538,7 +538,7 @@ describe('runRemTypoUnitConversions', () => {
 
 	describe('error handling', () => {
 		it('should log error and return early when directory does not exist', async () => {
-			const brand = 'allianz';
+			const brand = 'escapp';
 			mockCheckFolderExistence.mockReturnValue(false);
 
 			await runRemTypoUnitConversions(brand, DesignSystemNames.a1);
@@ -551,7 +551,7 @@ describe('runRemTypoUnitConversions', () => {
 		});
 
 		it('should handle empty file list gracefully', async () => {
-			const brand = 'allianz';
+			const brand = 'escapp';
 			mockCheckFolderExistence.mockReturnValue(true);
 			mockLoadFilesFromFolder.mockResolvedValue([]);
 
@@ -577,7 +577,7 @@ describe('runRemTypoUnitConversions', () => {
 		});
 
 		it('should handle different design system names', async () => {
-			const brand = 'allianz';
+			const brand = 'escapp';
 			mockCheckFolderExistence.mockReturnValue(true);
 			mockLoadFilesFromFolder.mockResolvedValue([]);
 
@@ -587,7 +587,7 @@ describe('runRemTypoUnitConversions', () => {
 		});
 
 		it('should handle files without extensions gracefully', async () => {
-			const brand = 'allianz';
+			const brand = 'escapp';
 			const fileWithoutExtension = '/mock/path/tokens';
 			mockCheckFolderExistence.mockReturnValue(true);
 			mockLoadFilesFromFolder.mockResolvedValue([fileWithoutExtension]);
@@ -600,7 +600,7 @@ describe('runRemTypoUnitConversions', () => {
 		});
 
 		it('should handle unsupported file extensions gracefully', async () => {
-			const brand = 'allianz';
+			const brand = 'escapp';
 			const unsupportedFile = '/mock/path/tokens.txt';
 			mockCheckFolderExistence.mockReturnValue(true);
 			mockLoadFilesFromFolder.mockResolvedValue([unsupportedFile]);
@@ -615,7 +615,7 @@ describe('runRemTypoUnitConversions', () => {
 
 	describe('conversion accuracy', () => {
 		it('should convert 16px to 1rem (default font size)', async () => {
-			const brand = 'allianz';
+			const brand = 'escapp';
 
 			const testData = {
 				// eslint-disable-next-line @typescript-eslint/naming-convention
@@ -644,7 +644,7 @@ describe('runRemTypoUnitConversions', () => {
 		});
 
 		it('should handle precision correctly for fractional results', async () => {
-			const brand = 'allianz';
+			const brand = 'escapp';
 			const testData = {
 				// eslint-disable-next-line @typescript-eslint/naming-convention
 				'font-size': {
@@ -671,7 +671,7 @@ describe('runRemTypoUnitConversions', () => {
 		});
 
 		it('should limit decimal precision to 5 places', async () => {
-			const brand = 'allianz';
+			const brand = 'escapp';
 			const testData = {
 				// eslint-disable-next-line @typescript-eslint/naming-convention
 				'font-size': {
@@ -700,7 +700,7 @@ describe('runRemTypoUnitConversions', () => {
 
 	describe('integration scenarios', () => {
 		it('should process full workflow from start to finish', async () => {
-			const brand = 'allianz';
+			const brand = 'escapp';
 			const callOrder: string[] = [];
 
 			mockCheckFolderExistence.mockImplementation(() => {
@@ -743,7 +743,7 @@ describe('runRemTypoUnitConversions', () => {
 		});
 
 		it('should preserve original data structure integrity', async () => {
-			const brand = 'allianz';
+			const brand = 'escapp';
 			const originalData = JSON.parse(JSON.stringify(mockJsonDataComplexNested));
 			mockCheckFolderExistence.mockReturnValue(true);
 			mockLoadFilesFromFolder.mockResolvedValue([mockJsonFilePath]);

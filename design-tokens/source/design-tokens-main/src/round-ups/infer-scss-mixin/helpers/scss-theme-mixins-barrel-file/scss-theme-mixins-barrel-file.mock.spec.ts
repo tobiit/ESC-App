@@ -3,7 +3,7 @@
  * The generation process was guided by the prompt specified in `.github/prompts/unit-testing.prompt.md`.
  */
 
-export const mockTargetFolder = 'token-package/dist/allianz/a1/web';
+export const mockTargetFolder = 'token-package/dist/escapp/a1/web';
 
 export const mockScssMixinFiles = [
 	`${mockTargetFolder}/tokens-light-minimal-spacious-mixins.scss`,

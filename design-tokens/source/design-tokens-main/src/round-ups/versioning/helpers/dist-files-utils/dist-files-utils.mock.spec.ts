@@ -16,13 +16,13 @@ export const mockedPrepareFolder = prepareFolder as jest.MockedFunction<typeof p
 export const mockedCreateHash = crypto.createHash as jest.MockedFunction<typeof crypto.createHash>;
 
 // Mock file paths for testing
-export const mockTokenOutputFullFilePath = 'token-package/dist/allianz/a1/web/tokens-allianz.css';
-export const mockTokenOutputFullFilePathCdn = 'token-package/cdn/tokens/1.0.0/allianz/a1/web/tokens-allianz.1.0.0.css';
-export const mockTokenOutputFilePathParts = ['token-package', 'dist', 'allianz', 'a1', 'web', 'tokens-allianz.css'];
-export const mockBrand = 'allianz';
+export const mockTokenOutputFullFilePath = 'token-package/dist/escapp/a1/web/tokens-escapp.css';
+export const mockTokenOutputFullFilePathCdn = 'token-package/cdn/tokens/1.0.0/escapp/a1/web/tokens-escapp.1.0.0.css';
+export const mockTokenOutputFilePathParts = ['token-package', 'dist', 'escapp', 'a1', 'web', 'tokens-escapp.css'];
+export const mockBrand = 'escapp';
 export const mockDesignSystemName = 'a1';
 export const mockPlatform = 'web';
-export const mockFileName = 'tokens-allianz.css';
+export const mockFileName = 'tokens-escapp.css';
 export const mockVersion = '1.0.0';
 
 // Mock file content for testing
@@ -31,7 +31,7 @@ export const mockFileContent = `/**
  * 
  * Version §§{VERSION_PLACEHOLDER}§§
  * Generated on §§{DATE_PLACEHOLDER}§§
- * Copyright (c) Allianz Group
+ * Copyright (c) escapp Group
  */
 
 :root {
@@ -46,7 +46,7 @@ export const mockFileContentWithVersion = `/**
  * 
  * Version 1.0.0
  * Generated on §§{DATE_PLACEHOLDER}§§
- * Copyright (c) Allianz Group
+ * Copyright (c) escapp Group
  */
 
 :root {
@@ -61,7 +61,7 @@ export const mockFileContentWithVersionAndDate = `/**
  * 
  * Version 1.0.0
  * Generated on Thu Jul 04 2025 10:00:00 GMT+0200 (Central European Summer Time)
- * Copyright (c) Allianz Group
+ * Copyright (c) escapp Group
  */
 
 :root {
@@ -152,9 +152,9 @@ export const mockFileData3 = 'file3 content';
 export const mockExpectedHash = 'abc123def456';
 
 // Mock path variations for testing edge cases
-export const mockComplexFilePath = 'token-package/dist/allianz/a1/web/components/tokens-allianz-components.v2.css';
-export const mockComplexFilePathParts = ['token-package', 'dist', 'allianz', 'a1', 'web', 'components', 'tokens-allianz-components.v2.css'];
-export const mockComplexFileName = 'tokens-allianz-components.v2.css';
+export const mockComplexFilePath = 'token-package/dist/escapp/a1/web/components/tokens-escapp-components.v2.css';
+export const mockComplexFilePathParts = ['token-package', 'dist', 'escapp', 'a1', 'web', 'components', 'tokens-escapp-components.v2.css'];
+export const mockComplexFileName = 'tokens-escapp-components.v2.css';
 
 // Mock empty file list for testing edge cases
 export const mockEmptyFileList: string[] = [];

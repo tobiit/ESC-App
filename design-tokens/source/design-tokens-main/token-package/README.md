@@ -1,6 +1,6 @@
-# Allianz Design Tokens
+# escapp Design Tokens
 
-These Design Tokens are platform-agnostic, key-value pair encoded design decisions of the Allianz brand. This project is the single source of truth (SSOT) for the technical provisioning of the **A1** Design Tokens.
+These Design Tokens are platform-agnostic, key-value pair encoded design decisions of the escapp brand. This project is the single source of truth (SSOT) for the technical provisioning of the **A1** Design Tokens.
 
 ## Table of Contents
 
@@ -10,7 +10,7 @@ These Design Tokens are platform-agnostic, key-value pair encoded design decisio
 - [Official Design System Documentation](#official-design-system-documentation)
 - [When to use and when not to use the A1 Design Tokens?](#when-to-use-and-when-not-to-use-the-a1-design-tokens)
   - [Indirect Distribution of the Design Tokens](#indirect-distribution-of-the-design-tokens)
-    - [Official Allianz Angular Brand Kit Component Library](#official-allianz-angular-brand-kit-component-library)
+    - [Official escapp Angular Brand Kit Component Library](#official-escapp-angular-brand-kit-component-library)
       - [Migrating from Angular NDBX to Angular Brand Kit with A1](#migrating-from-angular-ndbx-to-angular-brand-kit-with-a1)
     - [AEM Web Component Library](#aem-web-component-library)
   - [Direct Distribution of the Design Tokens](#direct-distribution-of-the-design-tokens)
@@ -48,11 +48,11 @@ These Design Tokens are platform-agnostic, key-value pair encoded design decisio
 
 ## Official Design System Documentation
 
-Under the official brand guidelines the documentation for the **A1** digital design system, together with the detailed documentation of the design tokens can be found in the [A1 Brand Guidelines](https://one.allianz.com/document/574#/foundation/design-tokens). If you want to learn more about the underlying concepts of our design token system, like design token naming schemas, color and spacing concepts, etc. head over there and dive in.
+Under the official brand guidelines the documentation for the **A1** digital design system, together with the detailed documentation of the design tokens can be found in the [A1 Brand Guidelines](https://one.escapp.com/document/574#/foundation/design-tokens). If you want to learn more about the underlying concepts of our design token system, like design token naming schemas, color and spacing concepts, etc. head over there and dive in.
 
 ### Dynamic Design Token Documentation
 
-There is also a standalone and versioned **dynamic documentation of the design tokens** available. It is perfect for explorative searches within the design token set and allows for value previews and quick copy'n'paste of the design token name in the format of your specific platform/programming language. In the future this should also be directly integrated into the aforementioned official **A1** brand guidelines: https://design-tokens-docs.cdn.allianz.com/
+There is also a standalone and versioned **dynamic documentation of the design tokens** available. It is perfect for explorative searches within the design token set and allows for value previews and quick copy'n'paste of the design token name in the format of your specific platform/programming language. In the future this should also be directly integrated into the aforementioned official **A1** brand guidelines: https://design-tokens-docs.cdn.escapp.com/
 
 ## When to use and when not to use the A1 Design Tokens?
 
@@ -60,11 +60,11 @@ In most cases you do not have to integrate and use the **A1** Design Tokens dire
 
 ### Indirect Distribution of the Design Tokens
 
-It is highly recommended to stick to one of the official Allianz component libraries like [Angular Brand Kit](https://github.developer.allianz.io/ilt/ngx-brand-kit) or the [AEM web components](https://github.developer.allianz.io/oneMarketing/elements), which represents the indirect integration of the design tokens via these component libraries. If you use these libraries you can still use the design tokens to also style your custom components and overall page layouts.
+It is highly recommended to stick to one of the official escapp component libraries like [Angular Brand Kit](https://github.developer.escapp.io/ilt/ngx-brand-kit) or the [AEM web components](https://github.developer.escapp.io/oneMarketing/elements), which represents the indirect integration of the design tokens via these component libraries. If you use these libraries you can still use the design tokens to also style your custom components and overall page layouts.
 
-#### Official Allianz Angular Brand Kit Component Library
+#### Official escapp Angular Brand Kit Component Library
 
-For all transactional web applications we recommend using the well established [Allianz Angular Brand Kit component library](https://ngx-brand-kit.frameworks.allianz.io/welcome), formerly known as Angular NDBX.
+For all transactional web applications we recommend using the well established [escapp Angular Brand Kit component library](https://ngx-brand-kit.frameworks.escapp.io/welcome), formerly known as Angular NDBX.
 
 ##### Migrating from Angular NDBX to Angular Brand Kit with A1
 
@@ -84,11 +84,11 @@ If your are faced with migrating an existing Angular NDBX project to the **A1** 
 - **Milestone 4**: Target Picture A1
   - Full **A1** switch
 
-Additional migration guides in [the A1 brand guidelines](https://one.allianz.com/document/1025#/migration-from-ndbx/transactional-applications-angular) and [the Allianz Angular Brand Kit component library documentation](https://ngx-brand-kit.frameworks.allianz.io/guides/a1).
+Additional migration guides in [the A1 brand guidelines](https://one.escapp.com/document/1025#/migration-from-ndbx/transactional-applications-angular) and [the escapp Angular Brand Kit component library documentation](https://ngx-brand-kit.frameworks.escapp.io/guides/a1).
 
 #### AEM Web Component Library
 
-For all content related pages within the Adobe Experience Manager (AEM), there is a successor of the PatternLab component library called [A1 Elements](https://github.developer.allianz.io/oneMarketing/elements), developed by DigitalSales (formerly known as OneMarketing). It is a web component library, which is used as presentational components within AEM. More infos in [their Storybook documentation](https://elements.cdn.allianz.com/master/storybook/index.html?path=/docs/general-welcome--docs).
+For all content related pages within the Adobe Experience Manager (AEM), there is a successor of the PatternLab component library called [A1 Elements](https://github.developer.escapp.io/oneMarketing/elements), developed by DigitalSales (formerly known as OneMarketing). It is a web component library, which is used as presentational components within AEM. More infos in [their Storybook documentation](https://elements.cdn.escapp.com/master/storybook/index.html?path=/docs/general-welcome--docs).
 
 ### Direct Distribution of the Design Tokens
 
@@ -119,33 +119,33 @@ This is just a quick overview of the supported platforms and file formats. If yo
 
 ### Not Finding Your Format?
 
-There is a [huge list of possible formats](https://styledictionary.com/reference/hooks/formats/predefined/) we could quickly provide. If you have really special needs and requirements, we might also provide a special format tailored to your specific needs. Please get in touch with us, if this is the case, by [opening a ticket in this repository](https://github.developer.allianz.io/a1/design-tokens/issues/new).
+There is a [huge list of possible formats](https://styledictionary.com/reference/hooks/formats/predefined/) we could quickly provide. If you have really special needs and requirements, we might also provide a special format tailored to your specific needs. Please get in touch with us, if this is the case, by [opening a ticket in this repository](https://github.developer.escapp.io/a1/design-tokens/issues/new).
 
 ## NPM
 
-There are currently two package registries available to get the `@allianz/a1-design-tokens` NPM package from. The GDF's Sonatype Nexus packages registry and the One Marketing jFrog Artifactory package registry. Depending on where your project is located and related to, either one of them might be easier to setup and reach. In the following the setup for each package registry is explained respectively, **but you will only need one of them**. Maybe in the future we can finally rely on a central NPM package registry for Allianz, which then would be our preferred place to receive the NPM package from ([read more in the related ADP ticket](https://github.developer.allianz.io/FutureCloudPlatform/support-and-discuss/issues/43254)).
+There are currently two package registries available to get the `@escapp/a1-design-tokens` NPM package from. The GDF's Sonatype Nexus packages registry and the One Marketing jFrog Artifactory package registry. Depending on where your project is located and related to, either one of them might be easier to setup and reach. In the following the setup for each package registry is explained respectively, **but you will only need one of them**. Maybe in the future we can finally rely on a central NPM package registry for escapp, which then would be our preferred place to receive the NPM package from ([read more in the related ADP ticket](https://github.developer.escapp.io/FutureCloudPlatform/support-and-discuss/issues/43254)).
 
 ### Global Digital Factory (GDF) Sonatype Nexus Package Registry
 
-If you might have already a `.npmrc` configuration for the `@allianz/ngx-brand-kit` Angular Brand Kit package (formerly known as Angular NDBX), you should be already setup for the GDF Nexus and can directly jump to the section [Install the Package](https://github.developer.allianz.io/a1/design-tokens/blob/main/token-package/README.md#install-the-package). If not please follow the beneath description for setting up the `.npmrc` configuration for the GDF Nexus package registry, like it is [also described in the Angular Brand Kit package](https://github.developer.allianz.io/ilt/ngx-brand-kit#installation).
+If you might have already a `.npmrc` configuration for the `@escapp/ngx-brand-kit` Angular Brand Kit package (formerly known as Angular NDBX), you should be already setup for the GDF Nexus and can directly jump to the section [Install the Package](https://github.developer.escapp.io/a1/design-tokens/blob/main/token-package/README.md#install-the-package). If not please follow the beneath description for setting up the `.npmrc` configuration for the GDF Nexus package registry, like it is [also described in the Angular Brand Kit package](https://github.developer.escapp.io/ilt/ngx-brand-kit#installation).
 
 #### Access Token
 
-Exactly like written in [the original guides by GDF](https://github.developer.allianz.io/gdf/overflow/issues/10) for setting up a `.npmrc` for local development, please follow these steps:
+Exactly like written in [the original guides by GDF](https://github.developer.escapp.io/gdf/overflow/issues/10) for setting up a `.npmrc` for local development, please follow these steps:
 
-1. First add the Nexus as the package registry for `@allianz` scoped NPM packages in your local terminal:
+1. First add the Nexus as the package registry for `@escapp` scoped NPM packages in your local terminal:
    ```bash
-   npm config set @allianz:registry "https://nexus-frontend.frameworks.allianz.io/repository/npm-public/"
+   npm config set @escapp:registry "https://nexus-frontend.frameworks.escapp.io/repository/npm-public/"
    ```
-2. Setting up the proxy `https_proxy="http://th000-surf.zone3.proxy.allianz:8080/"` mentioned in [the GDF guides](https://github.developer.allianz.io/gdf/overflow/issues/10), is not necessary and can most likely be skipped.
+2. Setting up the proxy `https_proxy="http://th000-surf.zone3.proxy.escapp:8080/"` mentioned in [the GDF guides](https://github.developer.escapp.io/gdf/overflow/issues/10), is not necessary and can most likely be skipped.
 3. Then login to the Nexus package registry with
    ```bash
-   npm login --registry https://nexus-frontend.frameworks.allianz.io/repository/npm-public/
+   npm login --registry https://nexus-frontend.frameworks.escapp.io/repository/npm-public/
    ```
-   If asked in the upcoming prompt, add your **BENSL** as the username, your **AVC Windows password** as the password and your **Allianz email** address as the email.
+   If asked in the upcoming prompt, add your **BENSL** as the username, your **AVC Windows password** as the password and your **escapp email** address as the email.
 4. Investigate what has been added to your local user `.npmrc` file. It should look like the following:
    ```text
-   //nexus-frontend.frameworks.allianz.io/repository/npm-public/:_authToken=<NpmToken.WITH_SOME_LONGER_KEY>
+   //nexus-frontend.frameworks.escapp.io/repository/npm-public/:_authToken=<NpmToken.WITH_SOME_LONGER_KEY>
    ```
    `<NpmToken.WITH_SOME_LONGER_KEY>` is a placeholder for your personal Nexus authentication token. **Keep in mind to never ever commit access tokens, auth tokens, passwords etc.!**
 
@@ -153,13 +153,13 @@ Exactly like written in [the original guides by GDF](https://github.developer.al
 
 1.  Finally the necessary NPM settings in your local user `.npmrc` file should look like this:
     ```text
-    @allianz:registry=https://nexus-frontend.frameworks.allianz.io/repository/npm-public/
-    //nexus-frontend.frameworks.allianz.io/repository/npm-public/:_authToken=<NpmToken.WITH_SOME_LONGER_KEY>
+    @escapp:registry=https://nexus-frontend.frameworks.escapp.io/repository/npm-public/
+    //nexus-frontend.frameworks.escapp.io/repository/npm-public/:_authToken=<NpmToken.WITH_SOME_LONGER_KEY>
     ```
 2.  If you are using a CI/CD pipeline you need to provide the `authToken` as a Github Action Secret or hidden parameter within Jenkins. Then during your CI/CD run, configure the pipline runners `.npmrc` file with the following npm config commands:
     ```bash
-    npm config set @allianz:registry https://nexus-frontend.frameworks.allianz.io/repository/npm-public/
-    npm config set //nexus-frontend.frameworks.allianz.io/repository/npm-public/:_authToken ${{NEXUS_AUTH_TOKEN}}
+    npm config set @escapp:registry https://nexus-frontend.frameworks.escapp.io/repository/npm-public/
+    npm config set //nexus-frontend.frameworks.escapp.io/repository/npm-public/:_authToken ${{NEXUS_AUTH_TOKEN}}
     ```
     Obviously in the above example the Github Action Secret or Jenkins hidden parameter name is `NEXUS_AUTH_TOKEN` and should have the value of the generated `authToken` seen in the previous step.
 
@@ -167,19 +167,19 @@ Exactly like written in [the original guides by GDF](https://github.developer.al
 
 #### Access Token
 
-Via the Allianz Virtual Client (AVC) or an AMC Mac go to the [jFrog Artifactory](https://diartifactory.jfrog.io/ui/login/). Then use the button **di-selfservice** beneath the login form. You will be redirected to an [Allianz Collaboration login page](https://login.collaboration.allianz.io/auth/realms/ptc/protocol/openid-connect/auth?client_id=nexus&scope=openid%20profile%20email&redirect_uri=https://diartifactory.jfrog.io/artifactory/api/oauth2/loginResponse&state=-5038515227226468818~~~~https%3A%2F%2Fdiartifactory.jfrog.io&response_type=code&approval_prompt=auto). There you again click on the button **Allianz Certificate** beneath the login form. After the login to the Artifactory you click in the top right on your user settings drop down menu and chose ['Edit Profile'](https://diartifactory.jfrog.io/ui/user_profile). Under **Authentication Settings** you can **Generate an Identity Token** which is valid for **_8hrs_**. **Keep in mind to never ever commit access tokens, auth tokens, passwords etc.!**
+Via the escapp Virtual Client (AVC) or an AMC Mac go to the [jFrog Artifactory](https://diartifactory.jfrog.io/ui/login/). Then use the button **di-selfservice** beneath the login form. You will be redirected to an [escapp Collaboration login page](https://login.collaboration.escapp.io/auth/realms/ptc/protocol/openid-connect/auth?client_id=nexus&scope=openid%20profile%20email&redirect_uri=https://diartifactory.jfrog.io/artifactory/api/oauth2/loginResponse&state=-5038515227226468818~~~~https%3A%2F%2Fdiartifactory.jfrog.io&response_type=code&approval_prompt=auto). There you again click on the button **escapp Certificate** beneath the login form. After the login to the Artifactory you click in the top right on your user settings drop down menu and chose ['Edit Profile'](https://diartifactory.jfrog.io/ui/user_profile). Under **Authentication Settings** you can **Generate an Identity Token** which is valid for **_8hrs_**. **Keep in mind to never ever commit access tokens, auth tokens, passwords etc.!**
 
 Further informations:
 
-- https://self-service.collaboration.allianz.io/main/faq
-- https://allianz-apac-prd.adobecqms.net/content/dam/onemarketing/ops/selfservice-FAQ.pdf
+- https://self-service.collaboration.escapp.io/main/faq
+- https://escapp-apac-prd.adobecqms.net/content/dam/onemarketing/ops/selfservice-FAQ.pdf
 
 #### NPM Settings
 
 In your local user `.npmrc` file add the following registry configurations:
 
 ```text
-@allianz:registry=https://diartifactory.jfrog.io/artifactory/api/npm/npm-all/
+@escapp:registry=https://diartifactory.jfrog.io/artifactory/api/npm/npm-all/
 //diartifactory.jfrog.io:_authToken=<YOUR_GENERATED_8HRS_TOKEN>
 ```
 
@@ -192,12 +192,12 @@ In case you need to setup a CI/CD pipeline, better try to use the GDF Nexus pack
 After setting up all NPM configurations, simply install it with the usual npm command:
 
 ```bash
-npm i @allianz/a1-design-tokens
+npm i @escapp/a1-design-tokens
 ```
 
 ### NPM Package File Overview
 
-The following listing is an exemplary overview of the available token files in the `dist` folder of the NPM package. The listing below shows which token files for each platform can be expected in the future. If you are not in direct collaboration with us, **please only rely on the tokens under `token-package/dist/allianz/a1/web` for now**.
+The following listing is an exemplary overview of the available token files in the `dist` folder of the NPM package. The listing below shows which token files for each platform can be expected in the future. If you are not in direct collaboration with us, **please only rely on the tokens under `token-package/dist/escapp/a1/web` for now**.
 
 Recommended **A1** default theming combination is: `light lively spacious`
 
@@ -206,7 +206,7 @@ Recommended **A1** default theming combination is: `light lively spacious`
 
 ```text
 dist
- └─> allianz
+ └─> escapp
      └─> a1
          ├─> android
          │   ├── tokens-dark-lively-compact-l.kt
@@ -465,18 +465,18 @@ We are using the Cloudflare CDN procured by Content Management Tribe under the D
 The link to a token file is build up like the following:
 
 ```text
-https://design-tokens.cdn.allianz.com/<TOKEN_PACKAGE_VERSION>/<PATH_TO_THE_TOKEN_FILE>
+https://design-tokens.cdn.escapp.com/<TOKEN_PACKAGE_VERSION>/<PATH_TO_THE_TOKEN_FILE>
 ```
 
 so for the version 1.2.0 the link looks like the following:
 
 ```text
-https://design-tokens.cdn.allianz.com/1.2.0/allianz/a1/web/tokens-light-lively-spacious.1.2.0.css
+https://design-tokens.cdn.escapp.com/1.2.0/escapp/a1/web/tokens-light-lively-spacious.1.2.0.css
 ```
 
 ### CDN File Overview
 
-The following listing is an exemplary overview of the available token files in the `cdn` folder of the token package. The listing below shows which token files for each platform can be expected in the future. This means that **you please only rely on the tokens under `token-package/cdn/tokens/<TOKEN_PACKAGE_VERSION>/allianz/a1/web` for now**.
+The following listing is an exemplary overview of the available token files in the `cdn` folder of the token package. The listing below shows which token files for each platform can be expected in the future. This means that **you please only rely on the tokens under `token-package/cdn/tokens/<TOKEN_PACKAGE_VERSION>/escapp/a1/web` for now**.
 
 Recommended **A1** default theming combination is: `light lively spacious`
 
@@ -487,7 +487,7 @@ Recommended **A1** default theming combination is: `light lively spacious`
 cdn
  └─> tokens
      ├─> <TOKEN_PACKAGE_VERSION>
-     │   └─> allianz
+     │   └─> escapp
      │       └─> a1
      │           ├─> android
      │           │   ├── tokens-dark-lively-compact-l.<TOKEN_PACKAGE_VERSION>.kt
@@ -777,11 +777,11 @@ As we move forward, we are committed to enhancing our integration strategies to 
 
 #### Build Time Integration
 
-For example at the top of your `_variables.scss` file in your general style in your project, import the Allianz default theme, assuming you [installed the design tokens via NPM](https://github.developer.allianz.io/a1/design-tokens/blob/main/token-package/README.md#install-the-package).
+For example at the top of your `_variables.scss` file in your general style in your project, import the escapp default theme, assuming you [installed the design tokens via NPM](https://github.developer.escapp.io/a1/design-tokens/blob/main/token-package/README.md#install-the-package).
 
 ```SCSS
 // relative path to your node_modules folder most likely varies
-@use '../node_modules/@allianz/a1-design-tokens/dist/allianz/a1/web/tokens-light-lively-spacious-xs' as *;
+@use '../node_modules/@escapp/a1-design-tokens/dist/escapp/a1/web/tokens-light-lively-spacious-xs' as *;
 ```
 
 Pay attention that you have to take care of the breakpoint media queries yourself in this case, as this example is only using the `xs` breakpoint tokens.
@@ -800,10 +800,10 @@ Pay attention that you have to take care of the breakpoint media queries yoursel
 
 #### Run Time Integration
 
-For example in the `<head>` of you website add the following link tag of the Allianz default theme like the following:
+For example in the `<head>` of you website add the following link tag of the escapp default theme like the following:
 
 ```HTML
-<link href="https://design-tokens.cdn.allianz.com/1.2.0/allianz/a1/web/tokens-light-lively-spacious.1.2.0.css" rel="stylesheet" type="text/css" />
+<link href="https://design-tokens.cdn.escapp.com/1.2.0/escapp/a1/web/tokens-light-lively-spacious.1.2.0.css" rel="stylesheet" type="text/css" />
 ```
 
 ##### Considerations
@@ -821,7 +821,7 @@ For example in the `<head>` of you website add the following link tag of the All
 
 #### Mixed Integration Scenario
 
-We as the Allianz Studio design system team recognize the importance of both methods, build-time and run-time integrations, and the value they bring to our development process. Our goal for the future is to explore and provide integration scenarios that harness the best of both worlds—combining the speed and reliability of build-time integration with the adaptability of run-time integration. By doing so, we aim to minimize the downsides of each approach. As first approach to this, we are providing a single and configurable SCSS mixin entry point, which provides the design tokens for a specific themeing combination and it's corresponding media queries.
+We as the escapp Studio design system team recognize the importance of both methods, build-time and run-time integrations, and the value they bring to our development process. Our goal for the future is to explore and provide integration scenarios that harness the best of both worlds—combining the speed and reliability of build-time integration with the adaptability of run-time integration. By doing so, we aim to minimize the downsides of each approach. As first approach to this, we are providing a single and configurable SCSS mixin entry point, which provides the design tokens for a specific themeing combination and it's corresponding media queries.
 
 ##### Configurable Selector via SCSS Mixins
 
@@ -829,7 +829,7 @@ In case you want to adjust the selector under which all the CSS variable represe
 
 ```SCSS
 // relative path to your node_modules folder most likely varies
-@use '../node_modules/@allianz/a1-design-tokens/dist/allianz/a1/web/tokens-theme-mixins-index' as tokens;
+@use '../node_modules/@escapp/a1-design-tokens/dist/escapp/a1/web/tokens-theme-mixins-index' as tokens;
 
 @include tokens.apply-design-tokens('light', 'lively', 'spacious', '.your-custom-selector');
 ```
@@ -857,7 +857,7 @@ which compiles to
 
 ### Token Usage
 
-If you want to quickly understand, how the **A1** design Tokens can be used in your code, you may want ot have a look in [the A1 typography example](https://github.developer.allianz.io/a1/poc-experiments/blob/main/early-demos/demo-typography.html) as CSS variables in a HTML static website. Download the example and just drag'n'drop the file in your browser, then examine the HTML & CSS source code in your browser inspector. The design tokens can be used in CSS for example like the following for a headline:
+If you want to quickly understand, how the **A1** design Tokens can be used in your code, you may want ot have a look in [the A1 typography example](https://github.developer.escapp.io/a1/poc-experiments/blob/main/early-demos/demo-typography.html) as CSS variables in a HTML static website. Download the example and just drag'n'drop the file in your browser, then examine the HTML & CSS source code in your browser inspector. The design tokens can be used in CSS for example like the following for a headline:
 
 ```html
 <style>
@@ -870,7 +870,7 @@ If you want to quickly understand, how the **A1** design Tokens can be used in y
 <h1 class="headline-6xl">Headline 6XL</h1>
 ```
 
-In the linked [PoC Experiments repository](https://github.developer.allianz.io/a1/poc-experiments) a few more example design token integration examples are available. Please acknowledge, that these examples may not be updated to the latest design token release version and are relying on a specific version, that they have been using.
+In the linked [PoC Experiments repository](https://github.developer.escapp.io/a1/poc-experiments) a few more example design token integration examples are available. Please acknowledge, that these examples may not be updated to the latest design token release version and are relying on a specific version, that they have been using.
 
 ## Versioning & Release Cycles
 
@@ -896,7 +896,7 @@ Remember, the key goal during the pre-1.0.0 phase is to iterate quickly and inco
 
 ### Connected Release Versions
 
-As we have a true end-2-end connection between desgins, design tokens and component libraries it is important to understand, which version of each respective part works together with each of the other parts. Therefore [a release compatibility overview](https://one.allianz.com/document/1025#/updates/releases/changelog) documents the compatible versions.
+As we have a true end-2-end connection between desgins, design tokens and component libraries it is important to understand, which version of each respective part works together with each of the other parts. Therefore [a release compatibility overview](https://one.escapp.com/document/1025#/updates/releases/changelog) documents the compatible versions.
 
 ### Definition of Breaking Changes
 
@@ -919,22 +919,22 @@ In order to get a better understanding, which changes compared to the previous r
 
 ## Design Token Migration Script
 
-If you are already using an older version of the A1 design tokens, you can use the migration script with the corresponding migration file, that is able to resolve all breaking changes connected to design token names between versions of this token-package. In theory it can easily be enhanced with own design token names or design token names in other formats than CSS variables or also with import paths before you run the script. More dedicated details under [Migrations](https://github.developer.allianz.io/a1/design-tokens/tree/main/migrations).
+If you are already using an older version of the A1 design tokens, you can use the migration script with the corresponding migration file, that is able to resolve all breaking changes connected to design token names between versions of this token-package. In theory it can easily be enhanced with own design token names or design token names in other formats than CSS variables or also with import paths before you run the script. More dedicated details under [Migrations](https://github.developer.escapp.io/a1/design-tokens/tree/main/migrations).
 
 ## Background Informations
 
 ### Design Token Standard
 
-There are several companies that produce design related products. All of them try to solve the problem of standardise Design Tokens. To find the best solution for the digital design and development industry they formed a community around the topic in July 2019. Among the companies you find names like PenPot, Tokens Studio, Google (Material Design), Framer, Marvel, Zeroheight, Figma, Sketch, Adobe (XD), InVision, Interplay, Knapsack, Arcade, UXPin, Axure, Modulz, Abstract, Zeplin etc. All of them agreed upon the fact that it is hard to find a general approach where every vendor will align to. But they are willing to work on it. We as Allianz will stick to what was decided there to ensure a high level of reusability.
+There are several companies that produce design related products. All of them try to solve the problem of standardise Design Tokens. To find the best solution for the digital design and development industry they formed a community around the topic in July 2019. Among the companies you find names like PenPot, Tokens Studio, Google (Material Design), Framer, Marvel, Zeroheight, Figma, Sketch, Adobe (XD), InVision, Interplay, Knapsack, Arcade, UXPin, Axure, Modulz, Abstract, Zeplin etc. All of them agreed upon the fact that it is hard to find a general approach where every vendor will align to. But they are willing to work on it. We as escapp will stick to what was decided there to ensure a high level of reusability.
 
 - [W3C Design Tokens](https://www.w3.org/community/design-tokens/)
 - [W3C Design Tokens - Working Draft](https://design-tokens.github.io/community-group/format/)
 
 ### Design Decisions
 
-Please be aware that the design tokens administered here describe the technically mapped design decisions of Allianz. For all design tokens, there are explanatory and more detailed descriptions of the intended use. In some cases, it may be useful to use these descriptions as a basis for decision-making in order to clarify possible questions. In doubt, please contact the Design System Team within the Allianz Studio.
+Please be aware that the design tokens administered here describe the technically mapped design decisions of escapp. For all design tokens, there are explanatory and more detailed descriptions of the intended use. In some cases, it may be useful to use these descriptions as a basis for decision-making in order to clarify possible questions. In doubt, please contact the Design System Team within the escapp Studio.
 
-Find more information here: [A1 Brand Guidelines](https://one.allianz.com/)
+Find more information here: [A1 Brand Guidelines](https://one.escapp.com/)
 
 ### Design System Feature Overview
 
@@ -948,7 +948,7 @@ Find more information here: [A1 Brand Guidelines](https://one.allianz.com/)
 
 ### Technical Decisions
 
-Allianz products and services build upon a broad and heterogeneous technology landscape. This repository is therefore the single source of truth for different kind of platforms, tools and Alllianz brands. The goal is to provide an as simple as possible solution for every consuming party.
+escapp products and services build upon a broad and heterogeneous technology landscape. This repository is therefore the single source of truth for different kind of platforms, tools and Alllianz brands. The goal is to provide an as simple as possible solution for every consuming party.
 
 - All descriptions and assets are directly accessible via URL (not a bug, it's a feature).
 - All files contain a versioning information in the header comment and additionally in the file name for the CDN distribution.
@@ -956,11 +956,11 @@ Allianz products and services build upon a broad and heterogeneous technology la
 
 ### Keep Informed
 
-Updates and announcements will be communicated directly by the Allianz Studio. Apart from purely technical changes, we implicitly ask you to use the official Allianz Studio channels (e-mail, newsletter, Microsoft Teams) for announcements and voting.
+Updates and announcements will be communicated directly by the escapp Studio. Apart from purely technical changes, we implicitly ask you to use the official escapp Studio channels (e-mail, newsletter, Microsoft Teams) for announcements and voting.
 
-Find more information here under [A1 Brand Guidelines](https://one.allianz.com/).
-If you have questions feel free to reach out to use via [our Allianz Teams channel](https://teams.microsoft.com/l/team/19%3aExOsuBe8zknc18D-HRrDFdSM1WHXyvPmWDH9HFc_uCw1%40thread.tacv2/conversations?groupId=84dc364c-f66f-4602-81b9-184f4c3f1828&tenantId=6e06e42d-6925-47c6-b9e7-9581c7ca302a).
+Find more information here under [A1 Brand Guidelines](https://one.escapp.com/).
+If you have questions feel free to reach out to use via [our escapp Teams channel](https://teams.microsoft.com/l/team/19%3aExOsuBe8zknc18D-HRrDFdSM1WHXyvPmWDH9HFc_uCw1%40thread.tacv2/conversations?groupId=84dc364c-f66f-4602-81b9-184f4c3f1828&tenantId=6e06e42d-6925-47c6-b9e7-9581c7ca302a).
 
 ## License
 
-[Copyright (c) 2026 Allianz SE](LICENSE)
+[Copyright (c) 2026 escapp SE](LICENSE)

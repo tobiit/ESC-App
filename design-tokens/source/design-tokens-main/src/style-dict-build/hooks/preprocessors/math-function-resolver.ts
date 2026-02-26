@@ -34,7 +34,7 @@ const checkTokenValueForMathFunction = (value: string) => {
 	}
 };
 
-// TODO https://jmp.allianz.net/browse/A1-1077
+// TODO https://jmp.escapp.net/browse/A1-1077
 // const storeOriginalFormulaInTsExtensions = (token: DesignToken, originalFormula: string): void => {
 // 	if (!token['$extensions']) {
 // 		token['$extensions'] = {};

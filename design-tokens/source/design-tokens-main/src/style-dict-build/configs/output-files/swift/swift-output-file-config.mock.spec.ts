@@ -16,7 +16,7 @@ export const mockMockedExcludedTokensFilterName = 'mocked-filter-name';
  */
 export const createStandardSwiftConfigScenario = () => {
 	return {
-		input: '/dist/ios/allianz-theme',
+		input: '/dist/ios/escapp-theme',
 		description: 'Standard Swift config with typical output path',
 	};
 };

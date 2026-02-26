@@ -7,7 +7,7 @@ import { ScssMixinFileProcessingData, ScssMixinProcessingState } from '../respon
  */
 
 // Mock target folder and parameters
-export const mockBrand = 'allianz';
+export const mockBrand = 'escapp';
 export const mockDesignSystemName = 'a1';
 export const mockTargetFolder = `token-package/dist/${mockBrand}/${mockDesignSystemName}/web`;
 

@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { PlatformConfig } from 'style-dictionary';
 import { jsonToolsOutputFileConfig, pumlOutputFileConfig } from '../../output-files/index.js';
 import { TsTransformGroups } from '../../../enums/index.js';
-import { allianzFileHeaderName } from '../../../hooks/index.js';
+import { escappFileHeaderName } from '../../../hooks/index.js';
 import { Platforms } from '../../../../shared/index.js';
 import { platformPumlConfig, platformToolsConfig } from './tools-platform-config.js';
 import {
@@ -16,7 +16,7 @@ import {
 	createStandardToolsPlatformConfigScenario,
 	createUndefinedInputToolsPlatformConfigScenario,
 	createUnicodePathToolsPlatformConfigScenario,
-	mockMockedAllianzFileHeaderName,
+	mockMockedescappFileHeaderName,
 	mockMockedJsonToolsOutputFileConfig,
 	mockMockedPlatformsTools,
 	mockMockedTsTransformGroups,
@@ -58,7 +58,7 @@ jest.mock('../../../enums/index.js', () => {
 // Mock the hooks dependency
 jest.mock('../../../hooks/index.js', () => {
 	return {
-		allianzFileHeaderName: 'allianzFileHeader',
+		escappFileHeaderName: 'escappFileHeader',
 		pumlColorTransformName: 'name/puml/color',
 		pumlNameTransformName: 'name/puml/constant',
 	};
@@ -97,7 +97,7 @@ describe('platformToolsConfig', () => {
 				buildPath: scenario.outputFilePath,
 				files: [mockMockedJsonToolsOutputFileConfig],
 				options: {
-					fileHeader: mockMockedAllianzFileHeaderName,
+					fileHeader: mockMockedescappFileHeaderName,
 				},
 			});
 
@@ -117,7 +117,7 @@ describe('platformToolsConfig', () => {
 				buildPath: scenario.outputFilePath,
 				files: [mockMockedJsonToolsOutputFileConfig],
 				options: {
-					fileHeader: mockMockedAllianzFileHeaderName,
+					fileHeader: mockMockedescappFileHeaderName,
 				},
 			});
 
@@ -133,7 +133,7 @@ describe('platformToolsConfig', () => {
 			expect(result.buildPath).toBe('');
 			expect(result.transformGroup).toBe(mockMockedTsTransformGroups);
 			expect(result.files).toEqual([mockMockedJsonToolsOutputFileConfig]);
-			expect(result.options?.fileHeader).toBe(mockMockedAllianzFileHeaderName);
+			expect(result.options?.fileHeader).toBe(mockMockedescappFileHeaderName);
 
 			expect(mockJsonToolsOutputFileConfig).toHaveBeenCalledWith(`${mockMockedPlatformsTools}/`);
 		});
@@ -193,7 +193,7 @@ describe('platformToolsConfig', () => {
 			const testFileName = 'test-tools-tokens';
 			const result = platformToolsConfig(testOutputPath, testFileName);
 
-			expect(result.options?.fileHeader).toBe(mockMockedAllianzFileHeaderName);
+			expect(result.options?.fileHeader).toBe(mockMockedescappFileHeaderName);
 		});
 
 		it('should set buildPath to the provided outputFilePath', () => {
@@ -279,13 +279,13 @@ describe('platformToolsConfig', () => {
 			expect(result.transformGroup).toBe(TsTransformGroups.tokensStudio);
 		});
 
-		it('should use allianzFileHeaderName from hooks', () => {
+		it('should use escappFileHeaderName from hooks', () => {
 			const outputPath = '/test/build';
 			const fileName = 'design-tools-tokens';
 
 			const result = platformToolsConfig(outputPath, fileName);
 
-			expect(result.options?.fileHeader).toBe(allianzFileHeaderName);
+			expect(result.options?.fileHeader).toBe(escappFileHeaderName);
 		});
 
 		it('should use Platforms.tools from shared enums', () => {
@@ -357,14 +357,14 @@ describe('platformToolsConfig', () => {
 
 		it('should be designed for tools token generation', () => {
 			const outputPath = '/tools/tokens';
-			const fileName = 'allianz-tools-tokens';
+			const fileName = 'escapp-tools-tokens';
 
 			const result = platformToolsConfig(outputPath, fileName);
 
 			// Verify it's configured for tools development
 			expect(result.transformGroup).toBe('tokens-studio');
 			expect(result.files).toEqual([mockMockedJsonToolsOutputFileConfig]);
-			expect(mockJsonToolsOutputFileConfig).toHaveBeenCalledWith('tools/allianz-tools-tokens');
+			expect(mockJsonToolsOutputFileConfig).toHaveBeenCalledWith('tools/escapp-tools-tokens');
 		});
 
 		it('should use tokens-studio transform group for tools compatibility', () => {
@@ -475,11 +475,11 @@ describe('platformPumlConfig', () => {
 			expect(mockPumlOutputFileConfig).toHaveBeenCalledWith('tools/design-tokens');
 		});
 
-		it('should set fileHeader option to allianz', () => {
+		it('should set fileHeader option to escapp', () => {
 			const result = platformPumlConfig('/dist', 'tokens');
 
 			expect(result.options).toBeDefined();
-			expect(result.options?.fileHeader).toBe(allianzFileHeaderName);
+			expect(result.options?.fileHeader).toBe(escappFileHeaderName);
 		});
 
 		it('should work with empty strings', () => {

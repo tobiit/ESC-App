@@ -101,7 +101,7 @@ export const mockPreparedVersionCheckData = {
 	tokenOutputFullFilePath: '/path/to/dist/file1.css',
 	tokenOutputFilePathParts: ['path', 'to', 'dist', 'file1.css'],
 	platform: 'web',
-	brand: 'allianz',
+	brand: 'escapp',
 	file: 'file1.css',
 	initialDistVersion: '0.0.1',
 };

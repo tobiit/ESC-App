@@ -16,7 +16,7 @@ export const mockMockedKtOutputFileConfig = [
 ] as Array<File>;
 
 export const mockMockedTsTransformGroups = 'tokens-studio';
-export const mockMockedAllianzFileHeaderName = 'allianzFileHeader';
+export const mockMockedescappFileHeaderName = 'escappFileHeader';
 export const mockMockedPlatformsAndroid = 'android';
 
 /**
@@ -25,7 +25,7 @@ export const mockMockedPlatformsAndroid = 'android';
 export const createStandardAndroidPlatformConfigScenario = () => {
 	return {
 		outputFilePath: '/dist/tokens',
-		outputFileName: 'allianz-tokens',
+		outputFileName: 'escapp-tokens',
 		description: 'Standard Android platform config with typical paths',
 	};
 };
@@ -127,7 +127,7 @@ export const createExpectedAndroidPlatformConfig = (outputFilePath: string): Pla
 		buildPath: outputFilePath,
 		files: mockMockedKtOutputFileConfig,
 		options: {
-			fileHeader: mockMockedAllianzFileHeaderName,
+			fileHeader: mockMockedescappFileHeaderName,
 		},
 	};
 };

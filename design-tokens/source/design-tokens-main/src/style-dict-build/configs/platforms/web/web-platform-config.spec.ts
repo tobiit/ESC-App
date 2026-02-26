@@ -15,7 +15,7 @@ import {
 	createStandardWebStylePlatformConfigScenario,
 	createUndefinedInputWebPlatformConfigScenario,
 	createUnicodePathWebPlatformConfigScenario,
-	mockMockedAllianzFileHeaderName,
+	mockMockedescappFileHeaderName,
 	mockMockedCssOutputFileConfig,
 	mockMockedCubicBezierWrapTransformName,
 	mockMockedInsetShorthandCalcFixTransformName,
@@ -60,7 +60,7 @@ jest.mock('../../../enums/index.js', () => {
 });
 jest.mock('../../../hooks/index.js', () => {
 	return {
-		allianzFileHeaderName: 'allianzFileHeader',
+		escappFileHeaderName: 'escappFileHeader',
 		transformTo8DigitHexValuesTransformName: 'transformTo8DigitHexValues',
 		cubicBezierWrapTransformName: 'cubicBezierWrap',
 		lowerCaseLinearGradientTransformName: 'lowerCaseLinearGradient',
@@ -208,7 +208,7 @@ describe('web-platform-config', () => {
 
 			const result = platformWebJsConfig(scenario.outputFilePath, scenario.outputFileName);
 
-			expect(result.options?.fileHeader).toBe(mockMockedAllianzFileHeaderName);
+			expect(result.options?.fileHeader).toBe(mockMockedescappFileHeaderName);
 		});
 	});
 
@@ -342,7 +342,7 @@ describe('web-platform-config', () => {
 
 			const result = platformWebStyleConfig(scenario.outputFilePath, scenario.outputFileName);
 
-			expect(result.options?.fileHeader).toBe(mockMockedAllianzFileHeaderName);
+			expect(result.options?.fileHeader).toBe(mockMockedescappFileHeaderName);
 		});
 
 		it('should spread all file configs correctly for web style config', () => {

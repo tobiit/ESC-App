@@ -44,4 +44,4 @@ export enum A1SpecialTokenNameKeyWords {
 	width = 'width',
 }
 
-// Token type and special token name key word mapping under: https://allianzms-my.sharepoint.com/:x:/r/personal/christoph_merdes_allianz_de/Documents/Temp/Token%20Mapping%20Release%201.xlsx?d=w3af02ade829c4b759aa5872b56992b93&csf=1&web=1&e=qXLhfG
+// Token type and special token name key word mapping under: https://escappms-my.sharepoint.com/:x:/r/personal/christoph_merdes_escapp_de/Documents/Temp/Token%20Mapping%20Release%201.xlsx?d=w3af02ade829c4b759aa5872b56992b93&csf=1&web=1&e=qXLhfG

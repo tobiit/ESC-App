@@ -1,4 +1,4 @@
-/* Auto-generated from Allianz design token export. */
+/* Auto-generated from escapp design token export. */
 :root {
   --accordion-l-item-header-gap-horizontal: var(--semantic-dimension-static-800);
   --accordion-l-item-headline-gap-horizontal: var(--semantic-dimension-static-400);
@@ -245,7 +245,7 @@
   --core-duration-100: 0.1s;
   --core-duration-250: 0.25s;
   --core-duration-500: 0.5s;
-  --core-font-family-primary: Allianz Neo;
+  --core-font-family-primary: escapp Neo;
   --core-font-weight-100: 400;
   --core-font-weight-150: 600;
   --core-font-weight-200: 700;
