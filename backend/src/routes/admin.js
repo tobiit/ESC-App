@@ -28,6 +28,253 @@ adminRouter.get("/participants", async (_req, res, next) => {
   }
 });
 
+// Bulk Upload Routes
+adminRouter.post("/events/:id/entries/bulk", async (req, res, next) => {
+  try {
+    const schema = z.object({
+      entries: z.array(z.object({
+        country: z.string().min(1),
+        song: z.string().optional(),
+        artist: z.string().optional()
+      }))
+    });
+    const parsed = schema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ message: "Ungültige Nutzdaten" });
+    
+    await withTx(async (conn) => {
+      // Delete existing entries for this event
+      await conn.query("DELETE FROM entries WHERE event_id = ?", [req.params.id]);
+      
+      // Insert new entries
+      for (let i = 0; i < parsed.data.entries.length; i++) {
+        const entry = parsed.data.entries[i];
+        await conn.query(
+          "INSERT INTO entries (event_id, country_name, song_title, artist_name, sort_order) VALUES (?, ?, ?, ?, ?)",
+          [req.params.id, entry.country, entry.song || null, entry.artist || null, i + 1]
+        );
+      }
+    });
+    
+    res.status(201).json({ ok: true, count: parsed.data.entries.length });
+  } catch (error) {
+    next(error);
+  }
+});
+
+adminRouter.post("/participants/bulk", async (req, res, next) => {
+  try {
+    const schema = z.object({
+      participants: z.array(z.object({
+        username: z.string().min(2),
+        display_name: z.string().min(1),
+        email: z.string().email().optional()
+      }))
+    });
+    const parsed = schema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ message: "Ungültige Nutzdaten" });
+    
+    const defaultPassword = "Welcome123!";
+    const hash = await bcrypt.hash(defaultPassword, 12);
+    
+    await withTx(async (conn) => {
+      for (const participant of parsed.data.participants) {
+        const existing = await conn.query("SELECT id FROM users WHERE username = ?", [participant.username]);
+        if (existing.length > 0) continue;
+        
+        await conn.query(
+          "INSERT INTO users (role, username, password_hash, display_name, is_active) VALUES ('participant', ?, ?, ?, TRUE)",
+          [participant.username, hash, participant.display_name]
+        );
+      }
+    });
+    
+    res.status(201).json({ ok: true, count: parsed.data.participants.length, defaultPassword });
+  } catch (error) {
+    next(error);
+  }
+});
+
+adminRouter.post("/events/:id/predictions/bulk", async (req, res, next) => {
+  try {
+    const schema = z.object({
+      rankings: z.array(z.object({
+        username: z.string().min(1),
+        country: z.string().min(1),
+        rank: z.string().min(1)
+      }))
+    });
+    const parsed = schema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ message: "Ungültige Nutzdaten" });
+    
+    await withTx(async (conn) => {
+      const entryRows = await conn.query("SELECT id, country_name FROM entries WHERE event_id = ?", [req.params.id]);
+      const entryMap = new Map(entryRows.map((row) => [row.country_name, Number(row.id)]));
+      const entrySet = new Set(entryRows.map((row) => Number(row.id)));
+
+      const byUser = {};
+      for (const ranking of parsed.data.rankings) {
+        if (!byUser[ranking.username]) byUser[ranking.username] = [];
+        byUser[ranking.username].push(ranking);
+      }
+
+      for (const [username, rankings] of Object.entries(byUser)) {
+        const userRows = await conn.query("SELECT id FROM users WHERE username = ? AND role = 'participant'", [username]);
+        if (userRows.length === 0) continue;
+        const userId = userRows[0].id;
+
+        let predictionRows = await conn.query(
+          "SELECT id FROM predictions WHERE event_id = ? AND participant_id = ?",
+          [req.params.id, userId]
+        );
+
+        let predictionId;
+        if (predictionRows.length === 0) {
+          const result = await conn.query(
+            "INSERT INTO predictions (event_id, participant_id, status) VALUES (?, ?, 'draft')",
+            [req.params.id, userId]
+          );
+          predictionId = result.insertId;
+        } else {
+          predictionId = predictionRows[0].id;
+        }
+
+        const items = rankings.map((ranking) => {
+          const entryId = entryMap.get(ranking.country);
+          if (!entryId) throw new Error(`Ungültiges Land: ${ranking.country}`);
+          return { entryId, rank: Number(ranking.rank) };
+        });
+        validatePredictionItems(items, entrySet);
+
+        await conn.query("DELETE FROM prediction_items WHERE prediction_id = ?", [predictionId]);
+        for (const item of items) {
+          await conn.query(
+            "INSERT INTO prediction_items (prediction_id, entry_id, rank_position) VALUES (?, ?, ?)",
+            [predictionId, item.entryId, item.rank]
+          );
+        }
+      }
+    });
+    
+    res.status(201).json({ ok: true, count: parsed.data.rankings.length });
+  } catch (error) {
+    next(error);
+  }
+});
+
+adminRouter.post("/events/:id/ratings/bulk", async (req, res, next) => {
+  try {
+    const schema = z.object({
+      ratings: z.array(z.object({
+        username: z.string().min(1),
+        country: z.string().min(1),
+        points: z.string().min(1)
+      }))
+    });
+    const parsed = schema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ message: "Ungültige Nutzdaten" });
+
+    await withTx(async (conn) => {
+      const entryRows = await conn.query("SELECT id, country_name FROM entries WHERE event_id = ?", [req.params.id]);
+      const entryMap = new Map(entryRows.map((row) => [row.country_name, Number(row.id)]));
+      const entrySet = new Set(entryRows.map((row) => Number(row.id)));
+
+      const byUser = {};
+      for (const rating of parsed.data.ratings) {
+        if (!byUser[rating.username]) byUser[rating.username] = [];
+        byUser[rating.username].push(rating);
+      }
+
+      for (const [username, ratings] of Object.entries(byUser)) {
+        const userRows = await conn.query("SELECT id FROM users WHERE username = ? AND role = 'participant'", [username]);
+        if (userRows.length === 0) continue;
+        const userId = userRows[0].id;
+
+        let ratingRows = await conn.query(
+          "SELECT id FROM ratings WHERE event_id = ? AND participant_id = ?",
+          [req.params.id, userId]
+        );
+
+        let ratingId;
+        if (ratingRows.length === 0) {
+          const result = await conn.query(
+            "INSERT INTO ratings (event_id, participant_id, status) VALUES (?, ?, 'draft')",
+            [req.params.id, userId]
+          );
+          ratingId = result.insertId;
+        } else {
+          ratingId = ratingRows[0].id;
+        }
+
+        const items = ratings.map((rating) => {
+          const entryId = entryMap.get(rating.country);
+          if (!entryId) throw new Error(`Ungültiges Land: ${rating.country}`);
+          return { entryId, points: Number(rating.points) };
+        });
+        validateRatingItems(items, entrySet);
+
+        await conn.query("DELETE FROM rating_items WHERE rating_id = ?", [ratingId]);
+        for (const item of items) {
+          await conn.query(
+            "INSERT INTO rating_items (rating_id, entry_id, points) VALUES (?, ?, ?)",
+            [ratingId, item.entryId, item.points]
+          );
+        }
+      }
+    });
+
+    res.status(201).json({ ok: true, count: parsed.data.ratings.length });
+  } catch (error) {
+    next(error);
+  }
+});
+
+adminRouter.post("/events/:id/officialresult/bulk", async (req, res, next) => {
+  try {
+    const schema = z.object({
+      results: z.array(z.object({
+        country: z.string().min(1),
+        rank: z.string().min(1)
+      }))
+    });
+    const parsed = schema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ message: "Ungültige Nutzdaten" });
+
+    await withTx(async (conn) => {
+      const entryRows = await conn.query("SELECT id, country_name FROM entries WHERE event_id = ?", [req.params.id]);
+      const entryMap = new Map(entryRows.map((row) => [row.country_name, Number(row.id)]));
+      const entrySet = new Set(entryRows.map((row) => Number(row.id)));
+
+      const items = parsed.data.results.map((result) => {
+        const entryId = entryMap.get(result.country);
+        if (!entryId) throw new Error(`Ungültiges Land: ${result.country}`);
+        return { entryId, rank: Number(result.rank) };
+      });
+      validatePredictionItems(items, entrySet);
+
+      const existing = await conn.query("SELECT id FROM official_results WHERE event_id = ? LIMIT 1", [req.params.id]);
+      let officialResultId = existing[0]?.id;
+      if (!officialResultId) {
+        await conn.query("INSERT INTO official_results (event_id, status) VALUES (?, 'unset')", [req.params.id]);
+        const created = await conn.query("SELECT id FROM official_results WHERE event_id = ? LIMIT 1", [req.params.id]);
+        officialResultId = created[0].id;
+      }
+
+      await conn.query("DELETE FROM official_result_items WHERE official_result_id = ?", [officialResultId]);
+      for (const item of items) {
+        await conn.query(
+          "INSERT INTO official_result_items (official_result_id, entry_id, rank_position) VALUES (?, ?, ?)",
+          [officialResultId, item.entryId, item.rank]
+        );
+      }
+      await conn.query("UPDATE official_results SET status = 'set' WHERE id = ?", [officialResultId]);
+    });
+
+    res.status(201).json({ ok: true, count: parsed.data.results.length });
+  } catch (error) {
+    next(error);
+  }
+});
+
 adminRouter.post("/participants", async (req, res, next) => {
   try {
     const schema = z.object({ username: z.string().min(2), password: z.string().min(6), displayName: z.string().min(1) });
@@ -85,7 +332,7 @@ adminRouter.delete("/participants/:id", async (req, res, next) => {
 adminRouter.get("/events", async (_req, res, next) => {
   try {
     const rows = await pool.query(
-      "SELECT id, name, year, status, is_active AS isActive, created_at AS createdAt, updated_at AS updatedAt FROM events ORDER BY id DESC"
+      "SELECT id, name, year, status, is_active AS isActive, deleted_at AS deletedAt, created_at AS createdAt, updated_at AS updatedAt FROM events ORDER BY deleted_at IS NOT NULL ASC, id DESC"
     );
     res.json(rows);
   } catch (error) {
@@ -133,6 +380,34 @@ adminRouter.put("/events/:id", async (req, res, next) => {
         ]
       );
     });
+    res.json({ ok: true });
+  } catch (error) {
+    next(error);
+  }
+});
+
+/* ── Soft-delete / Restore ── */
+
+adminRouter.post("/events/:id/soft-delete", async (req, res, next) => {
+  try {
+    const result = await pool.query(
+      "UPDATE events SET deleted_at = NOW(), is_active = FALSE WHERE id = ? AND deleted_at IS NULL",
+      [req.params.id]
+    );
+    if (result.affectedRows === 0) return res.status(404).json({ message: "Event nicht gefunden oder bereits gelöscht" });
+    res.json({ ok: true });
+  } catch (error) {
+    next(error);
+  }
+});
+
+adminRouter.post("/events/:id/restore", async (req, res, next) => {
+  try {
+    const result = await pool.query(
+      "UPDATE events SET deleted_at = NULL WHERE id = ? AND deleted_at IS NOT NULL",
+      [req.params.id]
+    );
+    if (result.affectedRows === 0) return res.status(404).json({ message: "Event nicht gefunden oder nicht gelöscht" });
     res.json({ ok: true });
   } catch (error) {
     next(error);

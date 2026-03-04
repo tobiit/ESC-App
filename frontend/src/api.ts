@@ -102,5 +102,21 @@ export const api = {
   adminResetRating: (eventId: number, participantId: number) =>
     request(`/admin/events/${eventId}/ratings/${participantId}/reset`, { method: "POST" }),
   adminResetPrediction: (eventId: number, participantId: number) =>
-    request(`/admin/events/${eventId}/predictions/${participantId}/reset`, { method: "POST" })
+    request(`/admin/events/${eventId}/predictions/${participantId}/reset`, { method: "POST" }),
+  // Bulk Upload APIs
+  adminBulkUploadEntries: (eventId: number, entries: Array<{ country: string; song: string; artist: string }>) =>
+    request(`/admin/events/${eventId}/entries/bulk`, { method: "POST", body: JSON.stringify({ entries }) }),
+  adminBulkUploadParticipants: (participants: Array<{ username: string; display_name: string; email?: string }>) =>
+    request("/admin/participants/bulk", { method: "POST", body: JSON.stringify({ participants }) }),
+  adminBulkUploadRankings: (eventId: number, rankings: Array<{ username: string; country: string; rank: string }>) =>
+    request(`/admin/events/${eventId}/predictions/bulk`, { method: "POST", body: JSON.stringify({ rankings }) }),
+  adminBulkUploadRatings: (eventId: number, ratings: Array<{ username: string; country: string; points: string }>) =>
+    request(`/admin/events/${eventId}/ratings/bulk`, { method: "POST", body: JSON.stringify({ ratings }) }),
+  adminBulkUploadOfficialResults: (eventId: number, results: Array<{ country: string; rank: string }>) =>
+    request(`/admin/events/${eventId}/officialresult/bulk`, { method: "POST", body: JSON.stringify({ results }) }),
+  // Soft-delete events
+  adminSoftDeleteEvent: (eventId: number) =>
+    request(`/admin/events/${eventId}/soft-delete`, { method: "POST" }),
+  adminRestoreEvent: (eventId: number) =>
+    request(`/admin/events/${eventId}/restore`, { method: "POST" })
 };

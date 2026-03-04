@@ -1,6 +1,7 @@
 plugins {
   id("com.android.application")
   id("org.jetbrains.kotlin.android")
+  id("org.jetbrains.kotlin.plugin.compose")
   id("org.jetbrains.kotlin.plugin.serialization")
 }
 
@@ -16,7 +17,7 @@ android {
     versionName = "1.0.0"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-    buildConfigField("String", "API_BASE_URL", '"http://10.0.2.2:4000"')
+    buildConfigField("String", "API_BASE_URL", "\"https://api.basisadresse.de/escappapi/\"")
   }
 
   buildTypes {

@@ -170,6 +170,24 @@ cd android
 ./gradlew assembleDebug
 ```
 
+Die Android-App benötigt das Android SDK (API Level 35). Die APK wird unter
+`android/app/build/outputs/apk/debug/app-debug.apk` erzeugt.
+
+#### Architektur (Android)
+
+| Paket | Inhalt |
+|---|---|
+| `model/` | DTOs für Login, Event, Entry, Rating, Prediction, Results |
+| `data/` | `EscApi` (Retrofit), `TokenStore`, `DraftStore` (DataStore) |
+| `viewmodel/` | `AppViewModel` mit immutablem `UiState` |
+| `ui/theme/` | `EscAppTheme` — Material3 ColorScheme aus Design Tokens |
+| `ui/screen/` | `LoginScreen`, `RatingScreen`, `PredictionScreen`, `ResultsScreen` |
+
+- **API Base URL**: `https://api.basisadresse.de/escappapi/`
+- **Nur Teilnehmerfunktionen** (kein Admin-Bereich)
+- **Offline-Drafts**: Rating- und Prediction-Entwürfe werden lokal in DataStore gecacht
+- **Token-Refresh**: OkHttp-Interceptor versucht bei 401-Antworten einen automatischen Token-Refresh
+
 ---
 
 ## 7) Tests und Verifikation
