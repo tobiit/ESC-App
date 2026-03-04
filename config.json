@@ -1,6 +1,0 @@
-{
-  "adminPassword": "admin123",
-  "sessionSecret": "hallo#VHS#Kurse#2026!",
-  "portraitSize": { "width": 720, "height": 960 },
-  "landscapeSize": { "width": 960, "height": 720 }
-}

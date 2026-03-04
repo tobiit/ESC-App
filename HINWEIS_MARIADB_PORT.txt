@@ -1,0 +1,7 @@
+**Hinweis:**
+
+Die MariaDB im Docker-Container ist jetzt auf Port 33306 erreichbar (Host-Port 33306 → Container-Port 3306).
+
+Bitte passen Sie ggf. lokale Tools oder Verbindungen an (z.B. MySQL-Clients: `localhost:33306`).
+
+Das Backend greift bereits auf den neuen Port zu.

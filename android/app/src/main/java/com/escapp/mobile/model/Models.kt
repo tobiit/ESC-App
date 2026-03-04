@@ -3,6 +3,8 @@ package com.escapp.mobile.model
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+/* ── Auth ── */
+
 @Serializable
 data class LoginRequest(val username: String, val password: String)
 
@@ -28,10 +30,17 @@ data class LoginResponse(
 )
 
 @Serializable
+data class LogoutRequest(val refreshToken: String)
+
+/* ── Event / Entries ── */
+
+@Serializable
 data class EventDto(
     val id: Long,
     val name: String,
-    val status: String
+    val year: Int? = null,
+    val status: String,
+    @SerialName("isActive") val isActive: Boolean = false
 )
 
 @Serializable
@@ -39,8 +48,11 @@ data class EntryDto(
     val id: Long,
     @SerialName("countryName") val countryName: String,
     @SerialName("songTitle") val songTitle: String? = null,
-    @SerialName("artistName") val artistName: String? = null
+    @SerialName("artistName") val artistName: String? = null,
+    @SerialName("sortOrder") val sortOrder: Int? = null
 )
+
+/* ── Rating ── */
 
 @Serializable
 data class RatingItemDto(val entryId: Long, val points: Int)
@@ -54,6 +66,8 @@ data class RatingItemBody(val entryId: Long, val points: Int)
 @Serializable
 data class RatingUpsertRequest(val items: List<RatingItemBody>)
 
+/* ── Prediction ── */
+
 @Serializable
 data class PredictionItemDto(val entryId: Long, val rank: Int)
 
@@ -66,8 +80,18 @@ data class PredictionItemBody(val entryId: Long, val rank: Int)
 @Serializable
 data class PredictionUpsertRequest(val items: List<PredictionItemBody>)
 
+/* ── Results ── */
+
 @Serializable
-data class ScoreDto(val rank: Int, val points: Int)
+data class ScoreDto(
+    val rank: Int = 0,
+    val points: Int = 0,
+    val participantId: Long? = null,
+    val displayName: String? = null,
+    val exactMatches: Int? = null,
+    val closeMatches: Int? = null,
+    val totalDeviation: Int? = null
+)
 
 @Serializable
 data class MeDto(
@@ -76,17 +100,18 @@ data class MeDto(
 )
 
 @Serializable
-data class ResultsDto(val me: MeDto? = null)
-
-data class AppState(
-    val user: UserDto? = null,
-    val event: EventDto? = null,
-    val entries: List<EntryDto> = emptyList(),
-    val ratingMap: MutableMap<Long, Int> = mutableMapOf(),
-    val predictionOrder: MutableList<Long> = mutableListOf(),
-    val ratingSubmitted: Boolean = false,
-    val predictionSubmitted: Boolean = false,
-    val results: ResultsDto? = null,
-    val message: String? = null,
-    val error: String? = null
+data class RankingEntry(
+    val entryId: Long? = null,
+    val rank: Int = 0,
+    val countryName: String = ""
 )
+
+@Serializable
+data class ResultsDto(
+    val me: MeDto? = null,
+    val ratingRanking: List<RankingEntry> = emptyList(),
+    val top3A: List<ScoreDto> = emptyList(),
+    val top3B: List<ScoreDto> = emptyList(),
+    val officialRanking: List<RankingEntry> = emptyList()
+)
+
