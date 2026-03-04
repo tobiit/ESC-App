@@ -170,8 +170,11 @@ cd android
 ./gradlew assembleDebug
 ```
 
+
 Die Android-App benötigt das Android SDK (API Level 35). Die APK wird unter
 `android/app/build/outputs/apk/debug/app-debug.apk` erzeugt.
+
+**Hinweis:** Die App kann direkt im Android-Emulator gestartet werden (z.B. über Android Studio oder `./gradlew installDebug`). Nach erfolgreichem Build erscheint sie im Emulator unter den Apps.
 
 #### Architektur (Android)
 
@@ -325,5 +328,11 @@ cd /home/tobiit/code
 
 - Backend Health prüfen
 - Admin Login prüfen (`/auth/admin/login`)
+
+### GitHub: Push schlägt fehl (Authentication)
+
+- GitHub unterstützt keine Passwort-Authentifizierung mehr. Stattdessen muss ein sogenanntes "Personal Access Token" (PAT) als Passwort verwendet werden.
+- Token unter https://github.com/settings/tokens generieren und beim Push als Passwort eingeben.
+- Siehe auch: https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token
 
 
