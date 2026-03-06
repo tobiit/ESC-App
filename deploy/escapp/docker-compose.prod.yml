@@ -1,0 +1,88 @@
+# ==========================================================================
+# ESC-App – Docker Compose Produktion
+# Startet MariaDB + Backend. Frontend wird statisch via Nginx bereitgestellt.
+# ==========================================================================
+#
+# Nutzung:
+#   cd /opt/escapp
+#   docker compose -f deploy/escapp/docker-compose.prod.yml --env-file .env up -d --build
+#
+# Die .env-Datei muss in /opt/escapp/.env liegen (aus .env.production.example erstellt).
+# ==========================================================================
+
+services:
+  # ── MariaDB 11.4 ─────────────────────────────────────────────────────────
+  mariadb:
+    image: docker.io/library/mariadb:11.4
+    container_name: escapp-mariadb
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: ${DB_NAME:-escapp}
+      MARIADB_USER: ${DB_USER:-escapp}
+      MARIADB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD muss gesetzt sein}
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?DB_ROOT_PASSWORD muss gesetzt sein}
+      TZ: UTC
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    networks:
+      - escapp-net
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    # Nicht nach außen exponiert – nur Backend hat Zugriff
+    expose:
+      - "3306"
+
+  # ── Backend (Node.js/Express) ────────────────────────────────────────────
+  backend:
+    build:
+      context: ../../backend
+      dockerfile: Dockerfile
+    container_name: escapp-backend
+    restart: unless-stopped
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    environment:
+      PORT: 4000
+      NODE_ENV: production
+      DB_HOST: mariadb
+      DB_PORT: 3306
+      DB_USER: ${DB_USER:-escapp}
+      DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD muss gesetzt sein}
+      DB_NAME: ${DB_NAME:-escapp}
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:?JWT_ACCESS_SECRET muss gesetzt sein}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:?JWT_REFRESH_SECRET muss gesetzt sein}
+      ACCESS_TOKEN_TTL: ${ACCESS_TOKEN_TTL:-15m}
+      REFRESH_TOKEN_TTL_DAYS: ${REFRESH_TOKEN_TTL_DAYS:-30}
+      CORS_ORIGIN: ${CORS_ORIGIN:-https://esc.basisadresse.de}
+      ADMIN_BOOTSTRAP_USERNAME: ${ADMIN_BOOTSTRAP_USERNAME:-admin}
+      ADMIN_BOOTSTRAP_PASSWORD: ${ADMIN_BOOTSTRAP_PASSWORD:?ADMIN_BOOTSTRAP_PASSWORD muss gesetzt sein}
+      ADMIN_BOOTSTRAP_DISPLAY_NAME: ${ADMIN_BOOTSTRAP_DISPLAY_NAME:-Administrator}
+    ports:
+      # Nur auf localhost binden – Nginx macht den öffentlichen Zugang
+      - "127.0.0.1:4000:4000"
+    networks:
+      - escapp-net
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:4000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  escapp-net:
+    driver: bridge
+
+volumes:
+  mariadb_data:
+    driver: local
