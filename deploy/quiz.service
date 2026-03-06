@@ -3,8 +3,8 @@ Description=Quiz App
 After=network.target
 
 [Service]
-WorkingDirectory=/var/www/quiz.basisadresse.de/htdocs
-ExecStart=/usr/bin/node /var/www/quiz.basisadresse.de/htdocs/server.js
+WorkingDirectory=/var/www/esc.basisadresse.de/
+ExecStart=/usr/bin/node /var/www/esc.basisadresse.de/server.js
 Restart=always
 Environment=NODE_ENV=production
 

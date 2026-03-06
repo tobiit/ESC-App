@@ -2,22 +2,22 @@
 
 ## Paths used
 
-- App path: /var/www/quiz.basisadresse.de/htdocs
-- Service: /etc/systemd/system/quiz.service
-- NGINX site: /etc/nginx/sites-available/quiz
+- App path: /var/www/esc.basisadresse.de/
+- Service: /etc/systemd/system/escapp.service
+- NGINX site: /etc/nginx/sites-available/escapp
 
 ## Systemd service
 
-Copy deploy/quiz.service to /etc/systemd/system/quiz.service and run:
+Copy deploy/escapp.service to /etc/systemd/system/escapp.service and run:
 
 - sudo systemctl daemon-reload
 - sudo systemctl enable --now quiz
 
 ## NGINX
 
-Copy deploy/nginx-quiz.conf to /etc/nginx/sites-available/quiz and run:
+Copy deploy/nginx-escapp.conf to /etc/nginx/sites-available/escapp and run:
 
-- sudo ln -s /etc/nginx/sites-available/quiz /etc/nginx/sites-enabled/
+- sudo ln -s /etc/nginx/sites-available/escapp /etc/nginx/sites-enabled/
 - sudo nginx -t
 - sudo systemctl reload nginx
 
@@ -25,4 +25,4 @@ Copy deploy/nginx-quiz.conf to /etc/nginx/sites-available/quiz and run:
 
 Use certbot for HTTPS:
 
-- sudo certbot --nginx -d quiz.basisadresse.de
+- sudo certbot --nginx -d esc.basisadresse.de
