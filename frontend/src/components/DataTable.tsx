@@ -1,10 +1,22 @@
 import React from "react";
 
-export function DataTable({ columns, data, onChange, rowClassName }) {
-  // columns: [{ key, label, editable, type, options }]
-  // data: array of objects
-  // onChange: (rowIdx, key, value) => void
-  // rowClassName: (row, idx) => string (optional)
+interface Column {
+  key: string;
+  label: string;
+  editable?: boolean;
+  type?: "select" | "checkbox" | "password" | "text";
+  options?: { value: string; label: string }[];
+  render?: (row: Record<string, any>, index: number) => React.ReactNode;
+}
+
+interface DataTableProps {
+  columns: Column[];
+  data: Record<string, any>[];
+  onChange: (rowIdx: number, key: string, value: any) => void;
+  rowClassName?: (row: Record<string, any>, idx: number) => string;
+}
+
+export function DataTable({ columns, data, onChange, rowClassName }: DataTableProps) {
   return (
     <table className="data-table">
       <thead>
