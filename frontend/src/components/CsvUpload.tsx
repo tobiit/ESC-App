@@ -1,14 +1,22 @@
 import React, { useRef } from "react";
 
-export function CsvUpload({ label, onUpload, example, accept = ".csv" }) {
-  const fileInput = useRef();
+interface CsvUploadProps {
+  label: string;
+  onUpload: (text: string, filename?: string) => void;
+  example?: string;
+  accept?: string;
+}
 
-  const handleFile = (e) => {
-    const file = e.target.files[0];
+export function CsvUpload({ label, onUpload, example, accept = ".csv" }: CsvUploadProps) {
+  const fileInput = useRef<HTMLInputElement | null>(null);
+
+  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
     reader.onload = (evt) => {
-      onUpload(evt.target.result, file.name);
+      const result = typeof evt.target?.result === "string" ? evt.target.result : "";
+      onUpload(result, file.name);
     };
     reader.readAsText(file);
   };
@@ -24,7 +32,7 @@ export function CsvUpload({ label, onUpload, example, accept = ".csv" }) {
           ref={fileInput}
           onChange={handleFile}
         />
-        <button type="button" onClick={() => fileInput.current.click()}>
+        <button type="button" onClick={() => fileInput.current?.click()}>
           Datei auswählen
         </button>
       </label>

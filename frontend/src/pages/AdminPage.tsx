@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api, clearTokens } from "../api";
-import { AdminEventManager } from "../components/AdminEventManager.jsx";
-import { DataTable } from "../components/DataTable.jsx";
+import { AdminEventManager } from "../components/AdminEventManager";
+import { DataTable } from "../components/DataTable";
 
 type User = { id: number; role: "admin" | "participant"; username: string; displayName: string };
 

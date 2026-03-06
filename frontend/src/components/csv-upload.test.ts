@@ -2,21 +2,21 @@ import { describe, it, expect } from "vitest";
 
 // CSV Parsing Tests
 describe("CSV Upload Validation", () => {
-  const parseCsv = (text) => {
+  const parseCsv = (text: string): Record<string, string>[] => {
     const lines = text.trim().split(/\r?\n/);
     if (lines.length === 0) return [];
     const [header, ...dataLines] = lines;
     const keys = header.split(",").map((k) => k.trim());
     return dataLines.map((line) => {
       const values = line.split(",").map((v) => v.trim());
-      const obj = {};
+      const obj: Record<string, string> = {};
       keys.forEach((k, i) => (obj[k] = values[i] || ""));
       return obj;
     });
   };
 
-  const validateSongs = (songs) => {
-    const errors = [];
+  const validateSongs = (songs: Record<string, string>[]): string[] => {
+    const errors: string[] = [];
     songs.forEach((song, i) => {
       if (!song.country) errors.push(`Zeile ${i + 2}: Land fehlt`);
       if (!song.song) errors.push(`Zeile ${i + 2}: Song fehlt`);
@@ -25,9 +25,9 @@ describe("CSV Upload Validation", () => {
     return errors;
   };
 
-  const validateParticipants = (participants) => {
-    const errors = [];
-    const usernames = new Set();
+  const validateParticipants = (participants: Record<string, string>[]): string[] => {
+    const errors: string[] = [];
+    const usernames = new Set<string>();
     participants.forEach((p, i) => {
       if (!p.username) errors.push(`Zeile ${i + 2}: Benutzername fehlt`);
       else if (usernames.has(p.username)) errors.push(`Zeile ${i + 2}: Benutzername "${p.username}" doppelt`);
@@ -37,24 +37,24 @@ describe("CSV Upload Validation", () => {
     return errors;
   };
 
-  const validateRankings = (rankings, songCount) => {
-    const errors = [];
-    const byUser = {};
+  const validateRankings = (rankings: Record<string, string>[], songCount: number): string[] => {
+    const errors: string[] = [];
+    const byUser: Record<string, Record<string, string>[]> = {};
     rankings.forEach((r) => {
       if (!byUser[r.username]) byUser[r.username] = [];
       byUser[r.username].push(r);
     });
 
-    Object.entries(byUser).forEach(([username, items]) => {
+    Object.entries(byUser).forEach(([username, items]: [string, Record<string, string>[]]) => {
       if (items.length !== songCount) {
         errors.push(`Benutzer "${username}": ${items.length} Songs/Länder statt ${songCount}`);
       }
-      const ranks = items.map((item) => Number(item.rank));
+      const ranks = items.map((item: Record<string, string>) => Number(item.rank));
       const uniqueRanks = new Set(ranks);
       if (uniqueRanks.size !== ranks.length) {
         errors.push(`Benutzer "${username}": Doppelte Platzierungen`);
       }
-      ranks.forEach((rank) => {
+      ranks.forEach((rank: number) => {
         if (rank < 1 || rank > songCount) {
           errors.push(`Benutzer "${username}": Ungültiger Platz ${rank} (muss 1-${songCount} sein)`);
         }
@@ -64,22 +64,22 @@ describe("CSV Upload Validation", () => {
     return errors;
   };
 
-  const validateRatings = (ratings) => {
-    const errors = [];
+  const validateRatings = (ratings: Record<string, string>[]): string[] => {
+    const errors: string[] = [];
     const allowedPoints = new Set([1, 2, 3, 4, 5, 6, 7, 8, 10, 12]);
-    const byUser = {};
+    const byUser: Record<string, Record<string, string>[]> = {};
     ratings.forEach((r) => {
       if (!byUser[r.username]) byUser[r.username] = [];
       byUser[r.username].push(r);
     });
 
-    Object.entries(byUser).forEach(([username, items]) => {
+    Object.entries(byUser).forEach(([username, items]: [string, Record<string, string>[]]) => {
       if (items.length !== 10) {
         errors.push(`Benutzer "${username}": ${items.length} Einträge statt 10`);
       }
       const seenCountries = new Set();
       const seenPoints = new Set();
-      items.forEach((item) => {
+      items.forEach((item: Record<string, string>) => {
         const points = Number(item.points);
         if (!item.country) {
           errors.push(`Benutzer "${username}": Land fehlt`);
@@ -101,17 +101,17 @@ describe("CSV Upload Validation", () => {
     return errors;
   };
 
-  const validateOfficialResults = (results, songCount) => {
-    const errors = [];
+  const validateOfficialResults = (results: Record<string, string>[], songCount: number): string[] => {
+    const errors: string[] = [];
     if (results.length !== songCount) {
       errors.push(`Offizielles Ergebnis: ${results.length} Einträge statt ${songCount}`);
     }
-    const ranks = results.map((item) => Number(item.rank));
+    const ranks = results.map((item: Record<string, string>) => Number(item.rank));
     const uniqueRanks = new Set(ranks);
     if (uniqueRanks.size !== ranks.length) {
       errors.push("Offizielles Ergebnis: Doppelte Platzierungen");
     }
-    ranks.forEach((rank) => {
+    ranks.forEach((rank: number) => {
       if (rank < 1 || rank > songCount) {
         errors.push(`Offizielles Ergebnis: Ungültiger Platz ${rank} (muss 1-${songCount} sein)`);
       }

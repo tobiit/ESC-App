@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { CsvUpload } from "./CsvUpload.jsx";
-import { DataTable } from "./DataTable.jsx";
+import { CsvUpload } from "./CsvUpload";
+import { DataTable } from "./DataTable";
 import { api } from "../api";
 
 // Beispiel-CSV-Header für Songs/Länder
@@ -10,22 +10,30 @@ const RANKINGS_HEADER = "username,country,rank\n";
 const RATINGS_HEADER = "username,country,points\n";
 const OFFICIAL_HEADER = "country,rank\n";
 
-function parseCsv(text) {
+type CsvRow = Record<string, string>;
+
+type SongRow = { country: string; song: string; artist: string; [key: string]: string };
+type ParticipantRow = { username: string; display_name: string; email: string; [key: string]: string };
+type RankingRow = { username: string; country: string; rank: string; [key: string]: string };
+type RatingRow = { username: string; country: string; points: string; [key: string]: string };
+type OfficialRow = { country: string; rank: string; [key: string]: string };
+
+function parseCsv(text: string): CsvRow[] {
   if (!text || text.trim() === "") return [];
   const lines = text.trim().split(/\r?\n/);
   if (lines.length === 0) return [];
   const [header, ...dataLines] = lines;
-  const keys = header.split(",").map(k => k.trim());
+  const keys = header.split(",").map((k) => k.trim());
   return dataLines.map((line) => {
-    const values = line.split(",").map(v => v.trim());
-    const obj = {};
+    const values = line.split(",").map((v) => v.trim());
+    const obj: CsvRow = {};
     keys.forEach((k, i) => (obj[k] = values[i] || ""));
     return obj;
   });
 }
 
-function validateSongs(songs) {
-  const errors = [];
+function validateSongs(songs: CsvRow[]): string[] {
+  const errors: string[] = [];
   songs.forEach((song, i) => {
     if (!song.country) errors.push(`Zeile ${i + 2}: Land fehlt`);
     if (!song.song) errors.push(`Zeile ${i + 2}: Song fehlt`);
@@ -34,9 +42,9 @@ function validateSongs(songs) {
   return errors;
 }
 
-function validateParticipants(participants) {
-  const errors = [];
-  const usernames = new Set();
+function validateParticipants(participants: CsvRow[]): string[] {
+  const errors: string[] = [];
+  const usernames = new Set<string>();
   participants.forEach((p, i) => {
     if (!p.username) errors.push(`Zeile ${i + 2}: Benutzername fehlt`);
     else if (usernames.has(p.username)) errors.push(`Zeile ${i + 2}: Benutzername "${p.username}" doppelt`);
@@ -46,37 +54,37 @@ function validateParticipants(participants) {
   return errors;
 }
 
-function validateRankings(rankings, songCount) {
-  const errors = [];
-  const byUser = {};
+function validateRankings(rankings: CsvRow[], songCount: number): string[] {
+  const errors: string[] = [];
+  const byUser: Record<string, CsvRow[]> = {};
   rankings.forEach((r) => {
     if (!byUser[r.username]) byUser[r.username] = [];
     byUser[r.username].push(r);
   });
-  
+
   Object.entries(byUser).forEach(([username, items]) => {
     if (items.length !== songCount) {
       errors.push(`Benutzer "${username}": ${items.length} Songs/Länder statt ${songCount}`);
     }
-    const ranks = items.map(item => Number(item.rank));
+    const ranks = items.map((item) => Number(item.rank));
     const uniqueRanks = new Set(ranks);
     if (uniqueRanks.size !== ranks.length) {
       errors.push(`Benutzer "${username}": Doppelte Platzierungen`);
     }
-    ranks.forEach((rank, i) => {
+    ranks.forEach((rank) => {
       if (rank < 1 || rank > songCount) {
         errors.push(`Benutzer "${username}": Ungültiger Platz ${rank} (muss 1-${songCount} sein)`);
       }
     });
   });
-  
+
   return errors;
 }
 
-function validateRatings(ratings) {
-  const errors = [];
+function validateRatings(ratings: CsvRow[]): string[] {
+  const errors: string[] = [];
   const allowedPoints = new Set([1, 2, 3, 4, 5, 6, 7, 8, 10, 12]);
-  const byUser = {};
+  const byUser: Record<string, CsvRow[]> = {};
   ratings.forEach((r) => {
     if (!byUser[r.username]) byUser[r.username] = [];
     byUser[r.username].push(r);
@@ -86,8 +94,8 @@ function validateRatings(ratings) {
     if (items.length !== 10) {
       errors.push(`Benutzer "${username}": ${items.length} Einträge statt 10`);
     }
-    const seenCountries = new Set();
-    const seenPoints = new Set();
+    const seenCountries = new Set<string>();
+    const seenPoints = new Set<number>();
     items.forEach((item) => {
       const points = Number(item.points);
       if (!item.country) {
@@ -110,8 +118,8 @@ function validateRatings(ratings) {
   return errors;
 }
 
-function validateOfficialResults(results, songCount) {
-  const errors = [];
+function validateOfficialResults(results: CsvRow[], songCount: number): string[] {
+  const errors: string[] = [];
   if (results.length !== songCount) {
     errors.push(`Offizielles Ergebnis: ${results.length} Einträge statt ${songCount}`);
   }
@@ -128,16 +136,21 @@ function validateOfficialResults(results, songCount) {
   return errors;
 }
 
-export function AdminEventManager({ eventId, onSave }) {
-  const [songs, setSongs] = useState([]);
-  const [participants, setParticipants] = useState([]);
-  const [rankings, setRankings] = useState([]);
-  const [ratings, setRatings] = useState([]);
-  const [officialResults, setOfficialResults] = useState([]);
+interface AdminEventManagerProps {
+  eventId?: number | null;
+  onSave?: () => void;
+}
+
+export function AdminEventManager({ eventId, onSave }: AdminEventManagerProps) {
+  const [songs, setSongs] = useState<SongRow[]>([]);
+  const [participants, setParticipants] = useState<ParticipantRow[]>([]);
+  const [rankings, setRankings] = useState<RankingRow[]>([]);
+  const [ratings, setRatings] = useState<RatingRow[]>([]);
+  const [officialResults, setOfficialResults] = useState<OfficialRow[]>([]);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
-  const showMessage = (msg, isError = false) => {
+  const showMessage = (msg: string, isError = false) => {
     if (isError) {
       setError(msg);
       setMessage("");
@@ -151,7 +164,7 @@ export function AdminEventManager({ eventId, onSave }) {
     }, 5000);
   };
 
-  const handleSongsUpload = (text) => {
+  const handleSongsUpload = (text: string) => {
     try {
       const parsed = parseCsv(text);
       const errors = validateSongs(parsed);
@@ -159,14 +172,14 @@ export function AdminEventManager({ eventId, onSave }) {
         showMessage(errors.join("; "), true);
         return;
       }
-      setSongs(parsed);
+      setSongs(parsed as SongRow[]);
       showMessage(`${parsed.length} Songs/Länder geladen`);
-    } catch (err) {
+    } catch (err: any) {
       showMessage("CSV-Parse-Fehler: " + err.message, true);
     }
   };
 
-  const handleParticipantsUpload = (text) => {
+  const handleParticipantsUpload = (text: string) => {
     try {
       const parsed = parseCsv(text);
       const errors = validateParticipants(parsed);
@@ -174,14 +187,14 @@ export function AdminEventManager({ eventId, onSave }) {
         showMessage(errors.join("; "), true);
         return;
       }
-      setParticipants(parsed);
+      setParticipants(parsed as ParticipantRow[]);
       showMessage(`${parsed.length} Teilnehmer geladen`);
-    } catch (err) {
+    } catch (err: any) {
       showMessage("CSV-Parse-Fehler: " + err.message, true);
     }
   };
 
-  const handleRankingsUpload = (text) => {
+  const handleRankingsUpload = (text: string) => {
     try {
       const parsed = parseCsv(text);
       const errors = validateRankings(parsed, songs.length);
@@ -189,14 +202,14 @@ export function AdminEventManager({ eventId, onSave }) {
         showMessage(errors.join("; "), true);
         return;
       }
-      setRankings(parsed);
+      setRankings(parsed as RankingRow[]);
       showMessage(`${parsed.length} Ranglisteneinträge geladen`);
-    } catch (err) {
+    } catch (err: any) {
       showMessage("CSV-Parse-Fehler: " + err.message, true);
     }
   };
 
-  const handleRatingsUpload = (text) => {
+  const handleRatingsUpload = (text: string) => {
     try {
       const parsed = parseCsv(text);
       const errors = validateRatings(parsed);
@@ -204,14 +217,14 @@ export function AdminEventManager({ eventId, onSave }) {
         showMessage(errors.join("; "), true);
         return;
       }
-      setRatings(parsed);
+      setRatings(parsed as RatingRow[]);
       showMessage(`${parsed.length} Ratings geladen`);
-    } catch (err) {
+    } catch (err: any) {
       showMessage("CSV-Parse-Fehler: " + err.message, true);
     }
   };
 
-  const handleOfficialUpload = (text) => {
+  const handleOfficialUpload = (text: string) => {
     try {
       const parsed = parseCsv(text);
       const errors = validateOfficialResults(parsed, songs.length);
@@ -219,9 +232,9 @@ export function AdminEventManager({ eventId, onSave }) {
         showMessage(errors.join("; "), true);
         return;
       }
-      setOfficialResults(parsed);
+      setOfficialResults(parsed as OfficialRow[]);
       showMessage(`${parsed.length} Offizielle Platzierungen geladen`);
-    } catch (err) {
+    } catch (err: any) {
       showMessage("CSV-Parse-Fehler: " + err.message, true);
     }
   };
@@ -244,6 +257,10 @@ export function AdminEventManager({ eventId, onSave }) {
 
   const saveSongs = async () => {
     try {
+      if (eventId == null) {
+        showMessage("Kein Event ausgewählt.", true);
+        return;
+      }
       const errors = validateSongs(songs);
       if (errors.length > 0) {
         showMessage(errors.join("; "), true);
@@ -252,7 +269,7 @@ export function AdminEventManager({ eventId, onSave }) {
       await api.adminBulkUploadEntries(eventId, songs);
       showMessage("Songs/Länder gespeichert");
       if (onSave) onSave();
-    } catch (err) {
+    } catch (err: any) {
       showMessage("Fehler beim Speichern: " + err.message, true);
     }
   };
@@ -267,13 +284,17 @@ export function AdminEventManager({ eventId, onSave }) {
       await api.adminBulkUploadParticipants(participants);
       showMessage("Teilnehmer gespeichert");
       if (onSave) onSave();
-    } catch (err) {
+    } catch (err: any) {
       showMessage("Fehler beim Speichern: " + err.message, true);
     }
   };
 
   const saveRankings = async () => {
     try {
+      if (eventId == null) {
+        showMessage("Kein Event ausgewählt.", true);
+        return;
+      }
       const errors = validateRankings(rankings, songs.length);
       if (errors.length > 0) {
         showMessage(errors.join("; "), true);
@@ -282,13 +303,17 @@ export function AdminEventManager({ eventId, onSave }) {
       await api.adminBulkUploadRankings(eventId, rankings);
       showMessage("Ranglistentipps gespeichert");
       if (onSave) onSave();
-    } catch (err) {
+    } catch (err: any) {
       showMessage("Fehler beim Speichern: " + err.message, true);
     }
   };
 
   const saveRatings = async () => {
     try {
+      if (eventId == null) {
+        showMessage("Kein Event ausgewählt.", true);
+        return;
+      }
       const errors = validateRatings(ratings);
       if (errors.length > 0) {
         showMessage(errors.join("; "), true);
@@ -297,13 +322,17 @@ export function AdminEventManager({ eventId, onSave }) {
       await api.adminBulkUploadRatings(eventId, ratings);
       showMessage("Ratings gespeichert");
       if (onSave) onSave();
-    } catch (err) {
+    } catch (err: any) {
       showMessage("Fehler beim Speichern: " + err.message, true);
     }
   };
 
   const saveOfficialResults = async () => {
     try {
+      if (eventId == null) {
+        showMessage("Kein Event ausgewählt.", true);
+        return;
+      }
       const errors = validateOfficialResults(officialResults, songs.length);
       if (errors.length > 0) {
         showMessage(errors.join("; "), true);
@@ -312,7 +341,7 @@ export function AdminEventManager({ eventId, onSave }) {
       await api.adminBulkUploadOfficialResults(eventId, officialResults);
       showMessage("Offizielles Ergebnis gespeichert");
       if (onSave) onSave();
-    } catch (err) {
+    } catch (err: any) {
       showMessage("Fehler beim Speichern: " + err.message, true);
     }
   };
@@ -324,7 +353,7 @@ export function AdminEventManager({ eventId, onSave }) {
         const existingEntries = await api.adminEntries(eventId);
         if (existingEntries?.length) {
           setSongs(
-            existingEntries.map((entry) => ({
+            existingEntries.map((entry: any) => ({
               country: entry.countryName,
               song: entry.songTitle || "",
               artist: entry.artistName || ""
@@ -334,14 +363,14 @@ export function AdminEventManager({ eventId, onSave }) {
         const existingParticipants = await api.adminParticipants();
         if (existingParticipants?.length) {
           setParticipants(
-            existingParticipants.map((participant) => ({
+            existingParticipants.map((participant: any) => ({
               username: participant.username,
               display_name: participant.displayName,
               email: participant.email || ""
             }))
           );
         }
-      } catch (err) {
+      } catch (err: any) {
         showMessage("Fehler beim Laden: " + err.message, true);
       }
     })();
@@ -367,12 +396,12 @@ export function AdminEventManager({ eventId, onSave }) {
           columns={[
             { key: "country", label: "Land", editable: true },
             { key: "song", label: "Song", editable: true },
-            { key: "artist", label: "Künstler", editable: true },
+            { key: "artist", label: "Künstler", editable: true }
           ]}
           data={songs}
           onChange={(i, k, v) => {
             const next = [...songs];
-            next[i][k] = v;
+            next[i][k] = v as string;
             setSongs(next);
           }}
         />
@@ -401,12 +430,12 @@ export function AdminEventManager({ eventId, onSave }) {
           columns={[
             { key: "username", label: "Benutzername", editable: true },
             { key: "display_name", label: "Anzeigename", editable: true },
-            { key: "email", label: "E-Mail", editable: true },
+            { key: "email", label: "E-Mail", editable: true }
           ]}
           data={participants}
           onChange={(i, k, v) => {
             const next = [...participants];
-            next[i][k] = v;
+            next[i][k] = v as string;
             setParticipants(next);
           }}
         />
@@ -439,12 +468,12 @@ export function AdminEventManager({ eventId, onSave }) {
           columns={[
             { key: "username", label: "Benutzername", editable: true },
             { key: "country", label: "Land", editable: true },
-            { key: "rank", label: "Platz", editable: true },
+            { key: "rank", label: "Platz", editable: true }
           ]}
           data={rankings}
           onChange={(i, k, v) => {
             const next = [...rankings];
-            next[i][k] = v;
+            next[i][k] = v as string;
             setRankings(next);
           }}
         />
@@ -480,7 +509,7 @@ export function AdminEventManager({ eventId, onSave }) {
           data={ratings}
           onChange={(i, k, v) => {
             const next = [...ratings];
-            next[i][k] = v;
+            next[i][k] = v as string;
             setRatings(next);
           }}
         />
@@ -515,7 +544,7 @@ export function AdminEventManager({ eventId, onSave }) {
           data={officialResults}
           onChange={(i, k, v) => {
             const next = [...officialResults];
-            next[i][k] = v;
+            next[i][k] = v as string;
             setOfficialResults(next);
           }}
         />
@@ -527,8 +556,16 @@ export function AdminEventManager({ eventId, onSave }) {
         </div>
       </div>
 
-      {message && <div className="toast" style={{ background: "var(--core-color-green-700, #2c7b2e)" }}>{message}</div>}
-      {error && <div className="toast" style={{ background: "var(--core-color-red-600, #d12800)" }}>{error}</div>}
+      {message && (
+        <div className="toast" style={{ background: "var(--core-color-green-700, #2c7b2e)" }}>
+          {message}
+        </div>
+      )}
+      {error && (
+        <div className="toast" style={{ background: "var(--core-color-red-600, #d12800)" }}>
+          {error}
+        </div>
+      )}
     </div>
   );
 }
