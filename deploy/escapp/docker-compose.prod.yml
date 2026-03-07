@@ -29,7 +29,7 @@ services:
     networks:
       - escapp-net
     healthcheck:
-      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized", "--port=33306"]
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
       interval: 15s
       timeout: 5s
       retries: 10
