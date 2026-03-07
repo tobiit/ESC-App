@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { api, clearTokens } from "../api";
 import { AdminEventManager } from "../components/AdminEventManager";
 import { DataTable } from "../components/DataTable";
+import { EscImport } from "../components/EscImport";
 
 type User = { id: number; role: "admin" | "participant"; username: string; displayName: string };
 
@@ -236,6 +237,9 @@ export function AdminPage({ user, onLogout }: { user: User; onLogout: () => void
             </select>
           </div>
         </div>
+
+        {/* ESC API Import */}
+        <EscImport onImported={load} />
 
         {/* CSV Upload Bereich */}
         {selectedEventId && <AdminEventManager eventId={selectedEventId} onSave={load} />}

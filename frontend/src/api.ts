@@ -118,5 +118,10 @@ export const api = {
   adminSoftDeleteEvent: (eventId: number) =>
     request(`/admin/events/${eventId}/soft-delete`, { method: "POST" }),
   adminRestoreEvent: (eventId: number) =>
-    request(`/admin/events/${eventId}/restore`, { method: "POST" })
+    request(`/admin/events/${eventId}/restore`, { method: "POST" }),
+  // ESC API Import
+  adminEscImportPreview: (year: number) =>
+    request(`/admin/esc-import/preview/${year}`),
+  adminEscImport: (year: number, setActive?: boolean) =>
+    request("/admin/esc-import", { method: "POST", body: JSON.stringify({ year, setActive }) })
 };
