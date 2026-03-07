@@ -16,25 +16,27 @@ services:
     image: docker.io/library/mariadb:11.4
     container_name: escapp-mariadb
     restart: unless-stopped
+    command: ["--port=33306"]
     environment:
       MARIADB_DATABASE: ${DB_NAME:-escapp}
       MARIADB_USER: ${DB_USER:-escapp}
       MARIADB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD muss gesetzt sein}
       MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?DB_ROOT_PASSWORD muss gesetzt sein}
+      MYSQL_TCP_PORT: "33306"
       TZ: UTC
     volumes:
       - mariadb_data:/var/lib/mysql
     networks:
       - escapp-net
     healthcheck:
-      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized", "--port=33306"]
       interval: 15s
       timeout: 5s
       retries: 10
       start_period: 30s
     # Nicht nach außen exponiert – nur Backend hat Zugriff
     expose:
-      - "3306"
+      - "33306"
 
   # ── Backend (Node.js/Express) ────────────────────────────────────────────
   backend:
@@ -50,7 +52,7 @@ services:
       PORT: 4000
       NODE_ENV: production
       DB_HOST: mariadb
-      DB_PORT: 3306
+      DB_PORT: 33306
       DB_USER: ${DB_USER:-escapp}
       DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD muss gesetzt sein}
       DB_NAME: ${DB_NAME:-escapp}

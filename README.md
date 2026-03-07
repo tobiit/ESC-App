@@ -14,21 +14,15 @@ Produktionsnahe Full-Stack-Lösung für ein Eurovision Finale Tippspiel mit:
 ### Module
 
 - `backend/`
-  - Node.js (Express), JWT Auth, Rollenmodell (`admin`, `participant`)
+  - Rollenmodell (`admin`, `participant`)
   - MariaDB via SQL-Migrationen
   - Audit-Logging, Rate-Limiting, Result-Berechnung
 - `frontend/`
-  - React + TypeScript
   - Teilnehmer- und Admin-Bereich
   - Nutzung der vorhandenen Design-Tokens
 - `android/`
   - Kotlin + Jetpack Compose
   - Retrofit/OkHttp, lokales Draft-Caching
-
-### Orchestrierung
-
-- `docker-compose.yml` für lokale Entwicklungsumgebung (DB, Backend, Frontend)
-- `scripts/integration-test.sh` für End-to-End API Smoke-Test
 
 ---
 
@@ -127,7 +121,7 @@ docker compose up --build -d
 - Frontend: http://localhost:5173
 - Backend: http://localhost:4000
 - Health: http://localhost:4000/health
-- MariaDB: localhost:3306
+- MariaDB: localhost:33306
 
 ### Bootstrap-Admin
 
