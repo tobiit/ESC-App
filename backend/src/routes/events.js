@@ -9,7 +9,8 @@ eventsRouter.get("/active", requireAuth, async (_req, res, next) => {
     const rows = await pool.query(
       "SELECT id, name, year, status, is_active AS isActive FROM events WHERE is_active = TRUE LIMIT 1"
     );
-    res.json(rows[0] || null);
+    if (!rows[0]) return res.status(404).json({ message: "Kein aktives Event" });
+    res.json(rows[0]);
   } catch (error) {
     next(error);
   }

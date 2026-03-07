@@ -11,6 +11,7 @@ import com.escapp.mobile.data.TokenStore
 import com.escapp.mobile.model.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import retrofit2.HttpException
 
 /** Immutable UI state – Compose recomposes when any property changes. */
 data class UiState(
@@ -83,8 +84,11 @@ class AppViewModel(
         viewModelScope.launch {
             ui = ui.copy(loading = true, error = null)
             runCatching {
-                val event = api.activeEvent()
-                    ?: run { ui = ui.copy(event = null, loading = false); return@launch }
+                val event = try {
+                    api.activeEvent()
+                } catch (e: HttpException) {
+                    if (e.code() == 404) null else throw e
+                } ?: run { ui = ui.copy(event = null, loading = false); return@launch }
 
                 val entries = api.entries(event.id)
                 val rating = api.myRating(event.id)
