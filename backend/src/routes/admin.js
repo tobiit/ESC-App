@@ -6,6 +6,35 @@ import { requireAuth, requireRole } from "../middleware/auth.js";
 import { writeAuditLog } from "../middleware/audit.js";
 import { validatePredictionItems, validateRatingItems } from "../services/validation.js";
 
+// Deutsche Übersetzungen für ESC-Ländercodes (Fallback wenn Countries-API nicht erreichbar)
+const COUNTRY_DE = {
+  AL: "Albanien", AD: "Andorra", AM: "Armenien", AU: "Australien", AT: "Österreich",
+  AZ: "Aserbaidschan", BY: "Belarus", BE: "Belgien", BA: "Bosnien und Herzegowina",
+  BG: "Bulgarien", HR: "Kroatien", CY: "Zypern", CZ: "Tschechien", DK: "Dänemark",
+  EE: "Estland", FI: "Finnland", FR: "Frankreich", GE: "Georgien", DE: "Deutschland",
+  GR: "Griechenland", HU: "Ungarn", IS: "Island", IE: "Irland", IL: "Israel", IT: "Italien",
+  KZ: "Kasachstan", LV: "Lettland", LT: "Litauen", LU: "Luxemburg", MK: "Nordmazedonien",
+  MT: "Malta", MD: "Moldau", MC: "Monaco", ME: "Montenegro", MA: "Marokko", NL: "Niederlande",
+  NO: "Norwegen", PL: "Polen", PT: "Portugal", RO: "Rumänien", RU: "Russland", SM: "San Marino",
+  RS: "Serbien", SK: "Slowakei", SI: "Slowenien", ES: "Spanien", SE: "Schweden", CH: "Schweiz",
+  TR: "Türkei", UA: "Ukraine", GB: "Vereinigtes Königreich", CS: "Serbien und Montenegro",
+  YU: "Jugoslawien", "GB-WLS": "Wales"
+};
+
+/** Ländername für Code ermitteln (deutsch bevorzugt, API-Fallback englisch) */
+async function resolveCountryName(code, apiCountries) {
+  if (COUNTRY_DE[code]) return COUNTRY_DE[code];
+  if (apiCountries && apiCountries[code]) return apiCountries[code];
+  return code;
+}
+
+/** Countries von der Eurovision-API laden */
+async function fetchEscCountries() {
+  const resp = await fetch("https://eurovisionapi.runasp.net/api/countries");
+  if (!resp.ok) return null;
+  return resp.json();
+}
+
 export const adminRouter = express.Router();
 
 adminRouter.use(requireAuth, requireRole("admin"));
@@ -747,6 +776,176 @@ adminRouter.put("/events/:id/officialresult", async (req, res, next) => {
       });
     });
     res.json({ ok: true });
+  } catch (error) {
+    next(error);
+  }
+});
+
+/* ── ESC API Import ── */
+
+// Preview: Daten vom Eurovision-API abrufen ohne Import
+adminRouter.get("/esc-import/preview/:year", async (req, res, next) => {
+  try {
+    const year = Number(req.params.year);
+    if (!year || year < 1956 || year > 2100) {
+      return res.status(400).json({ message: "Ungültiges Jahr" });
+    }
+
+    const [contestResp, countriesData] = await Promise.all([
+      fetch(`https://eurovisionapi.runasp.net/api/senior/contests/${year}`),
+      fetchEscCountries()
+    ]);
+
+    if (!contestResp.ok) {
+      return res.status(404).json({ message: `Keine ESC-Daten für ${year} gefunden` });
+    }
+
+    const contest = await contestResp.json();
+    const finalRound = contest.rounds?.find(r => r.name?.toLowerCase() === "final");
+    if (!finalRound) {
+      return res.status(404).json({ message: `Kein Finale für ${year} gefunden` });
+    }
+
+    const contestantMap = new Map(
+      (contest.contestants || []).map(c => [c.id, c])
+    );
+
+    const entries = [];
+    for (const perf of finalRound.performances || []) {
+      const contestant = contestantMap.get(perf.contestantId);
+      if (!contestant) continue;
+      const countryName = await resolveCountryName(contestant.country, countriesData);
+      entries.push({
+        country: countryName,
+        countryCode: contestant.country,
+        artist: contestant.artist,
+        song: contestant.song,
+        sortOrder: perf.running,
+        place: perf.place
+      });
+    }
+
+    entries.sort((a, b) => (a.sortOrder || 999) - (b.sortOrder || 999));
+
+    res.json({
+      year,
+      slogan: contest.slogan || `ESC ${year}`,
+      finaleDate: finalRound.date || null,
+      entries,
+      entryCount: entries.length
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Import: Event + Entries + Official Results anlegen
+adminRouter.post("/esc-import", async (req, res, next) => {
+  try {
+    const schema = z.object({
+      year: z.number().int().min(1956).max(2100),
+      setActive: z.boolean().optional()
+    });
+    const parsed = schema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ message: "Ungültige Nutzdaten" });
+
+    const { year, setActive } = parsed.data;
+
+    const [contestResp, countriesData] = await Promise.all([
+      fetch(`https://eurovisionapi.runasp.net/api/senior/contests/${year}`),
+      fetchEscCountries()
+    ]);
+
+    if (!contestResp.ok) {
+      return res.status(404).json({ message: `Keine ESC-Daten für ${year} gefunden` });
+    }
+
+    const contest = await contestResp.json();
+    const finalRound = contest.rounds?.find(r => r.name?.toLowerCase() === "final");
+    if (!finalRound) {
+      return res.status(404).json({ message: `Kein Finale für ${year} gefunden` });
+    }
+
+    const contestantMap = new Map(
+      (contest.contestants || []).map(c => [c.id, c])
+    );
+
+    const entries = [];
+    for (const perf of finalRound.performances || []) {
+      const contestant = contestantMap.get(perf.contestantId);
+      if (!contestant) continue;
+      const countryName = await resolveCountryName(contestant.country, countriesData);
+      entries.push({
+        countryName,
+        artist: contestant.artist || null,
+        song: contestant.song || null,
+        sortOrder: perf.running || 0,
+        place: perf.place || null
+      });
+    }
+
+    entries.sort((a, b) => a.sortOrder - b.sortOrder);
+    const eventName = contest.slogan || `ESC ${year}`;
+
+    let eventId;
+    await withTx(async (conn) => {
+      // Event anlegen
+      if (setActive) {
+        await conn.query("UPDATE events SET is_active = FALSE");
+      }
+      const eventResult = await conn.query(
+        "INSERT INTO events (name, year, status, is_active) VALUES (?, ?, 'draft', ?)",
+        [eventName, year, setActive || false]
+      );
+      eventId = Number(eventResult.insertId);
+
+      // Entries anlegen
+      for (const entry of entries) {
+        await conn.query(
+          "INSERT INTO entries (event_id, country_name, song_title, artist_name, sort_order) VALUES (?, ?, ?, ?, ?)",
+          [eventId, entry.countryName, entry.song, entry.artist, entry.sortOrder]
+        );
+      }
+
+      // Official Results anlegen (falls Platzierungen vorhanden)
+      const hasResults = entries.some(e => e.place != null);
+      if (hasResults) {
+        await conn.query("INSERT INTO official_results (event_id, status) VALUES (?, 'unset')", [eventId]);
+        const orRow = await conn.query("SELECT id FROM official_results WHERE event_id = ? LIMIT 1", [eventId]);
+        const officialResultId = orRow[0].id;
+
+        const entryRows = await conn.query("SELECT id, country_name FROM entries WHERE event_id = ?", [eventId]);
+        const entryMap = new Map(entryRows.map(r => [r.country_name, Number(r.id)]));
+
+        for (const entry of entries) {
+          if (entry.place == null) continue;
+          const entryId = entryMap.get(entry.countryName);
+          if (!entryId) continue;
+          await conn.query(
+            "INSERT INTO official_result_items (official_result_id, entry_id, rank_position) VALUES (?, ?, ?)",
+            [officialResultId, entryId, entry.place]
+          );
+        }
+        await conn.query("UPDATE official_results SET status = 'set' WHERE id = ?", [officialResultId]);
+      }
+
+      await writeAuditLog({
+        actorUserId: req.user.id,
+        actionType: "ESC_IMPORT",
+        entityType: "event",
+        entityId: eventId,
+        before: null,
+        after: { year, eventName, entryCount: entries.length, hasResults }
+      });
+    });
+
+    res.status(201).json({
+      ok: true,
+      eventId,
+      eventName,
+      entryCount: entries.length,
+      hasResults: entries.some(e => e.place != null)
+    });
   } catch (error) {
     next(error);
   }

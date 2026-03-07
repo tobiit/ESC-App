@@ -85,5 +85,8 @@ export const api = {
     adminBulkUploadOfficialResults: (eventId, results) => request(`/admin/events/${eventId}/officialresult/bulk`, { method: "POST", body: JSON.stringify({ results }) }),
     // Soft-delete events
     adminSoftDeleteEvent: (eventId) => request(`/admin/events/${eventId}/soft-delete`, { method: "POST" }),
-    adminRestoreEvent: (eventId) => request(`/admin/events/${eventId}/restore`, { method: "POST" })
+    adminRestoreEvent: (eventId) => request(`/admin/events/${eventId}/restore`, { method: "POST" }),
+    // ESC API Import
+    adminEscImportPreview: (year) => request(`/admin/esc-import/preview/${year}`),
+    adminEscImport: (year, setActive) => request("/admin/esc-import", { method: "POST", body: JSON.stringify({ year, setActive }) })
 };
