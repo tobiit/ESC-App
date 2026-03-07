@@ -26,17 +26,15 @@ services:
       TZ: UTC
     volumes:
       - mariadb_data:/var/lib/mysql
-    networks:
-      - escapp-net
     healthcheck:
       test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
       interval: 15s
       timeout: 5s
       retries: 10
       start_period: 30s
-    # Nicht nach außen exponiert – nur Backend hat Zugriff
-    expose:
-      - "33306"
+    # Nur auf localhost binden – nicht öffentlich erreichbar
+    ports:
+      - "127.0.0.1:33306:33306"
 
   # ── Backend (Node.js/Express) ────────────────────────────────────────────
   backend:
@@ -48,6 +46,8 @@ services:
     depends_on:
       mariadb:
         condition: service_healthy
+    extra_hosts:
+      - "mariadb:host-gateway"
     environment:
       PORT: 4000
       NODE_ENV: production
@@ -67,8 +67,6 @@ services:
     ports:
       # Nur auf localhost binden – Nginx macht den öffentlichen Zugang
       - "127.0.0.1:4000:4000"
-    networks:
-      - escapp-net
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:4000/health"]
       interval: 30s
@@ -80,10 +78,6 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
-
-networks:
-  escapp-net:
-    external: true
 
 volumes:
   mariadb_data:
