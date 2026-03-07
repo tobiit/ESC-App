@@ -24,7 +24,7 @@ Vollständiges Deployment-Kit für die Installation der ESC-App auf einem **Ubun
 │  │                       │  (Node.js/Express)    │  │ │
 │  │                       │        │              │  │ │
 │  │                       │        ▼              │  │ │
-│  │                       │  MariaDB :3306        │  │ │
+│  │                       │  MariaDB :33306       │  │ │
 │  │                       │  (nicht exponiert)    │  │ │
 │  │                       └───────────────────────┘  │ │
 │  │                                                   │ │

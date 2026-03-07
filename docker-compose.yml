@@ -2,14 +2,16 @@ services:
   mariadb:
     image: docker.io/library/mariadb:11.4
     container_name: escapp-mariadb
+    command: ["--port=33306"]
     environment:
       MARIADB_DATABASE: escapp
       MARIADB_USER: escapp
       MARIADB_PASSWORD: escapp
       MARIADB_ROOT_PASSWORD: root
+      MYSQL_TCP_PORT: "33306"
       TZ: UTC
     ports:
-      - "33306:3306"
+      - "33306:33306"
     volumes:
       - mariadb_data:/var/lib/mysql
 
@@ -22,7 +24,7 @@ services:
       PORT: 4000
       NODE_ENV: development
       DB_HOST: mariadb
-      DB_PORT: 3306
+      DB_PORT: 33306
       DB_USER: escapp
       DB_PASSWORD: escapp
       DB_NAME: escapp

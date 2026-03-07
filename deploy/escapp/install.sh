@@ -139,7 +139,7 @@ NODE_ENV=production
 
 # Datenbank
 DB_HOST=mariadb
-DB_PORT=3306
+DB_PORT=33306
 DB_NAME=escapp
 DB_USER=escapp
 DB_PASSWORD=${DB_PASSWORD}

@@ -12,7 +12,7 @@ export const config = {
   nodeEnv: process.env.NODE_ENV || "development",
   db: {
     host: process.env.DB_HOST || "localhost",
-    port: toInt(process.env.DB_PORT, 3306),
+    port: toInt(process.env.DB_PORT, 33306),
     user: process.env.DB_USER || "escapp",
     password: process.env.DB_PASSWORD || "escapp",
     database: process.env.DB_NAME || "escapp"
