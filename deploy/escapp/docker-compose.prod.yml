@@ -43,15 +43,14 @@ services:
       dockerfile: Dockerfile
     container_name: escapp-backend
     restart: unless-stopped
+    network_mode: host
     depends_on:
       mariadb:
         condition: service_healthy
-    extra_hosts:
-      - "mariadb:host-gateway"
     environment:
       PORT: 4000
       NODE_ENV: production
-      DB_HOST: mariadb
+      DB_HOST: 127.0.0.1
       DB_PORT: 33306
       DB_USER: ${DB_USER:-escapp}
       DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD muss gesetzt sein}
@@ -64,9 +63,6 @@ services:
       ADMIN_BOOTSTRAP_USERNAME: ${ADMIN_BOOTSTRAP_USERNAME:-admin}
       ADMIN_BOOTSTRAP_PASSWORD: ${ADMIN_BOOTSTRAP_PASSWORD:?ADMIN_BOOTSTRAP_PASSWORD muss gesetzt sein}
       ADMIN_BOOTSTRAP_DISPLAY_NAME: ${ADMIN_BOOTSTRAP_DISPLAY_NAME:-Administrator}
-    ports:
-      # Nur auf localhost binden – Nginx macht den öffentlichen Zugang
-      - "127.0.0.1:4000:4000"
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:4000/health"]
       interval: 30s
