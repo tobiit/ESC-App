@@ -94,6 +94,17 @@ ok "Frontend nach ${WEB_ROOT} deployt."
 log "Starte Backend-Services (Docker Compose) …"
 cd "$APP_DIR"
 
+# Podman-Netzwerk mit DNS erstellen (falls noch nicht vorhanden)
+if command -v podman &>/dev/null; then
+    if ! podman network exists escapp-net 2>/dev/null; then
+        log "Erstelle Podman-Netzwerk escapp-net mit DNS …"
+        podman network create escapp-net
+        ok "Netzwerk escapp-net erstellt."
+    else
+        ok "Netzwerk escapp-net existiert bereits."
+    fi
+fi
+
 # Docker Compose starten/neu bauen
 docker compose -f "$COMPOSE_FILE" --env-file "${APP_DIR}/.env" up -d --build --remove-orphans 2>&1 | tail -10
 ok "Docker-Container gestartet."
