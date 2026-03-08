@@ -52,3 +52,25 @@ export const validatePredictionItems = (items, allowedEntryIds) => {
     seenRanks.add(rank);
   }
 };
+
+export const validateOfficialResultItems = (items, allowedEntryIds) => {
+  const expectedSize = allowedEntryIds.size;
+  if (!Array.isArray(items) || items.length !== expectedSize) {
+    throw new Error("Offizielles Ergebnis muss vollständige Rangliste enthalten.");
+  }
+  const seenEntries = new Set();
+  for (const item of items) {
+    const entryId = Number(item.entryId);
+    const rank = Number(item.rank);
+    if (!allowedEntryIds.has(entryId)) {
+      throw new Error("Offizielles Ergebnis enthält ungültige Entries.");
+    }
+    if (!Number.isInteger(rank) || rank < 1 || rank > expectedSize) {
+      throw new Error("Offizielles Ergebnis enthält ungültige Ränge.");
+    }
+    if (seenEntries.has(entryId)) {
+      throw new Error("Offizielles Ergebnis enthält doppelte Entries.");
+    }
+    seenEntries.add(entryId);
+  }
+};

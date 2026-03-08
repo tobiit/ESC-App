@@ -4,7 +4,7 @@ import { z } from "zod";
 import { pool, withTx } from "../db/pool.js";
 import { requireAuth, requireRole } from "../middleware/auth.js";
 import { writeAuditLog } from "../middleware/audit.js";
-import { validatePredictionItems, validateRatingItems } from "../services/validation.js";
+import { validateOfficialResultItems, validatePredictionItems, validateRatingItems } from "../services/validation.js";
 import { getCountryNameDe, isValidCountryCode } from "../services/countries.js";
 
 /** Countries von der Eurovision-API laden (ESC API gibt Codes bereits zurück) */
@@ -827,7 +827,7 @@ adminRouter.put("/events/:id/officialresult", async (req, res, next) => {
 
     const entries = await pool.query("SELECT id FROM entries WHERE event_id = ?", [req.params.id]);
     const expected = new Set(entries.map((entry) => Number(entry.id)));
-    validatePredictionItems(parsed.data.items, expected);
+    validateOfficialResultItems(parsed.data.items, expected);
 
     await withTx(async (conn) => {
       const existing = await conn.query("SELECT id, status FROM official_results WHERE event_id = ? LIMIT 1", [
@@ -1013,19 +1013,16 @@ adminRouter.post("/esc-import", async (req, res, next) => {
 
         const entryRows = await conn.query("SELECT id, country_code FROM entries WHERE event_id = ?", [eventId]);
         const codeMap = new Map(entryRows.map(r => [r.country_code, Number(r.id)]));
-        const usedRanks = new Set();
 
         for (const entry of entries) {
           const rank = Number(entry.place);
           if (!Number.isInteger(rank) || rank < 1) continue;
-          if (usedRanks.has(rank)) continue;
           const entryId = lookupEntryByCountry(entry.countryCode, codeMap);
           if (!entryId) continue;
           await conn.query(
             "INSERT INTO official_result_items (official_result_id, entry_id, rank_position) VALUES (?, ?, ?)",
             [officialResultId, entryId, rank]
           );
-          usedRanks.add(rank);
         }
         await conn.query("UPDATE official_results SET status = 'set' WHERE id = ?", [officialResultId]);
       }
