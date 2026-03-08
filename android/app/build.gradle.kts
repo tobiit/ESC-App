@@ -71,6 +71,9 @@ dependencies {
   implementation("androidx.security:security-crypto:1.1.0-alpha06")
   implementation("androidx.datastore:datastore-preferences:1.1.1")
 
+  // Drag & Drop für Prediction-Liste
+  implementation("sh.calvin.reorderable:reorderable:2.4.0")
+
   testImplementation("junit:junit:4.13.2")
   testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
   testImplementation("io.mockk:mockk:1.13.12")

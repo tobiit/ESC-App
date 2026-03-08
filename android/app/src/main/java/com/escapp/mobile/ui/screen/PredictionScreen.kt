@@ -1,8 +1,10 @@
 package com.escapp.mobile.ui.screen
 
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
@@ -10,10 +12,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import com.escapp.mobile.model.EntryDto
 import com.escapp.mobile.ui.getCountryNameDe
 import com.escapp.mobile.ui.theme.*
+import sh.calvin.reorderable.ReorderableItem
+import sh.calvin.reorderable.rememberReorderableLazyListState
 
 /**
  * Prediction screen: reorder entries into your predicted final ranking.
@@ -22,6 +27,8 @@ import com.escapp.mobile.ui.theme.*
  *   - Reorder icons    → semantic-color-action-secondary-resting (Blue700)
  *   - Disabled icons   → semantic-color-action-secondary-disabled (Gray500)
  *   - Submit button    → Blue900  (semantic-color-action-primary-resting)
+ * 
+ * Unterstützt sowohl Drag & Drop als auch Pfeil-Buttons zum Verschieben.
  */
 @Composable
 fun PredictionScreen(
@@ -30,83 +37,117 @@ fun PredictionScreen(
     isSubmitted: Boolean,
     eventOpen: Boolean,
     onMove: (Int, Int) -> Unit,
+    onMoveTo: (Int, Int) -> Unit,
     onSave: () -> Unit,
     onSubmit: () -> Unit
 ) {
     val enabled = !isSubmitted && eventOpen
+    
+    val lazyListState = rememberLazyListState()
+    val reorderableState = rememberReorderableLazyListState(
+        lazyListState = lazyListState,
+        onMove = { from, to -> 
+            if (enabled) {
+                onMoveTo(from.index, to.index)
+            }
+        }
+    )
 
     LazyColumn(
+        state = lazyListState,
         verticalArrangement = Arrangement.spacedBy(2.dp),
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(bottom = 80.dp)
     ) {
         itemsIndexed(predictionOrder, key = { _, id -> id }) { index, entryId ->
-            val entry = entries.firstOrNull { it.id == entryId }
+            ReorderableItem(state = reorderableState, key = entryId) { isDragging ->
+                val entry = entries.firstOrNull { it.id == entryId }
 
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surface
-                ),
-                shape = MaterialTheme.shapes.small
-            ) {
-                Row(
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    ),
+                    shape = MaterialTheme.shapes.small,
+                    elevation = CardDefaults.cardElevation(
+                        defaultElevation = if (isDragging) 8.dp else 1.dp
+                    )
                 ) {
-                    /* ── Rank badge ── */
-                    Surface(
-                        shape = MaterialTheme.shapes.small,
-                        color = Blue200,  // primaryContainer
-                        modifier = Modifier.size(36.dp)
+                    Row(
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Box(contentAlignment = Alignment.Center) {
+                        /* ── Rank badge ── */
+                        Surface(
+                            shape = MaterialTheme.shapes.small,
+                            color = Blue200,
+                            modifier = Modifier.size(36.dp)
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Text(
+                                    "${index + 1}",
+                                    style = MaterialTheme.typography.titleSmall,
+                                    color = Blue900
+                                )
+                            }
+                        }
+
+                        Spacer(Modifier.width(12.dp))
+
+                        /* ── Country name + song (Drag-Handle) ── */
+                        Column(
+                            modifier = Modifier
+                                .weight(1f)
+                                .then(
+                                    if (enabled) {
+                                        Modifier.draggableHandle(
+                                            onDragStarted = {
+                                                // Optional: Haptic feedback hier
+                                            },
+                                            onDragStopped = {
+                                                // Optional: Feedback nach Drag
+                                            }
+                                        )
+                                    } else {
+                                        Modifier
+                                    }
+                                )
+                        ) {
                             Text(
-                                "${index + 1}",
-                                style = MaterialTheme.typography.titleSmall,
-                                color = Blue900  // semantic-color-on-surface-primary
+                                getCountryNameDe(entry?.countryCode),
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = DarkBlue1000
+                            )
+                            if (!entry?.songTitle.isNullOrBlank()) {
+                                Text(
+                                    "${entry?.artistName.orEmpty()} – ${entry?.songTitle}",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = Blue700
+                                )
+                            }
+                        }
+
+                        /* ── Up / Down buttons ── */
+                        IconButton(
+                            onClick = { onMove(index, -1) },
+                            enabled = enabled && index > 0
+                        ) {
+                            Icon(
+                                Icons.Default.KeyboardArrowUp,
+                                contentDescription = "Nach oben",
+                                tint = if (enabled && index > 0) Blue700 else Gray500
                             )
                         }
-                    }
-
-                    Spacer(Modifier.width(12.dp))
-
-                    /* ── Country name + song ── */
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            getCountryNameDe(entry?.countryCode),
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = DarkBlue1000
-                        )
-                        if (!entry?.songTitle.isNullOrBlank()) {
-                            Text(
-                                "${entry?.artistName.orEmpty()} – ${entry?.songTitle}",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = Blue700
+                        IconButton(
+                            onClick = { onMove(index, 1) },
+                            enabled = enabled && index < predictionOrder.size - 1
+                        ) {
+                            Icon(
+                                Icons.Default.KeyboardArrowDown,
+                                contentDescription = "Nach unten",
+                                tint = if (enabled && index < predictionOrder.size - 1) Blue700 else Gray500
                             )
                         }
-                    }
-
-                    /* ── Up / Down buttons ── */
-                    IconButton(
-                        onClick = { onMove(index, -1) },
-                        enabled = enabled && index > 0
-                    ) {
-                        Icon(
-                            Icons.Default.KeyboardArrowUp,
-                            contentDescription = "Nach oben",
-                            tint = if (enabled && index > 0) Blue700 else Gray500
-                        )
-                    }
-                    IconButton(
-                        onClick = { onMove(index, 1) },
-                        enabled = enabled && index < predictionOrder.size - 1
-                    ) {
-                        Icon(
-                            Icons.Default.KeyboardArrowDown,
-                            contentDescription = "Nach unten",
-                            tint = if (enabled && index < predictionOrder.size - 1) Blue700 else Gray500
-                        )
                     }
                 }
             }

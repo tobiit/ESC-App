@@ -326,6 +326,7 @@ private fun EscApp(vm: AppViewModel) {
                         isSubmitted = ui.predictionSubmitted,
                         eventOpen = ui.event.status == "open",
                         onMove = vm::movePrediction,
+                        onMoveTo = vm::movePredictionToPosition,
                         onSave = vm::savePrediction,
                         onSubmit = vm::submitPrediction
                     )

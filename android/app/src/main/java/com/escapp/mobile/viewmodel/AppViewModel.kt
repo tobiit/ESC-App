@@ -236,6 +236,22 @@ class AppViewModel(
         }
     }
 
+    fun movePredictionToPosition(fromIndex: Int, toIndex: Int) {
+        if (ui.predictionSubmitted) return
+        if (fromIndex < 0 || toIndex < 0) return
+        val list = ui.predictionOrder.toMutableList()
+        if (fromIndex >= list.size || toIndex >= list.size) return
+        if (fromIndex == toIndex) return
+        
+        val item = list.removeAt(fromIndex)
+        list.add(toIndex, item)
+        
+        ui = ui.copy(predictionOrder = list.toList())
+        ui.event?.let { event ->
+            viewModelScope.launch { draftStore.writePredictionDraft(event.id, list) }
+        }
+    }
+
     fun savePrediction() {
         val event = ui.event ?: return
         val items = ui.predictionOrder.mapIndexed { i, id -> PredictionItemBody(id, i + 1) }
