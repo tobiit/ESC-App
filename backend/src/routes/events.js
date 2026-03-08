@@ -10,7 +10,9 @@ eventsRouter.get("/active", requireAuth, async (_req, res, next) => {
       "SELECT id, name, year, status, is_active AS isActive FROM events WHERE is_active = TRUE LIMIT 1"
     );
     if (!rows[0]) return res.status(404).json({ message: "Kein aktives Event" });
-    res.json(rows[0]);
+    const event = rows[0];
+    event.isActive = Boolean(event.isActive); // MariaDB TINYINT zu Boolean konvertieren
+    res.json(event);
   } catch (error) {
     next(error);
   }
