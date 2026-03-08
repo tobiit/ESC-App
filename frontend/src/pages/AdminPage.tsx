@@ -157,6 +157,7 @@ export function AdminPage({ user, onLogout }: { user: User; onLogout: () => void
       await api.adminApproveParticipant(participantId);
       setPendingParticipants(prev => prev.filter(p => p.id !== participantId));
       setMessage(`Teilnehmer ${name} freigeschaltet`);
+      await load(); // Teilnehmerliste neu laden, damit freigeschalteter Benutzer erscheint
     } catch (err) {
       setMessage(`Fehler beim Freischalten: ${(err as Error).message}`);
     }
