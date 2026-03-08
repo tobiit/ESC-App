@@ -1013,15 +1013,19 @@ adminRouter.post("/esc-import", async (req, res, next) => {
 
         const entryRows = await conn.query("SELECT id, country_code FROM entries WHERE event_id = ?", [eventId]);
         const codeMap = new Map(entryRows.map(r => [r.country_code, Number(r.id)]));
+        const usedRanks = new Set();
 
         for (const entry of entries) {
-          if (entry.place == null) continue;
+          const rank = Number(entry.place);
+          if (!Number.isInteger(rank) || rank < 1) continue;
+          if (usedRanks.has(rank)) continue;
           const entryId = lookupEntryByCountry(entry.countryCode, codeMap);
           if (!entryId) continue;
           await conn.query(
             "INSERT INTO official_result_items (official_result_id, entry_id, rank_position) VALUES (?, ?, ?)",
-            [officialResultId, entryId, entry.place]
+            [officialResultId, entryId, rank]
           );
+          usedRanks.add(rank);
         }
         await conn.query("UPDATE official_results SET status = 'set' WHERE id = ?", [officialResultId]);
       }
