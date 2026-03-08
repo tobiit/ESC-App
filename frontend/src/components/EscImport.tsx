@@ -3,6 +3,7 @@ import { api } from "../api";
 
 type PreviewEntry = {
   country: string;
+  countryName?: string;
   countryCode: string;
   artist: string;
   song: string;
@@ -113,7 +114,7 @@ export function EscImport({ onImported }: { onImported: () => void }) {
               {preview.entries.map((entry, i) => (
                 <tr key={i}>
                   <td>{entry.sortOrder}</td>
-                  <td>{entry.country}</td>
+                  <td>{entry.country || entry.countryName || entry.countryCode}</td>
                   <td>{entry.artist}</td>
                   <td>{entry.song}</td>
                   {preview.entries.some(e => e.place != null) && <td>{entry.place ?? "–"}</td>}

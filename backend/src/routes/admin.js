@@ -38,6 +38,30 @@ function lookupEntryByCountry(countryIdentifier, codeMap) {
   return null;
 }
 
+function resolveCountryName(code, countriesData) {
+  const normalizedCode = String(code || "").toUpperCase().trim();
+  if (!normalizedCode) return "Unbekannt";
+
+  // First try local static mapping.
+  const localName = getCountryNameDe(normalizedCode);
+  if (localName && localName !== normalizedCode) return localName;
+
+  // Fallback to ESC API country payload if available.
+  if (Array.isArray(countriesData)) {
+    const match = countriesData.find((country) => {
+      const candidateCode = String(
+        country?.code || country?.countryCode || country?.iso2 || country?.alpha2 || ""
+      ).toUpperCase().trim();
+      return candidateCode === normalizedCode;
+    });
+    const apiName = match?.nameDe || match?.name || match?.countryName;
+    if (apiName) return String(apiName);
+  }
+
+  // Last resort: keep code visible instead of blank.
+  return localName || normalizedCode;
+}
+
 export const adminRouter = express.Router();
 
 adminRouter.use(requireAuth, requireRole("admin"));
@@ -130,9 +154,10 @@ adminRouter.post("/events/:id/entries/bulk", async (req, res, next) => {
         if (!isValidCountryCode(countryCode)) {
           throw new Error(`Ungültiger Ländercode: ${entry.country}`);
         }
+        const countryName = resolveCountryName(countryCode, null);
         await conn.query(
-          "INSERT INTO entries (event_id, country_code, song_title, artist_name, sort_order) VALUES (?, ?, ?, ?, ?)",
-          [req.params.id, countryCode, entry.song || null, entry.artist || null, i + 1]
+          "INSERT INTO entries (event_id, country_name, country_code, song_title, artist_name, sort_order) VALUES (?, ?, ?, ?, ?, ?)",
+          [req.params.id, countryName, countryCode, entry.song || null, entry.artist || null, i + 1]
         );
       }
     });
@@ -537,9 +562,10 @@ adminRouter.put("/entries/:entryId", async (req, res, next) => {
     if (!isValidCountryCode(parsed.data.countryCode)) {
       return res.status(400).json({ message: "Ungültiger Ländercode" });
     }
+    const countryName = resolveCountryName(parsed.data.countryCode, null);
     await pool.query(
-      "UPDATE entries SET country_code = ?, song_title = ?, artist_name = ?, sort_order = ? WHERE id = ?",
-      [parsed.data.countryCode, parsed.data.songTitle || null, parsed.data.artistName || null, parsed.data.sortOrder, req.params.entryId]
+      "UPDATE entries SET country_name = ?, country_code = ?, song_title = ?, artist_name = ?, sort_order = ? WHERE id = ?",
+      [countryName, parsed.data.countryCode, parsed.data.songTitle || null, parsed.data.artistName || null, parsed.data.sortOrder, req.params.entryId]
     );
     res.json({ ok: true });
   } catch (error) {
@@ -875,9 +901,11 @@ adminRouter.get("/esc-import/preview/:year", async (req, res, next) => {
       const contestant = contestantMap.get(perf.contestantId);
       if (!contestant) continue;
       const code = (contestant.country || "").toUpperCase();
+      const countryName = resolveCountryName(code, countriesData);
       entries.push({
         countryCode: code,
-        countryName: getCountryNameDe(code),
+        country: countryName,
+        countryName,
         artist: contestant.artist,
         song: contestant.song,
         sortOrder: perf.running,
@@ -935,8 +963,10 @@ adminRouter.post("/esc-import", async (req, res, next) => {
       const contestant = contestantMap.get(perf.contestantId);
       if (!contestant) continue;
       const code = (contestant.country || "").toUpperCase();
+      const countryName = resolveCountryName(code, countriesData);
       entries.push({
         countryCode: code,
+        countryName,
         artist: contestant.artist || null,
         song: contestant.song || null,
         sortOrder: perf.running || 0,
@@ -967,9 +997,10 @@ adminRouter.post("/esc-import", async (req, res, next) => {
           console.warn(`Skipping invalid country code: ${entry.countryCode}`);
           continue;
         }
+        const countryName = entry.countryName || resolveCountryName(code, countriesData);
         await conn.query(
-          "INSERT INTO entries (event_id, country_code, song_title, artist_name, sort_order) VALUES (?, ?, ?, ?, ?)",
-          [eventId, code, entry.song, entry.artist, entry.sortOrder]
+          "INSERT INTO entries (event_id, country_name, country_code, song_title, artist_name, sort_order) VALUES (?, ?, ?, ?, ?, ?)",
+          [eventId, countryName, code, entry.song, entry.artist, entry.sortOrder]
         );
       }
 
