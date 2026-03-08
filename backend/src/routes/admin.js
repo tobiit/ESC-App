@@ -389,7 +389,7 @@ adminRouter.post("/participants", async (req, res, next) => {
     if (!parsed.success) return res.status(400).json({ message: "Ungültige Nutzdaten" });
     const hash = await bcrypt.hash(parsed.data.password, 12);
     await pool.query(
-      "INSERT INTO users (role, username, password_hash, display_name, is_active) VALUES ('participant', ?, ?, ?, TRUE)",
+      "INSERT INTO users (role, username, password_hash, display_name, is_active, is_approved) VALUES ('participant', ?, ?, ?, TRUE, TRUE)",
       [parsed.data.username, hash, parsed.data.displayName]
     );
     res.status(201).json({ ok: true });
