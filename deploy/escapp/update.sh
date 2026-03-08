@@ -74,6 +74,17 @@ if git ls-files --error-unmatch frontend/tsconfig.tsbuildinfo >/dev/null 2>&1; t
     git restore --staged --worktree frontend/tsconfig.tsbuildinfo >/dev/null 2>&1 || true
 fi
 
+# Entferne lokal generierte JS-Schatten-Dateien, wenn ein TS/TSX-Pendant existiert.
+# Diese Dateien entstehen durch lokale Tooling-Schritte und blockieren sonst git pull.
+if [[ -d frontend/src ]]; then
+    while IFS= read -r -d '' js_file; do
+        base="${js_file%.js}"
+        if [[ -f "${base}.ts" || -f "${base}.tsx" ]]; then
+            rm -f "$js_file"
+        fi
+    done < <(find frontend/src -type f -name "*.js" -print0)
+fi
+
 OLD_COMMIT=$(git rev-parse --short HEAD)
 git fetch origin
 git checkout "$GIT_BRANCH"
