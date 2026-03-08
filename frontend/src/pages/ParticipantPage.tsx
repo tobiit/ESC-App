@@ -18,12 +18,30 @@ export function ParticipantPage({ user, onLogout }: { user: User; onLogout: () =
   const [predictionSubmitted, setPredictionSubmitted] = useState(false);
   const [results, setResults] = useState<any>(null);
   const [message, setMessage] = useState("");
+  const [toastFading, setToastFading] = useState(false);
   const [tab, setTab] = useState<"rating" | "prediction" | "results">("rating");
   const [draggedEntryId, setDraggedEntryId] = useState<number | null>(null);
   const [dropIndicator, setDropIndicator] = useState<{ entryId: number; position: DropIndicatorPosition } | null>(null);
   const navigate = useNavigate();
 
   const selectedPoints = useMemo(() => new Set(Object.values(ratingMap)), [ratingMap]);
+
+  // Auto-fade toast after 8 seconds.
+  useEffect(() => {
+    if (!message) return;
+    setToastFading(false);
+    const fadeTimer = setTimeout(() => {
+      setToastFading(true);
+    }, 8000);
+    const clearTimer = setTimeout(() => {
+      setMessage("");
+      setToastFading(false);
+    }, 8300);
+    return () => {
+      clearTimeout(fadeTimer);
+      clearTimeout(clearTimer);
+    };
+  }, [message]);
 
   useEffect(() => {
     if (user.role !== "participant") {
