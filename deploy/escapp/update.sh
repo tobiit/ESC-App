@@ -68,6 +68,12 @@ fi
 # ---------------------------------------------------------------------------
 log "Schritt 2/5: Code aktualisieren …"
 cd "$APP_DIR"
+
+# Generierte TypeScript-Buildartefakte koennen lokal geaendert sein und Pull blockieren.
+if git ls-files --error-unmatch frontend/tsconfig.tsbuildinfo >/dev/null 2>&1; then
+    git restore --staged --worktree frontend/tsconfig.tsbuildinfo >/dev/null 2>&1 || true
+fi
+
 OLD_COMMIT=$(git rev-parse --short HEAD)
 git fetch origin
 git checkout "$GIT_BRANCH"
