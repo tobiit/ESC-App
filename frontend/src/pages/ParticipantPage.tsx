@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api, clearTokens } from "../api";
+import { getCountryNameDe } from "../lib/countries";
 
-type Entry = { id: number; countryName: string; songTitle?: string; artistName?: string; sortOrder: number };
+type Entry = { id: number; countryCode: string; songTitle?: string; artistName?: string; sortOrder: number };
 type User = { id: number; role: "admin" | "participant"; username: string; displayName: string };
+type DropIndicatorPosition = "before" | "after";
 
 const ESC_POINTS = [12, 10, 8, 7, 6, 5, 4, 3, 2, 1];
 
@@ -17,6 +19,8 @@ export function ParticipantPage({ user, onLogout }: { user: User; onLogout: () =
   const [results, setResults] = useState<any>(null);
   const [message, setMessage] = useState("");
   const [tab, setTab] = useState<"rating" | "prediction" | "results">("rating");
+  const [draggedEntryId, setDraggedEntryId] = useState<number | null>(null);
+  const [dropIndicator, setDropIndicator] = useState<{ entryId: number; position: DropIndicatorPosition } | null>(null);
   const navigate = useNavigate();
 
   const selectedPoints = useMemo(() => new Set(Object.values(ratingMap)), [ratingMap]);
@@ -97,6 +101,25 @@ export function ParticipantPage({ user, onLogout }: { user: User; onLogout: () =
     setPrediction(next);
   };
 
+  const moveToDropPosition = (fromIndex: number, targetIndex: number, position: DropIndicatorPosition) => {
+    if (fromIndex < 0 || targetIndex < 0) return;
+    if (fromIndex >= prediction.length || targetIndex >= prediction.length) return;
+
+    let insertionIndex = targetIndex + (position === "after" ? 1 : 0);
+    if (fromIndex < insertionIndex) insertionIndex -= 1;
+    if (fromIndex === insertionIndex) return;
+
+    const next = [...prediction];
+    const [moved] = next.splice(fromIndex, 1);
+    next.splice(insertionIndex, 0, moved);
+    setPrediction(next);
+  };
+
+  const truncateSongTitle = (songTitle?: string) => {
+    if (!songTitle) return "-";
+    return songTitle.length > 10 ? `${songTitle.slice(0, 10)}...` : songTitle;
+  };
+
   return (
     <div className="shell">
       <div className="topbar">
@@ -125,7 +148,7 @@ export function ParticipantPage({ user, onLogout }: { user: User; onLogout: () =
               <h3>Rating (1-8, 10, 12)</h3>
               {entries.map((entry) => (
                 <div className="row" key={entry.id}>
-                  <span>{entry.countryName}</span>
+                  <span>{getCountryNameDe(entry.countryCode)}</span>
                   <select
                     className="form-input form-input--inline"
                     disabled={ratingSubmitted || event.status !== "open"}
@@ -164,18 +187,73 @@ export function ParticipantPage({ user, onLogout }: { user: User; onLogout: () =
           {tab === "prediction" && (
             <div className="card">
               <h3>Prediction Rangliste</h3>
-              {prediction.map((entryId, index) => {
-                const entry = entries.find((item) => item.id === entryId);
-                return (
-                  <div key={entryId} className="row">
-                    <span>{index + 1}. {entry?.countryName}</span>
-                    <div className="inline">
-                      <button className="btn btn-icon" disabled={predictionSubmitted || event.status !== "open"} onClick={() => move(index, -1)}>↑</button>
-                      <button className="btn btn-icon" disabled={predictionSubmitted || event.status !== "open"} onClick={() => move(index, 1)}>↓</button>
-                    </div>
-                  </div>
-                );
-              })}
+              <table className="data-table prediction-table">
+                <thead>
+                  <tr>
+                    <th className="prediction-table__rank-header">Rang</th>
+                    <th>Land</th>
+                    <th>Song</th>
+                    <th>Aktion</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {prediction.map((entryId, index) => {
+                    const entry = entries.find((item) => item.id === entryId);
+                    const dragEnabled = !predictionSubmitted && event.status === "open";
+                    return (
+                      <tr
+                        key={entryId}
+                        className={`prediction-table__row${dragEnabled ? " prediction-table__row--movable" : ""}${draggedEntryId === entryId ? " prediction-table__row--dragging" : ""}${dropIndicator?.entryId === entryId && dropIndicator.position === "before" ? " prediction-table__row--drop-before" : ""}${dropIndicator?.entryId === entryId && dropIndicator.position === "after" ? " prediction-table__row--drop-after" : ""}`}
+                        draggable={dragEnabled}
+                        onDragStart={() => {
+                          setDraggedEntryId(entryId);
+                          setDropIndicator(null);
+                        }}
+                        onDragEnd={() => {
+                          setDraggedEntryId(null);
+                          setDropIndicator(null);
+                        }}
+                        onDragOver={(dragEvent) => {
+                          if (!dragEnabled || draggedEntryId === null) return;
+                          dragEvent.preventDefault();
+                          const rowRect = dragEvent.currentTarget.getBoundingClientRect();
+                          const position: DropIndicatorPosition = dragEvent.clientY < rowRect.top + rowRect.height / 2 ? "before" : "after";
+                          if (draggedEntryId !== entryId) {
+                            setDropIndicator({ entryId, position });
+                          }
+                        }}
+                        onDragLeave={(dragEvent) => {
+                          if (dropIndicator?.entryId !== entryId) return;
+                          const related = dragEvent.relatedTarget as Node | null;
+                          if (!related || !dragEvent.currentTarget.contains(related)) {
+                            setDropIndicator(null);
+                          }
+                        }}
+                        onDrop={() => {
+                          if (!dragEnabled || draggedEntryId === null || !dropIndicator) return;
+                          const fromIndex = prediction.findIndex((id) => id === draggedEntryId);
+                          moveToDropPosition(fromIndex, index, dropIndicator.position);
+                          setDraggedEntryId(null);
+                          setDropIndicator(null);
+                        }}
+                      >
+                        <td className="prediction-table__rank-cell">{index + 1}</td>
+                        <td>{getCountryNameDe(entry?.countryCode ?? "") ?? "-"}</td>
+                        <td title={entry?.songTitle ?? ""}>{truncateSongTitle(entry?.songTitle)}</td>
+                        <td>
+                          <div className="inline">
+                            <button className="btn btn-icon" disabled={!dragEnabled} onClick={() => move(index, -1)}>↑</button>
+                            <button className="btn btn-icon" disabled={!dragEnabled} onClick={() => move(index, 1)}>↓</button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+              {!predictionSubmitted && event.status === "open" && (
+                <p className="hint">Tipp: Ziehe ein Land per Drag-and-Drop direkt auf den gewuenschten Rang.</p>
+              )}
               {!predictionSubmitted && event.status === "open" && (
                 <div className="actions">
                   <button className="btn" onClick={() => void savePrediction()}>Entwurf speichern</button>
@@ -199,7 +277,7 @@ export function ParticipantPage({ user, onLogout }: { user: User; onLogout: () =
             </div>
           )}
 
-          {message && <div className="toast">{message}</div>}
+          {message && <div className={`toast ${toastFading ? 'toast--fade-out' : ''}`}>{message}</div>}
         </div>
       )}
     </div>

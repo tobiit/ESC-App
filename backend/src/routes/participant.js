@@ -267,7 +267,7 @@ participantRouter.get("/events/:id/results", async (req, res, next) => {
   try {
     const eventId = Number(req.params.id);
     const entries = await pool.query(
-      "SELECT id, country_name FROM entries WHERE event_id = ? ORDER BY sort_order ASC, country_name ASC",
+      "SELECT id, country_code FROM entries WHERE event_id = ? ORDER BY sort_order ASC, country_code ASC",
       [eventId]
     );
     if (entries.length === 0) {
@@ -311,7 +311,7 @@ participantRouter.get("/events/:id/results", async (req, res, next) => {
     let leaderboardB = [];
     if (officialRows[0]) {
       officialRanking = await pool.query(
-        `SELECT ori.entry_id AS entryId, ori.rank_position AS rank, e.country_name AS countryName
+        `SELECT ori.entry_id AS entryId, ori.rank_position AS rank, e.country_code AS countryCode
          FROM official_result_items ori
          JOIN entries e ON e.id = ori.entry_id
          WHERE ori.official_result_id = ?

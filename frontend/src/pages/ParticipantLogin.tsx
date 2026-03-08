@@ -55,6 +55,17 @@ export function ParticipantLogin({ onLogin }: { onLogin: (user: User) => void })
           Anmelden
         </button>
         {error && <p className="form-message form-message--error">{error}</p>}
+
+        <div className="login-register-cta">
+          <p className="login-register-cta__label">Noch kein Konto?</p>
+          <button
+            className="btn"
+            style={{ width: "100%" }}
+            onClick={() => navigate("/registrieren")}
+          >
+            Als neuer Teilnehmer registrieren
+          </button>
+        </div>
       </div>
     </div>
   );

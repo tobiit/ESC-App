@@ -26,14 +26,14 @@ CREATE TABLE IF NOT EXISTS events (
 CREATE TABLE IF NOT EXISTS entries (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
   event_id BIGINT NOT NULL,
-  country_name VARCHAR(120) NOT NULL,
+  country_code CHAR(2) NOT NULL,
   song_title VARCHAR(200) NULL,
   artist_name VARCHAR(200) NULL,
   sort_order INT NOT NULL DEFAULT 0,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   CONSTRAINT fk_entries_event FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE,
-  UNIQUE KEY uq_event_country (event_id, country_name),
+  UNIQUE KEY uq_event_country (event_id, country_code),
   INDEX idx_entries_event (event_id)
 );
 

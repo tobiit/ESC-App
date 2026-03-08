@@ -5,5 +5,7 @@
 			"path": "."
 		}
 	],
-	"settings": {}
+	"settings": {
+		"android-dev-ext.appSourceRoot": "android/app/src/main"
+	}
 }

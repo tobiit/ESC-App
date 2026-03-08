@@ -66,6 +66,27 @@ class AppViewModel(
         }
     }
 
+    fun register(
+        displayName: String,
+        fullName: String,
+        username: String,
+        password: String,
+        acceptedTerms: Boolean,
+        onSuccess: () -> Unit
+    ) {
+        viewModelScope.launch {
+            ui = ui.copy(loading = true, error = null)
+            runCatching {
+                api.register(RegisterRequest(displayName, fullName, username, password, acceptedTerms))
+            }.onSuccess { _ ->
+                ui = ui.copy(loading = false, error = null)
+                onSuccess()
+            }.onFailure { err ->
+                ui = ui.copy(loading = false, error = parseError(err))
+            }
+        }
+    }
+
     fun logout() {
         viewModelScope.launch {
             val refreshToken = tokenStore.readRefreshToken()
@@ -240,7 +261,7 @@ class AppViewModel(
             }.onSuccess {
                 ui = ui.copy(predictionSubmitted = true)
                 showMessage("Tipp eingereicht")
-            }.onFailure { err ->
+            }.onFailure { err: Throwable ->
                 ui = ui.copy(error = parseError(err))
             }
         }

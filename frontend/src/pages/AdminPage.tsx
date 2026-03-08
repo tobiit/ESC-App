@@ -10,9 +10,29 @@ type User = { id: number; role: "admin" | "participant"; username: string; displ
 export function AdminPage({ user, onLogout }: { user: User; onLogout: () => void }) {
   const [eventRows, setEventRows] = useState<any[]>([]);
   const [participantRows, setParticipantRows] = useState<any[]>([]);
-  const [selectedEventId, setSelectedEventId] = useState<number | null>(null);
+  const [pendingParticipants, setPendingParticipants] = useState<any[]>([]);
+
   const [message, setMessage] = useState("");
+  const [toastFading, setToastFading] = useState(false);
   const navigate = useNavigate();
+
+  // Auto-fade toast after 8 seconds
+  useEffect(() => {
+    if (message) {
+      setToastFading(false);
+      const fadeTimer = setTimeout(() => {
+        setToastFading(true);
+      }, 8000);
+      const clearTimer = setTimeout(() => {
+        setMessage("");
+        setToastFading(false);
+      }, 8300);
+      return () => {
+        clearTimeout(fadeTimer);
+        clearTimeout(clearTimer);
+      };
+    }
+  }, [message]);
 
   useEffect(() => {
     if (user.role !== "admin") {
@@ -23,15 +43,18 @@ export function AdminPage({ user, onLogout }: { user: User; onLogout: () => void
   }, [user, navigate]);
 
   const load = async () => {
-    const [eventRowsResponse, participantRowsResponse] = await Promise.all([api.adminEvents(), api.adminParticipants()]);
+    const [eventRowsResponse, participantRowsResponse, pendingResponse] = await Promise.all([
+      api.adminEvents(),
+      api.adminParticipants(),
+      api.adminPendingParticipants()
+    ]);
     setEventRows(
       eventRowsResponse.map((event: any) => ({ ...event, isNew: false }))
     );
     setParticipantRows(
       participantRowsResponse.map((participant: any) => ({ ...participant, password: "", isNew: false }))
     );
-    const active = eventRowsResponse.find((event: any) => event.isActive) || eventRowsResponse[0];
-    if (active) setSelectedEventId(active.id);
+    setPendingParticipants(pendingResponse);
   };
 
   const handleLogout = async () => {
@@ -127,6 +150,32 @@ export function AdminPage({ user, onLogout }: { user: User; onLogout: () => void
     await load();
   };
 
+  const approveParticipant = async (participantId: number) => {
+    const participant = pendingParticipants.find(p => p.id === participantId);
+    const name = participant?.displayName || participant?.username || "Teilnehmer";
+    try {
+      await api.adminApproveParticipant(participantId);
+      setPendingParticipants(prev => prev.filter(p => p.id !== participantId));
+      setMessage(`Teilnehmer ${name} freigeschaltet`);
+    } catch (err) {
+      setMessage(`Fehler beim Freischalten: ${(err as Error).message}`);
+    }
+  };
+
+  const rejectParticipant = async (participantId: number) => {
+    const participant = pendingParticipants.find(p => p.id === participantId);
+    const name = participant?.displayName || participant?.username || "Teilnehmer";
+    if (confirm("Möchten Sie diese Registrierung wirklich ablehnen und löschen?")) {
+      try {
+        await api.adminDeleteParticipant(participantId);
+        setPendingParticipants(prev => prev.filter(p => p.id !== participantId));
+        setMessage(`Teilnehmer ${name} abgelehnt`);
+      } catch (err) {
+        setMessage(`Fehler beim Ablehnen: ${(err as Error).message}`);
+      }
+    }
+  };
+
   const softDeleteEvent = async (eventId: number) => {
     await api.adminSoftDeleteEvent(eventId);
     setMessage("Event als gelöscht markiert");
@@ -148,6 +197,53 @@ export function AdminPage({ user, onLogout }: { user: User; onLogout: () => void
       </div>
 
       <div className="layout">
+        {/* Ausstehende Freischaltungen */}
+        {pendingParticipants.length > 0 && (
+          <div className="card" style={{ borderLeft: "4px solid #ff6b35" }}>
+            <h3>Ausstehende Freischaltungen ({pendingParticipants.length})</h3>
+            <p style={{ marginBottom: "1rem", color: "#666" }}>
+              Neue Teilnehmer müssen freigeschaltet werden, bevor sie sich anmelden können.
+            </p>
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Benutzername</th>
+                  <th>Anzeigename</th>
+                  <th>Vollständiger Name</th>
+                  <th>Registriert am</th>
+                  <th>Aktionen</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pendingParticipants.map((participant: any) => (
+                  <tr key={participant.id}>
+                    <td>{participant.username}</td>
+                    <td>{participant.displayName}</td>
+                    <td>{participant.fullName || "—"}</td>
+                    <td>{new Date(participant.createdAt).toLocaleString("de-DE")}</td>
+                    <td>
+                      <div style={{ display: "flex", gap: "8px" }}>
+                        <button
+                          className="btn btn-success btn-sm"
+                          onClick={() => void approveParticipant(participant.id)}
+                        >
+                          Freischalten
+                        </button>
+                        <button
+                          className="btn btn-danger btn-sm"
+                          onClick={() => void rejectParticipant(participant.id)}
+                        >
+                          Ablehnen
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
         {/* Teilnehmer Verwaltung */}
         <div className="card">
           <h3>Teilnehmer Verwaltung</h3>
@@ -202,15 +298,22 @@ export function AdminPage({ user, onLogout }: { user: User; onLogout: () => void
                 label: "Aktionen",
                 render: (row: any) =>
                   row.id ? (
-                    row.deletedAt ? (
-                      <button className="btn btn-sm" onClick={() => void restoreEvent(row.id)}>
-                        Wiederherstellen
-                      </button>
-                    ) : (
-                      <button className="btn btn-danger btn-sm" onClick={() => void softDeleteEvent(row.id)}>
-                        Löschen
-                      </button>
-                    )
+                    <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
+                      {row.status === "finished" && (
+                        <button className="btn btn-sm" onClick={() => navigate(`/verwaltung/ergebnis/${row.id}`)}>
+                          Ergebnis
+                        </button>
+                      )}
+                      {row.deletedAt ? (
+                        <button className="btn btn-sm" onClick={() => void restoreEvent(row.id)}>
+                          Wiederherstellen
+                        </button>
+                      ) : (
+                        <button className="btn btn-danger btn-sm" onClick={() => void softDeleteEvent(row.id)}>
+                          Löschen
+                        </button>
+                      )}
+                    </div>
                   ) : ""
               }
             ]}
@@ -222,29 +325,16 @@ export function AdminPage({ user, onLogout }: { user: User; onLogout: () => void
             <button className="btn" onClick={addEventRow}>Zeile hinzufügen</button>
             <button className="btn btn-primary" onClick={() => void saveEvents()}>Events speichern</button>
           </div>
-          <div className="form-field">
-            <label className="form-label">Aktives Event auswählen</label>
-            <select
-              className="form-input"
-              value={selectedEventId || ""}
-              onChange={(event) => setSelectedEventId(Number(event.target.value))}
-            >
-              {eventRows.filter((e) => !e.deletedAt).map((event) => (
-                <option key={event.id || event.name} value={event.id || ""}>
-                  {event.name} ({event.status})
-                </option>
-              ))}
-            </select>
-          </div>
+
         </div>
 
         {/* ESC API Import */}
         <EscImport onImported={load} />
 
-        {/* CSV Upload Bereich */}
-        {selectedEventId && <AdminEventManager eventId={selectedEventId} onSave={load} />}
+        {/* Event-Daten verwalten */}
+        {eventRows.length > 0 && <AdminEventManager events={eventRows} onSave={load} />}
 
-        {message && <div className="toast">{message}</div>}
+        {message && <div className={`toast ${toastFading ? 'toast--fade-out' : ''}`}>{message}</div>}
       </div>
     </div>
   );

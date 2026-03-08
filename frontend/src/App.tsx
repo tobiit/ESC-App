@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ParticipantLogin } from "./pages/ParticipantLogin";
+import { ParticipantRegister } from "./pages/ParticipantRegister";
 import { AdminLogin } from "./pages/AdminLogin";
 import { ParticipantPage } from "./pages/ParticipantPage";
 import { AdminPage } from "./pages/AdminPage";
+import { AdminResultsPage } from "./pages/AdminResultsPage";
 
 type User = { id: number; role: "admin" | "participant"; username: string; displayName: string };
 
@@ -30,6 +32,8 @@ export function App() {
               : <ParticipantLogin onLogin={setUser} />
           }
         />
+        <Route path="/login" element={<ParticipantLogin onLogin={setUser} />} />
+        <Route path="/registrieren" element={<ParticipantRegister />} />
 
         {/* Admin-Bereich */}
         <Route
@@ -45,6 +49,14 @@ export function App() {
           element={
             user && user.role === "admin"
               ? <AdminPage user={user} onLogout={handleLogout} />
+              : <Navigate to="/verwaltung/login" replace />
+          }
+        />
+        <Route
+          path="/verwaltung/ergebnis/:eventId"
+          element={
+            user && user.role === "admin"
+              ? <AdminResultsPage user={user} onLogout={handleLogout} />
               : <Navigate to="/verwaltung/login" replace />
           }
         />

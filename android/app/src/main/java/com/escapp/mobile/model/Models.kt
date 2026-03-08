@@ -9,6 +9,18 @@ import kotlinx.serialization.Serializable
 data class LoginRequest(val username: String, val password: String)
 
 @Serializable
+data class RegisterRequest(
+    val displayName: String,
+    val fullName: String,
+    val username: String,
+    val password: String,
+    val acceptedTerms: Boolean
+)
+
+@Serializable
+data class RegisterResponse(val message: String)
+
+@Serializable
 data class RefreshRequest(val refreshToken: String)
 
 @Serializable
@@ -46,7 +58,7 @@ data class EventDto(
 @Serializable
 data class EntryDto(
     val id: Long,
-    @SerialName("countryName") val countryName: String,
+    @SerialName("countryCode") val countryCode: String,
     @SerialName("songTitle") val songTitle: String? = null,
     @SerialName("artistName") val artistName: String? = null,
     @SerialName("sortOrder") val sortOrder: Int? = null
@@ -103,7 +115,7 @@ data class MeDto(
 data class RankingEntry(
     val entryId: Long? = null,
     val rank: Int = 0,
-    val countryName: String = ""
+    val countryCode: String = ""
 )
 
 @Serializable

@@ -1,5 +1,6 @@
 package com.escapp.mobile.ui.screen
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -19,6 +20,7 @@ import com.escapp.mobile.ui.theme.*
 @Composable
 fun LoginScreen(
     onLogin: (String, String) -> Unit,
+    onNavigateToRegister: () -> Unit,
     isLoading: Boolean,
     error: String?
 ) {
@@ -124,6 +126,33 @@ fun LoginScreen(
                         text = error,
                         color = MaterialTheme.colorScheme.error,  // Red700
                         style = MaterialTheme.typography.bodySmall
+                    )
+                }
+
+                /* ── Divider ── */
+                Spacer(Modifier.height(8.dp))
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                Spacer(Modifier.height(8.dp))
+
+                /* ── Register Section ── */
+                Text(
+                    text = "Noch kein Konto?",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(Modifier.height(8.dp))
+                OutlinedButton(
+                    onClick = onNavigateToRegister,
+                    modifier = Modifier.fillMaxWidth().height(48.dp),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = MaterialTheme.colorScheme.primary
+                    ),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary),
+                    shape = MaterialTheme.shapes.medium
+                ) {
+                    Text(
+                        "Als neuer Teilnehmer registrieren",
+                        style = MaterialTheme.typography.labelLarge
                     )
                 }
             }

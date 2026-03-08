@@ -12,6 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.escapp.mobile.model.EntryDto
+import com.escapp.mobile.ui.getCountryNameDe
 import com.escapp.mobile.ui.theme.*
 
 /**
@@ -73,7 +74,7 @@ fun PredictionScreen(
                     /* ── Country name + song ── */
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            entry?.countryName ?: "Unbekannt",
+                            getCountryNameDe(entry?.countryCode),
                             style = MaterialTheme.typography.bodyLarge,
                             color = DarkBlue1000
                         )

@@ -58,6 +58,11 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ username, password })
     }) as Promise<AuthPayload>,
+  register: (payload: { displayName: string; fullName: string; username: string; password: string; acceptedTerms: boolean }) =>
+    request("/auth/register", {
+      method: "POST",
+      body: JSON.stringify(payload)
+    }) as Promise<{ message: string }>,
   logout: () =>
     request("/auth/logout", {
       method: "POST",
@@ -79,6 +84,8 @@ export const api = {
     request(`/events/${eventId}/predictions/me/submit`, { method: "POST" }),
   getResults: (eventId: number) => request(`/events/${eventId}/results`),
   adminParticipants: () => request("/admin/participants"),
+  adminPendingParticipants: () => request("/admin/participants/pending"),
+  adminApproveParticipant: (id: number) => request(`/admin/participants/${id}/approve`, { method: "POST" }),
   adminCreateParticipant: (payload: { username: string; password: string; displayName: string }) =>
     request("/admin/participants", { method: "POST", body: JSON.stringify(payload) }),
   adminUpdateParticipant: (id: number, payload: { displayName: string; isActive: boolean }) =>
@@ -92,9 +99,9 @@ export const api = {
   adminUpdateEvent: (id: number, payload: { name: string; year?: number; status: string; isActive: boolean }) =>
     request(`/admin/events/${id}`, { method: "PUT", body: JSON.stringify(payload) }),
   adminEntries: (eventId: number) => request(`/admin/events/${eventId}/entries`),
-  adminAddEntry: (eventId: number, payload: { countryName: string; songTitle?: string; artistName?: string; sortOrder: number }) =>
+  adminAddEntry: (eventId: number, payload: { countryCode: string; songTitle?: string; artistName?: string; sortOrder: number }) =>
     request(`/admin/events/${eventId}/entries`, { method: "POST", body: JSON.stringify(payload) }),
-  adminUpdateEntry: (entryId: number, payload: { countryName: string; songTitle?: string; artistName?: string; sortOrder: number }) =>
+  adminUpdateEntry: (entryId: number, payload: { countryCode: string; songTitle?: string; artistName?: string; sortOrder: number }) =>
     request(`/admin/entries/${entryId}`, { method: "PUT", body: JSON.stringify(payload) }),
   adminDeleteEntry: (entryId: number) => request(`/admin/entries/${entryId}`, { method: "DELETE" }),
   adminOfficialResult: (eventId: number) => request(`/admin/events/${eventId}/officialresult`),

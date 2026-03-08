@@ -10,6 +10,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.escapp.mobile.model.EntryDto
+import com.escapp.mobile.ui.getCountryNameDe
 import com.escapp.mobile.ui.theme.*
 
 private val ESC_POINTS = listOf(12, 10, 8, 7, 6, 5, 4, 3, 2, 1)
@@ -128,7 +129,7 @@ private fun RatingRow(
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    entry.countryName,
+                    getCountryNameDe(entry.countryCode),
                     style = MaterialTheme.typography.bodyLarge,
                     color = DarkBlue1000  // semantic-color-on-surface-primary
                 )

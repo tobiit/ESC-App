@@ -19,9 +19,9 @@ eventsRouter.get("/active", requireAuth, async (_req, res, next) => {
 eventsRouter.get("/:id/entries", requireAuth, async (req, res, next) => {
   try {
     const rows = await pool.query(
-      `SELECT id, event_id AS eventId, country_name AS countryName, song_title AS songTitle,
+      `SELECT id, event_id AS eventId, country_code AS countryCode, song_title AS songTitle,
               artist_name AS artistName, sort_order AS sortOrder
-       FROM entries WHERE event_id = ? ORDER BY sort_order ASC, country_name ASC`,
+       FROM entries WHERE event_id = ? ORDER BY sort_order ASC, country_code ASC`,
       [req.params.id]
     );
     res.json(rows);

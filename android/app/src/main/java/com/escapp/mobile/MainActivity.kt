@@ -133,6 +133,8 @@ class MainActivity : ComponentActivity() {
 private fun EscApp(vm: AppViewModel) {
     val ui = vm.ui
     var tab by remember { mutableIntStateOf(0) }
+    var currentScreen by remember { mutableStateOf("login") }  // "login", "register", "terms"
+    var registerSuccess by remember { mutableStateOf(false) }
 
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -197,11 +199,38 @@ private fun EscApp(vm: AppViewModel) {
 
         /* ── Login gate ── */
         if (ui.user == null) {
-            LoginScreen(
-                onLogin = vm::login,
-                isLoading = ui.loading,
-                error = ui.error
-            )
+            when (currentScreen) {
+                "login" -> {
+                    LoginScreen(
+                        onLogin = vm::login,
+                        onNavigateToRegister = { 
+                            currentScreen = "register"
+                            registerSuccess = false
+                        },
+                        isLoading = ui.loading,
+                        error = ui.error
+                    )
+                }
+                "register" -> {
+                    RegisterScreen(
+                        onRegister = { displayName, fullName, username, password, acceptedTerms ->
+                            vm.register(displayName, fullName, username, password, acceptedTerms) {
+                                registerSuccess = true
+                            }
+                        },
+                        onNavigateToLogin = { currentScreen = "login" },
+                        onShowTerms = { currentScreen = "terms" },
+                        isLoading = ui.loading,
+                        error = ui.error,
+                        success = registerSuccess
+                    )
+                }
+                "terms" -> {
+                    TermsScreen(
+                        onNavigateBack = { currentScreen = "register" }
+                    )
+                }
+            }
             return@Scaffold
         }
 

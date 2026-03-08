@@ -14,6 +14,14 @@ const loginLimiter = rateLimit({ windowMs: 60_000, max: 30, standardHeaders: tru
 
 const loginSchema = z.object({ username: z.string().min(2), password: z.string().min(4) });
 
+const registrationSchema = z.object({
+  displayName: z.string().min(2).max(120),
+  fullName: z.string().min(2).max(120),
+  username: z.string().min(3).max(64),
+  password: z.string().min(6).max(100),
+  acceptedTerms: z.boolean().refine(val => val === true, { message: "Nutzungsbedingungen müssen akzeptiert werden" })
+});
+
 const hashRefreshToken = (token) => crypto.createHash("sha256").update(token).digest("hex");
 
 const issueTokens = async (user) => {
@@ -34,7 +42,7 @@ const performLogin = async (req, res, expectedRole) => {
 
   const { username, password } = parsed.data;
   const rows = await pool.query(
-    "SELECT id, role, username, display_name, password_hash, is_active, failed_login_count, locked_until FROM users WHERE username = ? LIMIT 1",
+    "SELECT id, role, username, display_name, password_hash, is_active, is_approved, failed_login_count, locked_until FROM users WHERE username = ? LIMIT 1",
     [username]
   );
   const user = rows[0];
@@ -43,6 +51,9 @@ const performLogin = async (req, res, expectedRole) => {
   }
   if (!user.is_active) {
     return res.status(403).json({ message: "Konto deaktiviert" });
+  }
+  if (!user.is_approved) {
+    return res.status(403).json({ message: "Ihr Konto muß noch durch einen Administrator freigegeben werden" });
   }
   if (user.locked_until && new Date(user.locked_until).getTime() > Date.now()) {
     return res.status(423).json({ message: "Konto vorübergehend gesperrt" });
@@ -67,6 +78,38 @@ const performLogin = async (req, res, expectedRole) => {
     ...tokenPair
   });
 };
+
+authRouter.post("/register", loginLimiter, async (req, res, next) => {
+  try {
+    const parsed = registrationSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ message: "Ungültige Nutzdaten", errors: parsed.error.errors });
+    }
+
+    const { displayName, fullName, username, password } = parsed.data;
+
+    // Check if username already exists
+    const existing = await pool.query("SELECT id FROM users WHERE username = ? LIMIT 1", [username]);
+    if (existing.length > 0) {
+      return res.status(409).json({ message: "Benutzername bereits vergeben" });
+    }
+
+    // Hash password
+    const passwordHash = await bcrypt.hash(password, 12);
+
+    // Create participant user (requires admin approval)
+    await pool.query(
+      "INSERT INTO users (role, username, password_hash, display_name, full_name, is_active, is_approved) VALUES (?, ?, ?, ?, ?, ?, ?)",
+      ["participant", username, passwordHash, displayName, fullName, true, false]
+    );
+
+    return res.status(201).json({
+      message: "Registrierung erfolgreich. Ihr Konto muß noch durch einen Administrator freigegeben werden."
+    });
+  } catch (error) {
+    next(error);
+  }
+});
 
 authRouter.post("/login", loginLimiter, async (req, res, next) => {
   try {

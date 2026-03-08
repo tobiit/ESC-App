@@ -39,7 +39,7 @@ export const buildRatingsReferenceRanking = (entries, allRatingItems) => {
       Number(entry.id),
       {
         entryId: Number(entry.id),
-        countryName: entry.country_name,
+        countryCode: entry.country_code,
         total: 0,
         counts: Object.fromEntries([12, 10, 8, 7, 6, 5, 4, 3, 2, 1].map((point) => [point, 0]))
       }
@@ -61,7 +61,7 @@ export const buildRatingsReferenceRanking = (entries, allRatingItems) => {
       for (const p of ESC_POINTS) {
         if (b.counts[p] !== a.counts[p]) return b.counts[p] - a.counts[p];
       }
-      return a.countryName.localeCompare(b.countryName, "de");
+      return a.countryCode.localeCompare(b.countryCode, "de");
     })
     .map((item, index) => ({
       ...item,
@@ -95,7 +95,7 @@ export const buildParticipantRanking = (participantsWithPredictions, referenceRa
       diffSum += part.diffAbs;
       perEntry.push({
         entryId,
-        countryName: entry.country_name,
+        countryCode: entry.country_code,
         predictedRank,
         actualRank,
         points: part.points

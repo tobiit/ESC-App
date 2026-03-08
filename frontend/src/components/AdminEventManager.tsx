@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { CsvUpload } from "./CsvUpload";
 import { DataTable } from "./DataTable";
 import { api } from "../api";
+import { isValidCountryCode, normalizeCountryCode, getCountryNameDe } from "../lib/countries";
 
 // Beispiel-CSV-Header für Songs/Länder
 const SONGS_HEADER = "country,song,artist\n";
@@ -23,9 +24,10 @@ function parseCsv(text: string): CsvRow[] {
   const lines = text.trim().split(/\r?\n/);
   if (lines.length === 0) return [];
   const [header, ...dataLines] = lines;
-  const keys = header.split(",").map((k) => k.trim());
+  const strip = (s: string) => s.trim().replace(/^["']|["']$/g, "");
+  const keys = header.split(",").map(strip);
   return dataLines.map((line) => {
-    const values = line.split(",").map((v) => v.trim());
+    const values = line.split(",").map(strip);
     const obj: CsvRow = {};
     keys.forEach((k, i) => (obj[k] = values[i] || ""));
     return obj;
@@ -35,7 +37,14 @@ function parseCsv(text: string): CsvRow[] {
 function validateSongs(songs: CsvRow[]): string[] {
   const errors: string[] = [];
   songs.forEach((song, i) => {
-    if (!song.country) errors.push(`Zeile ${i + 2}: Land fehlt`);
+    if (!song.country) {
+      errors.push(`Zeile ${i + 2}: Land fehlt`);
+    } else {
+      const normalized = normalizeCountryCode(song.country);
+      if (!normalized || !isValidCountryCode(normalized)) {
+        errors.push(`Zeile ${i + 2}: "${song.country}" ist kein gültiger 2-stelliger ISO-Ländercode`);
+      }
+    }
     if (!song.song) errors.push(`Zeile ${i + 2}: Song fehlt`);
     if (!song.artist) errors.push(`Zeile ${i + 2}: Künstler fehlt`);
   });
@@ -57,7 +66,11 @@ function validateParticipants(participants: CsvRow[]): string[] {
 function validateRankings(rankings: CsvRow[], songCount: number): string[] {
   const errors: string[] = [];
   const byUser: Record<string, CsvRow[]> = {};
-  rankings.forEach((r) => {
+  rankings.forEach((r, i) => {
+    const normalized = normalizeCountryCode(r.country);
+    if (!normalized || !isValidCountryCode(normalized)) {
+      errors.push(`Zeile ${i + 2}: "${r.country}" ist kein gültiger 2-stelliger ISO-Ländercode`);
+    }
     if (!byUser[r.username]) byUser[r.username] = [];
     byUser[r.username].push(r);
   });
@@ -100,6 +113,11 @@ function validateRatings(ratings: CsvRow[]): string[] {
       const points = Number(item.points);
       if (!item.country) {
         errors.push(`Benutzer "${username}": Land fehlt`);
+      } else {
+        const normalized = normalizeCountryCode(item.country);
+        if (!normalized || !isValidCountryCode(normalized)) {
+          errors.push(`Benutzer "${username}": "${item.country}" ist kein gültiger 2-stelliger ISO-Ländercode`);
+        }
       }
       if (!allowedPoints.has(points)) {
         errors.push(`Benutzer "${username}": Ungültige Punkte ${item.points}`);
@@ -120,6 +138,12 @@ function validateRatings(ratings: CsvRow[]): string[] {
 
 function validateOfficialResults(results: CsvRow[], songCount: number): string[] {
   const errors: string[] = [];
+  results.forEach((result, i) => {
+    const normalized = normalizeCountryCode(result.country);
+    if (!normalized || !isValidCountryCode(normalized)) {
+      errors.push(`Zeile ${i + 2}: "${result.country}" ist kein gültiger 2-stelliger ISO-Ländercode`);
+    }
+  });
   if (results.length !== songCount) {
     errors.push(`Offizielles Ergebnis: ${results.length} Einträge statt ${songCount}`);
   }
@@ -136,12 +160,48 @@ function validateOfficialResults(results: CsvRow[], songCount: number): string[]
   return errors;
 }
 
+type EventRow = { id: number; name: string; year?: number; status: string; deletedAt?: string | null };
+
 interface AdminEventManagerProps {
-  eventId?: number | null;
+  events: EventRow[];
   onSave?: () => void;
 }
 
-export function AdminEventManager({ eventId, onSave }: AdminEventManagerProps) {
+// Eurovision API Types
+type EurovisionContestant = {
+  id: number;
+  country: string;
+  artist: string;
+  song: string;
+};
+
+type EurovisionPerformance = {
+  contestantId: number;
+  running: number;
+  place: number | null;
+  scores: any[];
+};
+
+type EurovisionRound = {
+  name: string;
+  date: string;
+  time: string;
+  performances: EurovisionPerformance[];
+  disqualifieds: number[];
+};
+
+type EurovisionContest = {
+  year: number;
+  arena: string;
+  city: string;
+  country: string;
+  contestants: EurovisionContestant[];
+  rounds: EurovisionRound[];
+};
+
+export function AdminEventManager({ events, onSave }: AdminEventManagerProps) {
+  const manageableEvents = events.filter((e) => e.status !== "finished" && !e.deletedAt);
+  const [eventId, setEventId] = useState<number | null>(manageableEvents[0]?.id ?? null);
   const [songs, setSongs] = useState<SongRow[]>([]);
   const [participants, setParticipants] = useState<ParticipantRow[]>([]);
   const [rankings, setRankings] = useState<RankingRow[]>([]);
@@ -149,6 +209,12 @@ export function AdminEventManager({ eventId, onSave }: AdminEventManagerProps) {
   const [officialResults, setOfficialResults] = useState<OfficialRow[]>([]);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (eventId && !manageableEvents.some((e) => e.id === eventId)) {
+      setEventId(manageableEvents[0]?.id ?? null);
+    }
+  }, [events]);
 
   const showMessage = (msg: string, isError = false) => {
     if (isError) {
@@ -255,6 +321,60 @@ export function AdminEventManager({ eventId, onSave }: AdminEventManagerProps) {
     setOfficialResults([...officialResults, { country: "", rank: "" }]);
   };
 
+  const importOfficialFromEurovisionApi = async () => {
+    try {
+      if (eventId == null) {
+        showMessage("Kein Event ausgewählt.", true);
+        return;
+      }
+      
+      const selectedEvent = events.find((e) => e.id === eventId);
+      if (!selectedEvent?.year) {
+        showMessage("Event hat kein Jahr definiert.", true);
+        return;
+      }
+
+      const year = selectedEvent.year;
+      showMessage(`Lade Daten aus Eurovision API für Jahr ${year}...`);
+
+      const response = await fetch(`https://eurovisionapi.runasp.net/api/senior/contests/${year}`);
+      if (!response.ok) {
+        throw new Error(`Eurovision API Fehler: ${response.status} ${response.statusText}`);
+      }
+
+      const contest: EurovisionContest = await response.json();
+
+      // Nur die Final Round berücksichtigen
+      const finalRound = contest.rounds.find((r) => r.name === "final");
+      if (!finalRound) {
+        showMessage("Keine Final-Runde in den API-Daten gefunden.", true);
+        return;
+      }
+
+      // Performances mit Platzierung extrahieren (place !== null = hat im Finale angetreten)
+      const finalists = finalRound.performances
+        .filter((p) => p.place !== null)
+        .map((p) => {
+          const contestant = contest.contestants.find((c) => c.id === p.contestantId);
+          return {
+            country: contestant?.country || "",
+            rank: String(p.place)
+          };
+        })
+        .filter((item) => item.country && isValidCountryCode(item.country));
+
+      if (finalists.length === 0) {
+        showMessage("Keine gültigen Finalteilnehmer in den API-Daten gefunden.", true);
+        return;
+      }
+
+      setOfficialResults(finalists);
+      showMessage(`${finalists.length} offizielle Platzierungen aus Eurovision API ${year} geladen`);
+    } catch (err: any) {
+      showMessage("Fehler beim Import aus Eurovision API: " + err.message, true);
+    }
+  };
+
   const saveSongs = async () => {
     try {
       if (eventId == null) {
@@ -354,7 +474,7 @@ export function AdminEventManager({ eventId, onSave }: AdminEventManagerProps) {
         if (existingEntries?.length) {
           setSongs(
             existingEntries.map((entry: any) => ({
-              country: entry.countryName,
+              country: entry.countryCode,
               song: entry.songTitle || "",
               artist: entry.artistName || ""
             }))
@@ -376,25 +496,69 @@ export function AdminEventManager({ eventId, onSave }: AdminEventManagerProps) {
     })();
   }, [eventId]);
 
+  const selectedEventName = manageableEvents.find((e) => e.id === eventId)?.name || "–";
+
   return (
     <div className="admin-section">
       <h2>Event-Daten verwalten</h2>
 
-      <div className="card">
-        <h3>Songs/Länder</h3>
+      <div className="form-field">
+        <label className="form-label">Event auswählen</label>
+        <select
+          className="form-input"
+          value={eventId || ""}
+          onChange={(e) => setEventId(Number(e.target.value))}
+        >
+          <option value="" disabled>– Event wählen –</option>
+          {manageableEvents.map((ev) => (
+            <option key={ev.id} value={ev.id}>
+              {ev.name} ({ev.status})
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {!eventId && <p style={{ color: "#888" }}>Bitte ein Event auswählen.</p>}
+
+      {eventId && <><div className="card">
+        <h3>Songs/Länder – {selectedEventName}</h3>
         <CsvUpload
           label="Songs/Länder CSV hochladen"
           onUpload={handleSongsUpload}
           example={
             "data:text/csv;charset=utf-8," +
             encodeURIComponent(
-              SONGS_HEADER + "Schweden,Unicorn,Jane Doe\nDeutschland,Fireworks,Max Mustermann"
+              SONGS_HEADER + "SE,Unicorn,Jane Doe\nDE,Fireworks,Max Mustermann"
             )
           }
         />
         <DataTable
           columns={[
-            { key: "country", label: "Land", editable: true },
+            { 
+              key: "country", 
+              label: "Land", 
+              editable: true,
+              render: (row) => (
+                <div>
+                  <input
+                    value={row.country || ""}
+                    onChange={(e) => {
+                      const idx = songs.findIndex(s => s === row);
+                      if (idx >= 0) {
+                        const next = [...songs];
+                        next[idx].country = e.target.value;
+                        setSongs(next);
+                      }
+                    }}
+                    placeholder="z.B. DE"
+                    style={{ width: "60px", marginRight: "8px" }}
+                  />
+                  <span style={{ color: "#666", fontSize: "14px" }}>
+                    {row.country && getCountryNameDe(row.country.toUpperCase())}
+                  </span>
+                </div>
+              )
+            },
             { key: "song", label: "Song", editable: true },
             { key: "artist", label: "Künstler", editable: true }
           ]}
@@ -460,14 +624,38 @@ export function AdminEventManager({ eventId, onSave }: AdminEventManagerProps) {
             "data:text/csv;charset=utf-8," +
             encodeURIComponent(
               RANKINGS_HEADER +
-                "tobiit,Deutschland,23\ntobiit,Italien,3\ntobiit,Schweden,1\ntobiit,Malta,18"
+                "tobiit,DE,23\ntobiit,IT,3\ntobiit,SE,1\ntobiit,MT,18"
             )
           }
         />
         <DataTable
           columns={[
             { key: "username", label: "Benutzername", editable: true },
-            { key: "country", label: "Land", editable: true },
+            { 
+              key: "country", 
+              label: "Land", 
+              editable: true,
+              render: (row) => (
+                <div>
+                  <input
+                    value={row.country || ""}
+                    onChange={(e) => {
+                      const idx = rankings.findIndex(r => r === row);
+                      if (idx >= 0) {
+                        const next = [...rankings];
+                        next[idx].country = e.target.value;
+                        setRankings(next);
+                      }
+                    }}
+                    placeholder="z.B. DE"
+                    style={{ width: "60px", marginRight: "8px" }}
+                  />
+                  <span style={{ color: "#666", fontSize: "14px" }}>
+                    {row.country && getCountryNameDe(row.country.toUpperCase())}
+                  </span>
+                </div>
+              )
+            },
             { key: "rank", label: "Platz", editable: true }
           ]}
           data={rankings}
@@ -496,14 +684,38 @@ export function AdminEventManager({ eventId, onSave }: AdminEventManagerProps) {
             "data:text/csv;charset=utf-8," +
             encodeURIComponent(
               RATINGS_HEADER +
-                "tobiit,Deutschland,12\ntobiit,Italien,10\ntobiit,Schweden,8\ntobiit,Malta,7"
+                "tobiit,DE,12\ntobiit,IT,10\ntobiit,SE,8\ntobiit,MT,7"
             )
           }
         />
         <DataTable
           columns={[
             { key: "username", label: "Benutzername", editable: true },
-            { key: "country", label: "Land", editable: true },
+            { 
+              key: "country", 
+              label: "Land", 
+              editable: true,
+              render: (row) => (
+                <div>
+                  <input
+                    value={row.country || ""}
+                    onChange={(e) => {
+                      const idx = ratings.findIndex(r => r === row);
+                      if (idx >= 0) {
+                        const next = [...ratings];
+                        next[idx].country = e.target.value;
+                        setRatings(next);
+                      }
+                    }}
+                    placeholder="z.B. DE"
+                    style={{ width: "60px", marginRight: "8px" }}
+                  />
+                  <span style={{ color: "#666", fontSize: "14px" }}>
+                    {row.country && getCountryNameDe(row.country.toUpperCase())}
+                  </span>
+                </div>
+              )
+            },
             { key: "points", label: "Punkte", editable: true }
           ]}
           data={ratings}
@@ -526,19 +738,51 @@ export function AdminEventManager({ eventId, onSave }: AdminEventManagerProps) {
         <p style={{ fontSize: "14px", color: "#666", marginBottom: "12px" }}>
           Die Datei muss genau {songs.length} Einträge enthalten. Jeder Platz (1-{songs.length}) darf nur einmal vorkommen.
         </p>
+        <div style={{ marginBottom: "12px" }}>
+          <button onClick={importOfficialFromEurovisionApi} style={{ marginBottom: "8px" }}>
+            🌍 Aus Eurovision API importieren
+          </button>
+          <span style={{ fontSize: "13px", color: "#666", marginLeft: "12px" }}>
+            Lädt offizielle Finalergebnisse basierend auf dem Event-Jahr
+          </span>
+        </div>
         <CsvUpload
           label="Offizielles Ergebnis CSV hochladen"
           onUpload={handleOfficialUpload}
           example={
             "data:text/csv;charset=utf-8," +
             encodeURIComponent(
-              OFFICIAL_HEADER + "Schweden,1\nDeutschland,23\nItalien,3\nMalta,18"
+              OFFICIAL_HEADER + "SE,1\nDE,23\nIT,3\nMT,18"
             )
           }
         />
         <DataTable
           columns={[
-            { key: "country", label: "Land", editable: true },
+            { 
+              key: "country", 
+              label: "Land", 
+              editable: true,
+              render: (row) => (
+                <div>
+                  <input
+                    value={row.country || ""}
+                    onChange={(e) => {
+                      const idx = officialResults.findIndex(r => r === row);
+                      if (idx >= 0) {
+                        const next = [...officialResults];
+                        next[idx].country = e.target.value;
+                        setOfficialResults(next);
+                      }
+                    }}
+                    placeholder="z.B. DE"
+                    style={{ width: "60px", marginRight: "8px" }}
+                  />
+                  <span style={{ color: "#666", fontSize: "14px" }}>
+                    {row.country && getCountryNameDe(row.country.toUpperCase())}
+                  </span>
+                </div>
+              )
+            },
             { key: "rank", label: "Platz", editable: true }
           ]}
           data={officialResults}
@@ -555,6 +799,8 @@ export function AdminEventManager({ eventId, onSave }: AdminEventManagerProps) {
           </button>
         </div>
       </div>
+
+      </>}
 
       {message && (
         <div className="toast" style={{ background: "var(--core-color-green-700, #2c7b2e)" }}>

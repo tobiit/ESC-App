@@ -5,34 +5,37 @@ import { pool, withTx } from "../db/pool.js";
 import { requireAuth, requireRole } from "../middleware/auth.js";
 import { writeAuditLog } from "../middleware/audit.js";
 import { validatePredictionItems, validateRatingItems } from "../services/validation.js";
+import { getCountryNameDe, isValidCountryCode } from "../services/countries.js";
 
-// Deutsche Übersetzungen für ESC-Ländercodes (Fallback wenn Countries-API nicht erreichbar)
-const COUNTRY_DE = {
-  AL: "Albanien", AD: "Andorra", AM: "Armenien", AU: "Australien", AT: "Österreich",
-  AZ: "Aserbaidschan", BY: "Belarus", BE: "Belgien", BA: "Bosnien und Herzegowina",
-  BG: "Bulgarien", HR: "Kroatien", CY: "Zypern", CZ: "Tschechien", DK: "Dänemark",
-  EE: "Estland", FI: "Finnland", FR: "Frankreich", GE: "Georgien", DE: "Deutschland",
-  GR: "Griechenland", HU: "Ungarn", IS: "Island", IE: "Irland", IL: "Israel", IT: "Italien",
-  KZ: "Kasachstan", LV: "Lettland", LT: "Litauen", LU: "Luxemburg", MK: "Nordmazedonien",
-  MT: "Malta", MD: "Moldau", MC: "Monaco", ME: "Montenegro", MA: "Marokko", NL: "Niederlande",
-  NO: "Norwegen", PL: "Polen", PT: "Portugal", RO: "Rumänien", RU: "Russland", SM: "San Marino",
-  RS: "Serbien", SK: "Slowakei", SI: "Slowenien", ES: "Spanien", SE: "Schweden", CH: "Schweiz",
-  TR: "Türkei", UA: "Ukraine", GB: "Vereinigtes Königreich", CS: "Serbien und Montenegro",
-  YU: "Jugoslawien", "GB-WLS": "Wales"
-};
-
-/** Ländername für Code ermitteln (deutsch bevorzugt, API-Fallback englisch) */
-async function resolveCountryName(code, apiCountries) {
-  if (COUNTRY_DE[code]) return COUNTRY_DE[code];
-  if (apiCountries && apiCountries[code]) return apiCountries[code];
-  return code;
-}
-
-/** Countries von der Eurovision-API laden */
+/** Countries von der Eurovision-API laden (ESC API gibt Codes bereits zurück) */
 async function fetchEscCountries() {
   const resp = await fetch("https://eurovisionapi.runasp.net/api/countries");
   if (!resp.ok) return null;
   return resp.json();
+}
+
+/**
+ * Lookup entry by country code, with fallback to any matching prefix
+ * Falls back to old country_name for backward compatibility during migration
+ * @param {string} countryIdentifier - Country code ("DE") or country name ("Deutschland")
+ * @param {Map} codeMap - Map of country_code -> entryId
+ * @returns {number|null} - Entry ID or null if not found
+ */
+function lookupEntryByCountry(countryIdentifier, codeMap) {
+  if (!countryIdentifier) return null;
+  const normalized = (countryIdentifier || "").toUpperCase().trim();
+  
+  // Try exact code match first
+  if (codeMap.has(normalized)) return codeMap.get(normalized);
+  
+  // Fallback: try any code that starts with the identifier (for backward compat)
+  for (const [code, id] of codeMap.entries()) {
+    if (code.startsWith(normalized) || normalized.startsWith(code)) {
+      return id;
+    }
+  }
+  
+  return null;
 }
 
 export const adminRouter = express.Router();
@@ -49,9 +52,55 @@ const eventSchema = z.object({
 adminRouter.get("/participants", async (_req, res, next) => {
   try {
     const rows = await pool.query(
-      "SELECT id, username, display_name AS displayName, is_active AS isActive, created_at AS createdAt FROM users WHERE role = 'participant' ORDER BY display_name ASC"
+      "SELECT id, username, display_name AS displayName, full_name AS fullName, is_active AS isActive, is_approved AS isApproved, created_at AS createdAt FROM users WHERE role = 'participant' ORDER BY display_name ASC"
     );
     res.json(rows);
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Get pending approval users
+adminRouter.get("/participants/pending", async (_req, res, next) => {
+  try {
+    const rows = await pool.query(
+      "SELECT id, username, display_name AS displayName, full_name AS fullName, created_at AS createdAt FROM users WHERE role = 'participant' AND is_approved = FALSE ORDER BY created_at DESC"
+    );
+    res.json(rows);
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Approve user
+adminRouter.post("/participants/:id/approve", async (req, res, next) => {
+  try {
+    const userId = req.params.id;
+    await pool.query("UPDATE users SET is_approved = TRUE WHERE id = ? AND role = 'participant'", [userId]);
+    await writeAuditLog({
+      actorUserId: req.user.id,
+      actionType: "approve",
+      entityType: "participant",
+      entityId: userId
+    });
+    res.json({ ok: true });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Reject/delete user
+adminRouter.delete("/participants/:id", async (req, res, next) => {
+  try {
+    const userId = req.params.id;
+    await pool.query("DELETE FROM users WHERE id = ? AND role = 'participant'", [userId]);
+    await writeAuditLog({
+      actorUserId: req.user.id,
+      actionType: "delete",
+      entityType: "participant",
+      entityId: userId
+    });
+    res.json({ ok: true });
   } catch (error) {
     next(error);
   }
@@ -77,9 +126,13 @@ adminRouter.post("/events/:id/entries/bulk", async (req, res, next) => {
       // Insert new entries
       for (let i = 0; i < parsed.data.entries.length; i++) {
         const entry = parsed.data.entries[i];
+        const countryCode = String(entry.country || "").toUpperCase().trim();
+        if (!isValidCountryCode(countryCode)) {
+          throw new Error(`Ungültiger Ländercode: ${entry.country}`);
+        }
         await conn.query(
-          "INSERT INTO entries (event_id, country_name, song_title, artist_name, sort_order) VALUES (?, ?, ?, ?, ?)",
-          [req.params.id, entry.country, entry.song || null, entry.artist || null, i + 1]
+          "INSERT INTO entries (event_id, country_code, song_title, artist_name, sort_order) VALUES (?, ?, ?, ?, ?)",
+          [req.params.id, countryCode, entry.song || null, entry.artist || null, i + 1]
         );
       }
     });
@@ -136,8 +189,8 @@ adminRouter.post("/events/:id/predictions/bulk", async (req, res, next) => {
     if (!parsed.success) return res.status(400).json({ message: "Ungültige Nutzdaten" });
     
     await withTx(async (conn) => {
-      const entryRows = await conn.query("SELECT id, country_name FROM entries WHERE event_id = ?", [req.params.id]);
-      const entryMap = new Map(entryRows.map((row) => [row.country_name, Number(row.id)]));
+      const entryRows = await conn.query("SELECT id, country_code FROM entries WHERE event_id = ?", [req.params.id]);
+      const codeMap = new Map(entryRows.map((row) => [row.country_code, Number(row.id)]));
       const entrySet = new Set(entryRows.map((row) => Number(row.id)));
 
       const byUser = {};
@@ -168,7 +221,7 @@ adminRouter.post("/events/:id/predictions/bulk", async (req, res, next) => {
         }
 
         const items = rankings.map((ranking) => {
-          const entryId = entryMap.get(ranking.country);
+          const entryId = lookupEntryByCountry(ranking.country, codeMap);
           if (!entryId) throw new Error(`Ungültiges Land: ${ranking.country}`);
           return { entryId, rank: Number(ranking.rank) };
         });
@@ -203,8 +256,8 @@ adminRouter.post("/events/:id/ratings/bulk", async (req, res, next) => {
     if (!parsed.success) return res.status(400).json({ message: "Ungültige Nutzdaten" });
 
     await withTx(async (conn) => {
-      const entryRows = await conn.query("SELECT id, country_name FROM entries WHERE event_id = ?", [req.params.id]);
-      const entryMap = new Map(entryRows.map((row) => [row.country_name, Number(row.id)]));
+      const entryRows = await conn.query("SELECT id, country_code FROM entries WHERE event_id = ?", [req.params.id]);
+      const codeMap = new Map(entryRows.map((row) => [row.country_code, Number(row.id)]));
       const entrySet = new Set(entryRows.map((row) => Number(row.id)));
 
       const byUser = {};
@@ -235,7 +288,7 @@ adminRouter.post("/events/:id/ratings/bulk", async (req, res, next) => {
         }
 
         const items = ratings.map((rating) => {
-          const entryId = entryMap.get(rating.country);
+          const entryId = lookupEntryByCountry(rating.country, codeMap);
           if (!entryId) throw new Error(`Ungültiges Land: ${rating.country}`);
           return { entryId, points: Number(rating.points) };
         });
@@ -269,12 +322,12 @@ adminRouter.post("/events/:id/officialresult/bulk", async (req, res, next) => {
     if (!parsed.success) return res.status(400).json({ message: "Ungültige Nutzdaten" });
 
     await withTx(async (conn) => {
-      const entryRows = await conn.query("SELECT id, country_name FROM entries WHERE event_id = ?", [req.params.id]);
-      const entryMap = new Map(entryRows.map((row) => [row.country_name, Number(row.id)]));
+      const entryRows = await conn.query("SELECT id, country_code FROM entries WHERE event_id = ?", [req.params.id]);
+      const codeMap = new Map(entryRows.map((row) => [row.country_code, Number(row.id)]));
       const entrySet = new Set(entryRows.map((row) => Number(row.id)));
 
       const items = parsed.data.results.map((result) => {
-        const entryId = entryMap.get(result.country);
+        const entryId = lookupEntryByCountry(result.country, codeMap);
         if (!entryId) throw new Error(`Ungültiges Land: ${result.country}`);
         return { entryId, rank: Number(result.rank) };
       });
@@ -343,15 +396,6 @@ adminRouter.post("/participants/:id/reset-password", async (req, res, next) => {
     if (!parsed.success) return res.status(400).json({ message: "Ungültige Nutzdaten" });
     const hash = await bcrypt.hash(parsed.data.password, 12);
     await pool.query("UPDATE users SET password_hash = ? WHERE id = ? AND role = 'participant'", [hash, req.params.id]);
-    res.json({ ok: true });
-  } catch (error) {
-    next(error);
-  }
-});
-
-adminRouter.delete("/participants/:id", async (req, res, next) => {
-  try {
-    await pool.query("DELETE FROM users WHERE id = ? AND role = 'participant'", [req.params.id]);
     res.json({ ok: true });
   } catch (error) {
     next(error);
@@ -446,9 +490,9 @@ adminRouter.post("/events/:id/restore", async (req, res, next) => {
 adminRouter.get("/events/:id/entries", async (req, res, next) => {
   try {
     const rows = await pool.query(
-      `SELECT id, event_id AS eventId, country_name AS countryName, song_title AS songTitle,
-              artist_name AS artistName, sort_order AS sortOrder
-       FROM entries WHERE event_id = ? ORDER BY sort_order ASC, country_name ASC`,
+      `SELECT id, event_id AS eventId, country_code AS countryCode, song_title AS songTitle,
+       artist_name AS artistName, sort_order AS sortOrder
+       FROM entries WHERE event_id = ? ORDER BY sort_order ASC, country_code ASC`,
       [req.params.id]
     );
     res.json(rows);
@@ -459,12 +503,20 @@ adminRouter.get("/events/:id/entries", async (req, res, next) => {
 
 adminRouter.post("/events/:id/entries", async (req, res, next) => {
   try {
-    const schema = z.object({ countryName: z.string().min(1), songTitle: z.string().optional(), artistName: z.string().optional(), sortOrder: z.number().int() });
+    const schema = z.object({
+      countryCode: z.string().length(2).toUpperCase(),
+      songTitle: z.string().optional(),
+      artistName: z.string().optional(),
+      sortOrder: z.number().int()
+    });
     const parsed = schema.safeParse(req.body);
     if (!parsed.success) return res.status(400).json({ message: "Ungültige Nutzdaten" });
+    if (!isValidCountryCode(parsed.data.countryCode)) {
+      return res.status(400).json({ message: "Ungültiger Ländercode" });
+    }
     await pool.query(
-      "INSERT INTO entries (event_id, country_name, song_title, artist_name, sort_order) VALUES (?, ?, ?, ?, ?)",
-      [req.params.id, parsed.data.countryName, parsed.data.songTitle || null, parsed.data.artistName || null, parsed.data.sortOrder]
+      "INSERT INTO entries (event_id, country_code, song_title, artist_name, sort_order) VALUES (?, ?, ?, ?, ?)",
+      [req.params.id, parsed.data.countryCode, parsed.data.songTitle || null, parsed.data.artistName || null, parsed.data.sortOrder]
     );
     res.status(201).json({ ok: true });
   } catch (error) {
@@ -474,12 +526,20 @@ adminRouter.post("/events/:id/entries", async (req, res, next) => {
 
 adminRouter.put("/entries/:entryId", async (req, res, next) => {
   try {
-    const schema = z.object({ countryName: z.string().min(1), songTitle: z.string().optional(), artistName: z.string().optional(), sortOrder: z.number().int() });
+    const schema = z.object({
+      countryCode: z.string().length(2).toUpperCase(),
+      songTitle: z.string().optional(),
+      artistName: z.string().optional(),
+      sortOrder: z.number().int()
+    });
     const parsed = schema.safeParse(req.body);
     if (!parsed.success) return res.status(400).json({ message: "Ungültige Nutzdaten" });
+    if (!isValidCountryCode(parsed.data.countryCode)) {
+      return res.status(400).json({ message: "Ungültiger Ländercode" });
+    }
     await pool.query(
-      "UPDATE entries SET country_name = ?, song_title = ?, artist_name = ?, sort_order = ? WHERE id = ?",
-      [parsed.data.countryName, parsed.data.songTitle || null, parsed.data.artistName || null, parsed.data.sortOrder, req.params.entryId]
+      "UPDATE entries SET country_code = ?, song_title = ?, artist_name = ?, sort_order = ? WHERE id = ?",
+      [parsed.data.countryCode, parsed.data.songTitle || null, parsed.data.artistName || null, parsed.data.sortOrder, req.params.entryId]
     );
     res.json({ ok: true });
   } catch (error) {
@@ -814,10 +874,10 @@ adminRouter.get("/esc-import/preview/:year", async (req, res, next) => {
     for (const perf of finalRound.performances || []) {
       const contestant = contestantMap.get(perf.contestantId);
       if (!contestant) continue;
-      const countryName = await resolveCountryName(contestant.country, countriesData);
+      const code = (contestant.country || "").toUpperCase();
       entries.push({
-        country: countryName,
-        countryCode: contestant.country,
+        countryCode: code,
+        countryName: getCountryNameDe(code),
         artist: contestant.artist,
         song: contestant.song,
         sortOrder: perf.running,
@@ -874,9 +934,9 @@ adminRouter.post("/esc-import", async (req, res, next) => {
     for (const perf of finalRound.performances || []) {
       const contestant = contestantMap.get(perf.contestantId);
       if (!contestant) continue;
-      const countryName = await resolveCountryName(contestant.country, countriesData);
+      const code = (contestant.country || "").toUpperCase();
       entries.push({
-        countryName,
+        countryCode: code,
         artist: contestant.artist || null,
         song: contestant.song || null,
         sortOrder: perf.running || 0,
@@ -901,9 +961,15 @@ adminRouter.post("/esc-import", async (req, res, next) => {
 
       // Entries anlegen
       for (const entry of entries) {
+        // Validiere dass country_code gültig ist und in uppercase
+        const code = (entry.countryCode || "").toUpperCase();
+        if (!isValidCountryCode(code)) {
+          console.warn(`Skipping invalid country code: ${entry.countryCode}`);
+          continue;
+        }
         await conn.query(
-          "INSERT INTO entries (event_id, country_name, song_title, artist_name, sort_order) VALUES (?, ?, ?, ?, ?)",
-          [eventId, entry.countryName, entry.song, entry.artist, entry.sortOrder]
+          "INSERT INTO entries (event_id, country_code, song_title, artist_name, sort_order) VALUES (?, ?, ?, ?, ?)",
+          [eventId, code, entry.song, entry.artist, entry.sortOrder]
         );
       }
 
@@ -914,12 +980,12 @@ adminRouter.post("/esc-import", async (req, res, next) => {
         const orRow = await conn.query("SELECT id FROM official_results WHERE event_id = ? LIMIT 1", [eventId]);
         const officialResultId = orRow[0].id;
 
-        const entryRows = await conn.query("SELECT id, country_name FROM entries WHERE event_id = ?", [eventId]);
-        const entryMap = new Map(entryRows.map(r => [r.country_name, Number(r.id)]));
+        const entryRows = await conn.query("SELECT id, country_code FROM entries WHERE event_id = ?", [eventId]);
+        const codeMap = new Map(entryRows.map(r => [r.country_code, Number(r.id)]));
 
         for (const entry of entries) {
           if (entry.place == null) continue;
-          const entryId = entryMap.get(entry.countryName);
+          const entryId = lookupEntryByCountry(entry.countryCode, codeMap);
           if (!entryId) continue;
           await conn.query(
             "INSERT INTO official_result_items (official_result_id, entry_id, rank_position) VALUES (?, ?, ?)",
