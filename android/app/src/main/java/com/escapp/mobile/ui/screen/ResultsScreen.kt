@@ -3,10 +3,12 @@ package com.escapp.mobile.ui.screen
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.border
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.escapp.mobile.model.ResultsDto
@@ -25,7 +27,8 @@ import com.escapp.mobile.ui.theme.*
 @Composable
 fun ResultsScreen(
     eventStatus: String?,
-    results: ResultsDto?
+    results: ResultsDto?,
+    highlightOverview: Boolean = false
 ) {
     if (eventStatus != "finished") {
         Box(
@@ -59,6 +62,14 @@ fun ResultsScreen(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
+            .then(
+                if (highlightOverview) {
+                    Modifier.border(3.dp, Color(0xFFFFC107), MaterialTheme.shapes.medium)
+                } else {
+                    Modifier
+                }
+            )
+            .padding(4.dp)
             .padding(bottom = 24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {

@@ -1,6 +1,6 @@
 package com.escapp.mobile.ui.screen
 
-import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -12,7 +12,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.escapp.mobile.model.EntryDto
 import com.escapp.mobile.ui.getCountryNameDe
@@ -39,7 +39,9 @@ fun PredictionScreen(
     onMove: (Int, Int) -> Unit,
     onMoveTo: (Int, Int) -> Unit,
     onSave: () -> Unit,
-    onSubmit: () -> Unit
+    onSubmit: () -> Unit,
+    highlightList: Boolean = false,
+    highlightActions: Boolean = false
 ) {
     val enabled = !isSubmitted && eventOpen
     
@@ -64,7 +66,15 @@ fun PredictionScreen(
                 val entry = entries.firstOrNull { it.id == entryId }
 
                 Card(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .then(
+                            if (highlightList) {
+                                Modifier.border(3.dp, Color(0xFFFFC107), MaterialTheme.shapes.small)
+                            } else {
+                                Modifier
+                            }
+                        ),
                     colors = CardDefaults.cardColors(
                         containerColor = MaterialTheme.colorScheme.surface
                     ),
@@ -171,7 +181,16 @@ fun PredictionScreen(
             } else if (eventOpen) {
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .then(
+                            if (highlightActions) {
+                                Modifier.border(3.dp, Color(0xFFFFC107), MaterialTheme.shapes.medium)
+                            } else {
+                                Modifier
+                            }
+                        )
+                        .padding(4.dp)
                 ) {
                     OutlinedButton(
                         onClick = onSave,

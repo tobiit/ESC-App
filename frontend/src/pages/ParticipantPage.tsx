@@ -6,6 +6,20 @@ import { getCountryNameDe } from "../lib/countries";
 type Entry = { id: number; countryCode: string; songTitle?: string; artistName?: string; sortOrder: number };
 type User = { id: number; role: "admin" | "participant"; username: string; displayName: string };
 type DropIndicatorPosition = "before" | "after";
+type TutorialStep = {
+  title: string;
+  body: string;
+  tab: "rating" | "prediction" | "results";
+  target:
+    | "tab-rating"
+    | "tab-prediction"
+    | "tab-results"
+    | "rating-table"
+    | "rating-actions"
+    | "prediction-table"
+    | "prediction-actions"
+    | "results-section";
+};
 
 const ESC_POINTS = [12, 10, 8, 7, 6, 5, 4, 3, 2, 1];
 
@@ -25,7 +39,63 @@ export function ParticipantPage({ user, onLogout }: { user: User; onLogout: () =
   const [rankInputs, setRankInputs] = useState<Record<number, string>>({});
   const [expandedLeaderboardA, setExpandedLeaderboardA] = useState(false);
   const [expandedLeaderboardB, setExpandedLeaderboardB] = useState(false);
+  const [tutorialOpen, setTutorialOpen] = useState(false);
+  const [tutorialIndex, setTutorialIndex] = useState(0);
   const navigate = useNavigate();
+
+  const tutorialSteps: TutorialStep[] = [
+    {
+      title: "Tab: Bewertung",
+      body: "Hier gibt es nichts zu gewinnen, aber Sie bewerten die Songs nach Ihrem eigenen Geschmack.",
+      tab: "rating",
+      target: "tab-rating"
+    },
+    {
+      title: "Bewertungsliste",
+      body: "Jedes Land kann genau einen Punktwert bekommen: 1-8, 10 oder 12. Jeder Wert darf nur einmal vergeben werden.",
+      tab: "rating",
+      target: "rating-table"
+    },
+    {
+      title: "Bewertung speichern",
+      body: "Sie können Entwürfe jederzeit unvollständig speichern und später ergänzen. Erst beim Einreichen wird gesperrt.",
+      tab: "rating",
+      target: "rating-actions"
+    },
+    {
+      title: "Tab: Tipp",
+      body: "Das ist Ihre Gewinnchance, tippen Sie die tatsächliche Platzierung  , für alle Songs (jeder Rang darf nur einmal vorkommen).",
+      tab: "prediction",
+      target: "tab-prediction"
+    },
+    {
+      title: "Tippliste sortieren",
+      body: "Ordnen Sie Länder per Drag-and-Drop, Pfeiltasten oder direkter Rang-Eingabe. Die Rangnummern passen sich sofort an.",
+      tab: "prediction",
+      target: "prediction-table"
+    },
+    {
+      title: "Tipp speichern und einreichen",
+      body: "Auch Tipps können als unvollständiger Entwurf gespeichert werden. Für die Einreichung muss die Rangliste vollständig sein.",
+      tab: "prediction",
+      target: "prediction-actions"
+    },
+    {
+      title: "Tab: Ergebnis",
+      body: "Nach Event-Ende sehen Sie hier Ihre Platzierungen gegen internes und offizielles Ranking sowie die Siegerlisten.",
+      tab: "results",
+      target: "tab-results"
+    },
+    {
+      title: "Ergebnistabellen",
+      body: "Diese Tabellen zeigen Punkte, Top-3 und interne Ranglisten. Mit " +
+        "'weitere Teilnehmer anzeigen' können Sie die Ansicht erweitern.",
+      tab: "results",
+      target: "results-section"
+    }
+  ];
+
+  const tutorialStep = tutorialSteps[tutorialIndex];
 
   const selectedPoints = useMemo(() => new Set(Object.values(ratingMap)), [ratingMap]);
 
@@ -185,6 +255,68 @@ export function ParticipantPage({ user, onLogout }: { user: User; onLogout: () =
     });
   }, [prediction]);
 
+  useEffect(() => {
+    if (!tutorialOpen) return;
+    if (tab !== tutorialStep.tab) {
+      setTab(tutorialStep.tab);
+    }
+  }, [tutorialOpen, tutorialStep, tab]);
+
+  const startTutorial = () => {
+    setTutorialIndex(0);
+    setTutorialOpen(true);
+    setTab(tutorialSteps[0].tab);
+  };
+
+  const stopTutorial = () => {
+    setTutorialOpen(false);
+  };
+
+  const nextTutorialStep = () => {
+    setTutorialIndex((prev) => Math.min(tutorialSteps.length - 1, prev + 1));
+  };
+
+  const previousTutorialStep = () => {
+    setTutorialIndex((prev) => Math.max(0, prev - 1));
+  };
+
+  const tutorialHighlightClass = (target: TutorialStep["target"]) =>
+    tutorialOpen && tutorialStep.target === target ? " tutorial-target tutorial-target--active" : "";
+
+  useEffect(() => {
+    if (!tutorialOpen) return;
+
+    const scrollActiveTargetIntoView = () => {
+      const activeTarget = document.querySelector(".tutorial-target--active") as HTMLElement | null;
+      if (!activeTarget) return;
+
+      const viewportTopPadding = 180;
+      const viewportBottomPadding = 28;
+      const rect = activeTarget.getBoundingClientRect();
+      const isLargeTarget = rect.height > window.innerHeight * 0.58;
+      const preferTopAnchoring =
+        isLargeTarget || tutorialStep.target === "rating-table" || tutorialStep.target === "prediction-table";
+      const isAboveViewport = rect.top < viewportTopPadding;
+      const isBelowViewport = rect.bottom > window.innerHeight - viewportBottomPadding;
+
+      if (!isAboveViewport && !isBelowViewport) return;
+
+      const targetScrollTop = preferTopAnchoring
+        ? Math.max(0, window.scrollY + rect.top - viewportTopPadding)
+        : Math.max(0, window.scrollY + rect.top - (window.innerHeight / 2 - rect.height / 2));
+
+      window.scrollTo({ top: targetScrollTop, behavior: "smooth" });
+    };
+
+    const frame = requestAnimationFrame(() => {
+      setTimeout(scrollActiveTargetIntoView, 40);
+    });
+
+    return () => {
+      cancelAnimationFrame(frame);
+    };
+  }, [tutorialOpen, tutorialIndex, tab, tutorialStep.target, results, entries.length, prediction.length]);
+
   const commitRankChange = (entryId: number) => {
     const fromIndex = prediction.findIndex((id) => id === entryId);
     if (fromIndex < 0) return;
@@ -212,8 +344,11 @@ export function ParticipantPage({ user, onLogout }: { user: User; onLogout: () =
     <div className="shell">
       <div className="topbar">
         <strong>ESC Tippspiel</strong>
-        <span>{user.displayName}</span>
-        <button className="btn btn-plain" onClick={() => void handleLogout()}>Logout</button>
+        <div className="topbar__actions">
+          <span>{user.displayName}</span>
+          <button className="btn btn-plain btn-plain--on-dark" onClick={startTutorial} disabled={!event}>So geht's</button>
+          <button className="btn btn-plain btn-plain--on-dark" onClick={() => void handleLogout()}>Logout</button>
+        </div>
       </div>
 
       {!event ? (
@@ -226,15 +361,15 @@ export function ParticipantPage({ user, onLogout }: { user: User; onLogout: () =
           </div>
 
           <div className="tab-bar">
-            <button className={`tab-item${tab === "rating" ? " tab-item--active" : ""}`} onClick={() => setTab("rating")}>
+            <button className={`tab-item${tab === "rating" ? " tab-item--active" : ""}${tutorialHighlightClass("tab-rating")}`} onClick={() => setTab("rating")}>
               <span className="tab-item__icon" aria-hidden="true">♥</span>
               Bewertung
             </button>
-            <button className={`tab-item${tab === "prediction" ? " tab-item--active" : ""}`} onClick={() => setTab("prediction")}>
+            <button className={`tab-item${tab === "prediction" ? " tab-item--active" : ""}${tutorialHighlightClass("tab-prediction")}`} onClick={() => setTab("prediction")}>
               <span className="tab-item__icon" aria-hidden="true">€</span>
               Tipp
             </button>
-            <button className={`tab-item${tab === "results" ? " tab-item--active" : ""}`} onClick={() => setTab("results")}>
+            <button className={`tab-item${tab === "results" ? " tab-item--active" : ""}${tutorialHighlightClass("tab-results")}`} onClick={() => setTab("results")}>
               <span className="tab-item__icon" aria-hidden="true">🏆</span>
               Ergebnis
             </button>
@@ -243,7 +378,7 @@ export function ParticipantPage({ user, onLogout }: { user: User; onLogout: () =
           {tab === "rating" && (
             <div className="card">
               <h3>Rating (1-8, 10, 12)</h3>
-              <table className="data-table prediction-table rating-table">
+              <table className={`data-table prediction-table rating-table${tutorialHighlightClass("rating-table")}`}>
                 <thead>
                   <tr>
                     <th className="prediction-table__country-header">Land</th>
@@ -286,7 +421,7 @@ export function ParticipantPage({ user, onLogout }: { user: User; onLogout: () =
                 </tbody>
               </table>
               {!ratingSubmitted && event.status === "open" && (
-                <div className="actions">
+                <div className={`actions${tutorialHighlightClass("rating-actions")}`}>
                   <button className="btn" onClick={() => void saveRating()}>Entwurf speichern</button>
                   <button className="btn btn-primary" onClick={() => void submitRating()}>Einreichen</button>
                 </div>
@@ -301,7 +436,7 @@ export function ParticipantPage({ user, onLogout }: { user: User; onLogout: () =
           {tab === "prediction" && (
             <div className="card">
               <h3>Prediction Rangliste</h3>
-              <table className="data-table prediction-table">
+              <table className={`data-table prediction-table${tutorialHighlightClass("prediction-table")}`}>
                 <thead>
                   <tr>
                     <th className="prediction-table__rank-header">Rang</th>
@@ -396,7 +531,7 @@ export function ParticipantPage({ user, onLogout }: { user: User; onLogout: () =
                 <p className="hint">Tipp: Ziehe ein Land per Drag-and-Drop oder gib den Rang direkt numerisch ein. Entwurf darf unvollständig sein.</p>
               )}
               {!predictionSubmitted && event.status === "open" && (
-                <div className="actions">
+                <div className={`actions${tutorialHighlightClass("prediction-actions")}`}>
                   <button className="btn" onClick={() => void savePrediction()}>Entwurf speichern</button>
                   <button className="btn btn-primary" onClick={() => void submitPrediction()}>Einreichen</button>
                 </div>
@@ -406,7 +541,7 @@ export function ParticipantPage({ user, onLogout }: { user: User; onLogout: () =
           )}
 
           {tab === "results" && (
-            <div className="card">
+            <div className={`card${tutorialHighlightClass("results-section")}`}>
               <h3>Ergebnisse</h3>
               {event.status !== "finished" && <p>Ergebnisse werden nach Event-Abschluss angezeigt.</p>}
               {results && (
@@ -551,6 +686,31 @@ export function ParticipantPage({ user, onLogout }: { user: User; onLogout: () =
           )}
 
           {message && <div className={`toast ${toastFading ? 'toast--fade-out' : ''}`}>{message}</div>}
+
+          {tutorialOpen && (
+            <div className="tutorial-overlay" role="dialog" aria-modal="true" aria-label="Einweisungstour">
+              <div className="tutorial-overlay__controls">
+                <button className="tutorial-overlay__nav" onClick={previousTutorialStep} disabled={tutorialIndex === 0}>
+                  ←
+                </button>
+                <div className="tutorial-overlay__progress">{tutorialIndex + 1} / {tutorialSteps.length}</div>
+                <button
+                  className="tutorial-overlay__nav"
+                  onClick={nextTutorialStep}
+                  disabled={tutorialIndex === tutorialSteps.length - 1}
+                >
+                  →
+                </button>
+                <button className="tutorial-overlay__close" onClick={stopTutorial} aria-label="Tutorial schließen">
+                  x
+                </button>
+              </div>
+              <div className="tutorial-overlay__bubble">
+                <h4>{tutorialStep.title}</h4>
+                <p>{tutorialStep.body}</p>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

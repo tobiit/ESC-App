@@ -75,6 +75,12 @@ textarea {
   color: var(--core-color-white, #ffffff);
 }
 
+.topbar__actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .topbar--admin {
   background: var(--core-color-darkblue-900, #1c3a6c);
 }
@@ -285,12 +291,24 @@ textarea {
 
 /* Plain button on dark background */
 .btn-plain--on-dark {
-  color: var(--core-color-white, #ffffff);
+  color: var(--semantic-color-on-action-primary-resting, var(--core-color-white, #ffffff));
+  border-color: rgba(255, 255, 255, 0.28);
 }
 
 .btn-plain--on-dark:hover {
   background: rgba(255, 255, 255, 0.15);
-  color: var(--core-color-white, #ffffff);
+  color: var(--semantic-color-on-action-primary-resting, var(--core-color-white, #ffffff));
+  border-color: rgba(255, 255, 255, 0.45);
+}
+
+.btn-plain--on-dark:active {
+  background: rgba(255, 255, 255, 0.24);
+}
+
+.btn-plain--on-dark:disabled {
+  color: var(--semantic-color-on-action-primary-disabled, rgba(255, 255, 255, 0.72));
+  border-color: rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.06);
 }
 
 /* Danger button */
@@ -364,6 +382,111 @@ textarea {
   justify-content: center;
   width: 1.1em;
   line-height: 1;
+}
+
+/* Guided Tutorial Overlay */
+.tutorial-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(8, 18, 38, 0.68);
+  z-index: 1200;
+  pointer-events: none;
+}
+
+.tutorial-overlay__controls {
+  position: fixed;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1500;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--core-color-white, #ffffff);
+  border: 1px solid var(--core-color-blue-300, #c3d7e9);
+  border-radius: 999px;
+  padding: 8px 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  pointer-events: auto;
+}
+
+.tutorial-overlay__nav,
+.tutorial-overlay__close {
+  min-width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  border: 1px solid var(--core-color-blue-400, #8ba6ca);
+  background: var(--core-color-white, #ffffff);
+  color: var(--core-color-blue-900, #003781);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.tutorial-overlay__close {
+  border-color: var(--core-color-red-400, #f08095);
+  color: var(--core-color-red-700, #DD0A42);
+}
+
+.tutorial-overlay__nav:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.tutorial-overlay__progress {
+  min-width: 62px;
+  text-align: center;
+  color: var(--core-color-blue-900, #003781);
+  font-weight: 700;
+}
+
+.tutorial-overlay__bubble {
+  position: fixed;
+  top: 72px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1500;
+  max-width: min(640px, calc(100vw - 24px));
+  max-height: min(45vh, 320px);
+  overflow-y: auto;
+  background: var(--core-color-white, #ffffff);
+  border: 1px solid var(--core-color-blue-300, #c3d7e9);
+  border-radius: 14px;
+  padding: 14px 16px;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.2);
+  pointer-events: auto;
+}
+
+.tutorial-overlay__bubble h4 {
+  margin: 0 0 6px;
+  color: var(--core-color-blue-900, #003781);
+  font-size: 16px;
+}
+
+.tutorial-overlay__bubble p {
+  margin: 0;
+  color: var(--core-color-darkblue-900, #1c3a6c);
+}
+
+.tutorial-target--active {
+  position: relative;
+  z-index: 1300;
+  box-shadow:
+    0 0 0 3px var(--core-color-white, #ffffff),
+    0 0 0 7px rgba(255, 202, 0, 0.55),
+    0 10px 22px rgba(0, 0, 0, 0.22);
+  border-radius: 10px;
+  background-clip: padding-box;
+}
+
+.tab-item.tutorial-target--active {
+  border-radius: 10px 10px 0 0;
+  background: rgba(255, 255, 255, 0.2);
+  color: var(--semantic-color-on-action-primary-resting, var(--core-color-white, #ffffff));
+  border-bottom-color: var(--core-color-yellow-400, #ffca00);
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 0.95),
+    0 0 0 6px rgba(255, 202, 0, 0.52),
+    0 8px 18px rgba(0, 0, 0, 0.25);
 }
 
 /* ── Badge ── */
@@ -687,7 +810,7 @@ textarea {
   background: rgba(0, 55, 129, 0.02);
 }
 
-.btn-plain {
+.results-section .btn-plain {
   padding: 10px 16px;
   margin-top: 12px;
   background: transparent;
@@ -700,16 +823,29 @@ textarea {
   transition: all 0.15s;
 }
 
-.btn-plain:hover {
+.results-section .btn-plain:hover {
   background: rgba(0, 55, 129, 0.04);
   border-color: var(--semantic-color-action-primary-resting, var(--core-color-blue-900, #003781));
 }
 
-.btn-plain:active {
+.results-section .btn-plain:active {
   background: rgba(0, 55, 129, 0.08);
 }
 
 @media (max-width: 720px) {
+  .topbar {
+    padding: 10px 12px;
+  }
+
+  .topbar__actions {
+    gap: 6px;
+  }
+
+  .topbar__actions .btn {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+
   .prediction-table th,
   .prediction-table td {
     padding: 8px 10px;
@@ -780,6 +916,28 @@ textarea {
   .btn-plain {
     padding: 8px 12px;
     font-size: 12px;
+  }
+
+  .tutorial-overlay__controls {
+    top: 10px;
+    gap: 6px;
+    padding: 6px 9px;
+  }
+
+  .tutorial-overlay__nav,
+  .tutorial-overlay__close {
+    min-width: 30px;
+    height: 30px;
+  }
+
+  .tutorial-overlay__bubble {
+    top: 58px;
+    width: calc(100vw - 16px);
+    padding: 12px;
+  }
+
+  .tutorial-overlay__bubble h4 {
+    font-size: 14px;
   }
 }
 
