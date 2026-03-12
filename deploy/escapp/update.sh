@@ -106,6 +106,7 @@ chmod +x "${SCRIPT_DIR}"/*.sh
 # ---------------------------------------------------------------------------
 log "Schritt 3/5: Frontend bauen …"
 cd "${APP_DIR}/frontend"
+export npm_config_loglevel=error
 npm ci --production=false 2>&1 | tail -1
 VITE_API_URL="https://${API_DOMAIN}${API_PATH:-/escappapi}" npm run build 2>&1 | tail -3
 ok "Frontend gebaut."
