@@ -3,7 +3,7 @@
 set -euo pipefail
 
 # Konfiguration
-REPO_DIR="/home/customer/ESC-App"
+REPO_DIR="/opt/escapp"
 REMOTE_NAME="origin"
 BRANCH_NAME="main"
 REMOTE_URL="https://github.com/tobiit/ESC-App.git"
