@@ -10,8 +10,10 @@ export const getThird = (rank, total) => {
   return "bottom";
 };
 
-export const scorePrediction = (predictedRank, actualRank, total) => {
-  if (predictedRank === actualRank) return { points: 3, exact: 1, near: 0, diffAbs: 0, sameThird: 0 };
+export const scorePrediction = (predictedRank, actualRank, validRanks, total) => {
+  if (validRanks.includes(predictedRank)) {
+    return { points: 3, exact: 1, near: 0, diffAbs: 0, sameThird: 0 };
+  }
   if (Math.abs(predictedRank - actualRank) === 1) {
     return { points: 2, exact: 0, near: 1, diffAbs: 1, sameThird: 0 };
   }
@@ -55,23 +57,46 @@ export const buildRatingsReferenceRanking = (entries, allRatingItems) => {
     }
   }
 
-  return [...stats.values()]
+  const sorted = [...stats.values()]
     .sort((a, b) => {
       if (b.total !== a.total) return b.total - a.total;
       for (const p of ESC_POINTS) {
         if (b.counts[p] !== a.counts[p]) return b.counts[p] - a.counts[p];
       }
       return a.countryCode.localeCompare(b.countryCode, "de");
-    })
-    .map((item, index) => ({
-      ...item,
-      rank: index + 1
-    }));
+    });
+
+  const result = [];
+  let currentRank = 1;
+
+  for (let i = 0; i < sorted.length; i++) {
+    const entry = sorted[i];
+    const entryWithRank = {
+      ...entry,
+      rank: currentRank,
+      validRanks: [currentRank]
+    };
+
+    if (i + 1 < sorted.length) {
+      const nextEntry = sorted[i + 1];
+      if (entry.total === nextEntry.total && 
+          JSON.stringify(entry.counts) === JSON.stringify(nextEntry.counts)) {
+        entryWithRank.validRanks.push(currentRank + 1);
+      } else {
+        currentRank = i + 2;
+      }
+    }
+
+    result.push(entryWithRank);
+  }
+
+  return result;
 };
 
 export const buildParticipantRanking = (participantsWithPredictions, referenceRanking, entries) => {
   const total = entries.length;
   const actualRanksByEntry = new Map(referenceRanking.map((row) => [Number(row.entryId), row.rank]));
+  const validRanksByEntry = new Map(referenceRanking.map((row) => [Number(row.entryId), row.validRanks]));
 
   const scored = participantsWithPredictions.map((participant) => {
     const predictedByEntry = new Map(participant.items.map((item) => [Number(item.entry_id), Number(item.rank_position)]));
@@ -85,10 +110,11 @@ export const buildParticipantRanking = (participantsWithPredictions, referenceRa
       const entryId = Number(entry.id);
       const predictedRank = predictedByEntry.get(entryId);
       const actualRank = actualRanksByEntry.get(entryId);
+      const validRanks = validRanksByEntry.get(entryId);
       if (!predictedRank || !actualRank) {
         continue;
       }
-      const part = scorePrediction(predictedRank, actualRank, total);
+      const part = scorePrediction(predictedRank, actualRank, validRanks || [actualRank], total);
       points += part.points;
       exactHits += part.exact;
       nearHits += part.near;

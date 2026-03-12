@@ -22,6 +22,9 @@ export function ParticipantPage({ user, onLogout }: { user: User; onLogout: () =
   const [tab, setTab] = useState<"rating" | "prediction" | "results">("rating");
   const [draggedEntryId, setDraggedEntryId] = useState<number | null>(null);
   const [dropIndicator, setDropIndicator] = useState<{ entryId: number; position: DropIndicatorPosition } | null>(null);
+  const [rankInputs, setRankInputs] = useState<Record<number, string>>({});
+  const [expandedLeaderboardA, setExpandedLeaderboardA] = useState(false);
+  const [expandedLeaderboardB, setExpandedLeaderboardB] = useState(false);
   const navigate = useNavigate();
 
   const selectedPoints = useMemo(() => new Set(Object.values(ratingMap)), [ratingMap]);
@@ -133,6 +136,32 @@ export function ParticipantPage({ user, onLogout }: { user: User; onLogout: () =
     setPrediction(next);
   };
 
+  useEffect(() => {
+    const nextInputs: Record<number, string> = {};
+    prediction.forEach((entryId, index) => {
+      nextInputs[entryId] = String(index + 1);
+    });
+    setRankInputs(nextInputs);
+  }, [prediction]);
+
+  const commitRankChange = (entryId: number) => {
+    const fromIndex = prediction.findIndex((id) => id === entryId);
+    if (fromIndex < 0) return;
+
+    const typedRank = Number.parseInt((rankInputs[entryId] ?? "").trim(), 10);
+    if (Number.isNaN(typedRank)) return;
+
+    const clampedRank = Math.min(prediction.length, Math.max(1, typedRank));
+    const targetIndex = clampedRank - 1;
+    if (targetIndex === fromIndex) return;
+
+    if (targetIndex > fromIndex) {
+      moveToDropPosition(fromIndex, targetIndex, "after");
+      return;
+    }
+    moveToDropPosition(fromIndex, targetIndex, "before");
+  };
+
   const truncateSongTitle = (songTitle?: string) => {
     if (!songTitle) return "-";
     return songTitle.length > 10 ? `${songTitle.slice(0, 10)}...` : songTitle;
@@ -156,42 +185,65 @@ export function ParticipantPage({ user, onLogout }: { user: User; onLogout: () =
           </div>
 
           <div className="tab-bar">
-            <button className={`tab-item${tab === "rating" ? " tab-item--active" : ""}`} onClick={() => setTab("rating")}>Bewertung</button>
-            <button className={`tab-item${tab === "prediction" ? " tab-item--active" : ""}`} onClick={() => setTab("prediction")}>Tipp</button>
-            <button className={`tab-item${tab === "results" ? " tab-item--active" : ""}`} onClick={() => setTab("results")}>Ergebnis</button>
+            <button className={`tab-item${tab === "rating" ? " tab-item--active" : ""}`} onClick={() => setTab("rating")}>
+              <span className="tab-item__icon" aria-hidden="true">♥</span>
+              Bewertung
+            </button>
+            <button className={`tab-item${tab === "prediction" ? " tab-item--active" : ""}`} onClick={() => setTab("prediction")}>
+              <span className="tab-item__icon" aria-hidden="true">€</span>
+              Tipp
+            </button>
+            <button className={`tab-item${tab === "results" ? " tab-item--active" : ""}`} onClick={() => setTab("results")}>
+              <span className="tab-item__icon" aria-hidden="true">🏆</span>
+              Ergebnis
+            </button>
           </div>
 
           {tab === "rating" && (
             <div className="card">
               <h3>Rating (1-8, 10, 12)</h3>
-              {entries.map((entry) => (
-                <div className="row" key={entry.id}>
-                  <span>{getCountryNameDe(entry.countryCode)}</span>
-                  <select
-                    className="form-input form-input--inline"
-                    disabled={ratingSubmitted || event.status !== "open"}
-                    value={ratingMap[entry.id] || ""}
-                    onChange={(eventValue) => {
-                      const value = Number(eventValue.target.value);
-                      setRatingMap((previous) => {
-                        const next = { ...previous };
-                        for (const [key, existing] of Object.entries(next)) {
-                          if (existing === value) delete next[Number(key)];
-                        }
-                        if (!value) { delete next[entry.id]; } else { next[entry.id] = value; }
-                        return next;
-                      });
-                    }}
-                  >
-                    <option value="">0</option>
-                    {ESC_POINTS.map((point) => (
-                      <option key={point} value={point} disabled={selectedPoints.has(point) && ratingMap[entry.id] !== point}>
-                        {point}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              ))}
+              <table className="data-table prediction-table rating-table">
+                <thead>
+                  <tr>
+                    <th className="prediction-table__country-header">Land</th>
+                    <th className="prediction-table__song-header">Song</th>
+                    <th className="rating-table__points-header">Bewertung</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {entries.map((entry) => (
+                    <tr key={entry.id}>
+                      <td className="prediction-table__country-cell">{getCountryNameDe(entry.countryCode)}</td>
+                      <td className="prediction-table__song-cell" title={entry.songTitle ?? ""}>{truncateSongTitle(entry.songTitle)}</td>
+                      <td className="rating-table__points-cell">
+                        <select
+                          className="form-input form-input--inline"
+                          disabled={ratingSubmitted || event.status !== "open"}
+                          value={ratingMap[entry.id] || ""}
+                          onChange={(eventValue) => {
+                            const value = Number(eventValue.target.value);
+                            setRatingMap((previous) => {
+                              const next = { ...previous };
+                              for (const [key, existing] of Object.entries(next)) {
+                                if (existing === value) delete next[Number(key)];
+                              }
+                              if (!value) { delete next[entry.id]; } else { next[entry.id] = value; }
+                              return next;
+                            });
+                          }}
+                        >
+                          <option value="">0</option>
+                          {ESC_POINTS.map((point) => (
+                            <option key={point} value={point} disabled={selectedPoints.has(point) && ratingMap[entry.id] !== point}>
+                              {point}
+                            </option>
+                          ))}
+                        </select>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
               {!ratingSubmitted && event.status === "open" && (
                 <div className="actions">
                   <button className="btn" onClick={() => void saveRating()}>Entwurf speichern</button>
@@ -209,8 +261,8 @@ export function ParticipantPage({ user, onLogout }: { user: User; onLogout: () =
                 <thead>
                   <tr>
                     <th className="prediction-table__rank-header">Rang</th>
-                    <th>Land</th>
-                    <th>Song</th>
+                    <th className="prediction-table__country-header">Land</th>
+                    <th className="prediction-table__song-header">Song</th>
                     <th>Aktion</th>
                   </tr>
                 </thead>
@@ -255,9 +307,36 @@ export function ParticipantPage({ user, onLogout }: { user: User; onLogout: () =
                           setDropIndicator(null);
                         }}
                       >
-                        <td className="prediction-table__rank-cell">{index + 1}</td>
-                        <td>{getCountryNameDe(entry?.countryCode ?? "") ?? "-"}</td>
-                        <td title={entry?.songTitle ?? ""}>{truncateSongTitle(entry?.songTitle)}</td>
+                        <td className="prediction-table__rank-cell">
+                          <input
+                            className="prediction-table__rank-input"
+                            type="number"
+                            min={1}
+                            max={prediction.length}
+                            inputMode="numeric"
+                            disabled={!dragEnabled}
+                            value={rankInputs[entryId] ?? String(index + 1)}
+                            onChange={(inputEvent) => {
+                              const nextValue = inputEvent.target.value;
+                              setRankInputs((previous) => ({ ...previous, [entryId]: nextValue }));
+                            }}
+                            onBlur={() => {
+                              commitRankChange(entryId);
+                            }}
+                            onKeyDown={(keyboardEvent) => {
+                              if (keyboardEvent.key === "Enter") {
+                                keyboardEvent.preventDefault();
+                                commitRankChange(entryId);
+                                keyboardEvent.currentTarget.blur();
+                              }
+                              if (keyboardEvent.key === "Tab") {
+                                commitRankChange(entryId);
+                              }
+                            }}
+                          />
+                        </td>
+                        <td className="prediction-table__country-cell">{getCountryNameDe(entry?.countryCode ?? "") ?? "-"}</td>
+                        <td className="prediction-table__song-cell" title={entry?.songTitle ?? ""}>{truncateSongTitle(entry?.songTitle)}</td>
                         <td>
                           <div className="inline">
                             <button className="btn btn-icon" disabled={!dragEnabled} onClick={() => move(index, -1)}>↑</button>
@@ -270,7 +349,7 @@ export function ParticipantPage({ user, onLogout }: { user: User; onLogout: () =
                 </tbody>
               </table>
               {!predictionSubmitted && event.status === "open" && (
-                <p className="hint">Tipp: Ziehe ein Land per Drag-and-Drop direkt auf den gewuenschten Rang.</p>
+                <p className="hint">Tipp: Ziehe ein Land per Drag-and-Drop oder gib den Rang direkt numerisch ein.</p>
               )}
               {!predictionSubmitted && event.status === "open" && (
                 <div className="actions">
@@ -288,8 +367,140 @@ export function ParticipantPage({ user, onLogout }: { user: User; onLogout: () =
               {event.status !== "finished" && <p>Ergebnisse werden nach Event-Abschluss angezeigt.</p>}
               {results && (
                 <>
-                  <p>Liste A (gegen Teilnehmer-Ranking): {results.me?.scoreAgainstRatingsRanking?.points ?? "-"} Punkte, Platz {results.me?.scoreAgainstRatingsRanking?.rank ?? "-"}</p>
-                  <p>Liste B (gegen offizielles Ranking): {results.me?.scoreAgainstOfficialRanking?.points ?? "-"} Punkte, Platz {results.me?.scoreAgainstOfficialRanking?.rank ?? "-"}</p>
+                  {/* Leaderboard against Official Ranking */}
+                  <div className="results-section">
+                    <h4>Platzierungen gegen offizielles Ranking</h4>
+                    {results.leaderboardB && results.leaderboardB.length > 0 ? (
+                      <>
+                        <table className="data-table results-table">
+                          <thead>
+                            <tr>
+                              <th className="results-table__rank">Platz</th>
+                              <th>Teilnehmer</th>
+                              <th className="results-table__points">Punkte</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {(expandedLeaderboardB ? results.leaderboardB : results.leaderboardB.slice(0, 5)).map(
+                              (participant: any, idx: number) => (
+                                <tr
+                                  key={participant.participantId}
+                                  className={`results-table__row${
+                                    participant.rank <= 3 ? ` results-table__row--top-${participant.rank}` : ""
+                                  }${participant.participantId === Number(user.id) ? " results-table__row--me" : ""}`}
+                                >
+                                  <td className="results-table__rank-cell">
+                                    {participant.rank === 1
+                                      ? "🥇"
+                                      : participant.rank === 2
+                                        ? "🥈"
+                                        : participant.rank === 3
+                                          ? "🥉"
+                                          : participant.rank}
+                                  </td>
+                                  <td>{participant.displayName}</td>
+                                  <td className="results-table__points-cell">{participant.points}</td>
+                                </tr>
+                              )
+                            )}
+                          </tbody>
+                        </table>
+                        {results.leaderboardB.length > 5 && !expandedLeaderboardB && (
+                          <button className="btn btn-plain" onClick={() => setExpandedLeaderboardB(true)}>
+                            {results.leaderboardB.length - 5} weitere Teilnehmer anzeigen
+                          </button>
+                        )}
+                        {expandedLeaderboardB && results.leaderboardB.length > 5 && (
+                          <button className="btn btn-plain" onClick={() => setExpandedLeaderboardB(false)}>
+                            Einklappen
+                          </button>
+                        )}
+                      </>
+                    ) : (
+                      <p className="hint">Keine Ergebnisse verfügbar.</p>
+                    )}
+                  </div>
+
+                  {/* Leaderboard against Ratings Ranking */}
+                  <div className="results-section">
+                    <h4>Platzierungen gegen internes Ranking</h4>
+                    {results.leaderboardA && results.leaderboardA.length > 0 ? (
+                      <>
+                        <table className="data-table results-table">
+                          <thead>
+                            <tr>
+                              <th className="results-table__rank">Platz</th>
+                              <th>Teilnehmer</th>
+                              <th className="results-table__points">Punkte</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {(expandedLeaderboardA ? results.leaderboardA : results.leaderboardA.slice(0, 5)).map(
+                              (participant: any) => (
+                                <tr
+                                  key={participant.participantId}
+                                  className={`results-table__row${
+                                    participant.rank <= 3 ? ` results-table__row--top-${participant.rank}` : ""
+                                  }${participant.participantId === Number(user.id) ? " results-table__row--me" : ""}`}
+                                >
+                                  <td className="results-table__rank-cell">
+                                    {participant.rank === 1
+                                      ? "🥇"
+                                      : participant.rank === 2
+                                        ? "🥈"
+                                        : participant.rank === 3
+                                          ? "🥉"
+                                          : participant.rank}
+                                  </td>
+                                  <td>{participant.displayName}</td>
+                                  <td className="results-table__points-cell">{participant.points}</td>
+                                </tr>
+                              )
+                            )}
+                          </tbody>
+                        </table>
+                        {results.leaderboardA.length > 5 && !expandedLeaderboardA && (
+                          <button className="btn btn-plain" onClick={() => setExpandedLeaderboardA(true)}>
+                            {results.leaderboardA.length - 5} weitere Teilnehmer anzeigen
+                          </button>
+                        )}
+                        {expandedLeaderboardA && results.leaderboardA.length > 5 && (
+                          <button className="btn btn-plain" onClick={() => setExpandedLeaderboardA(false)}>
+                            Einklappen
+                          </button>
+                        )}
+                      </>
+                    ) : (
+                      <p className="hint">Keine Ergebnisse verfügbar.</p>
+                    )}
+                  </div>
+
+                  {/* Rating Ranking */}
+                  <div className="results-section">
+                    <h4>Internes Ranking (aus Teilnehmer-Bewertungen)</h4>
+                    {results.ratingRanking && results.ratingRanking.length > 0 ? (
+                      <table className="data-table results-table">
+                        <thead>
+                          <tr>
+                            <th className="results-table__rank">Rang</th>
+                            <th>Land</th>
+                            <th className="results-table__points">Gesamt-Punkte</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {results.ratingRanking.map((entry: any, idx: number) => (
+                            <tr key={entry.entryId} className={idx % 2 === 0 ? "results-table__row--even" : ""}>
+                              <td className="results-table__rank-cell">{entry.rank}</td>
+                              <td>{getCountryNameDe(entry.countryCode)}</td>
+                              <td className="results-table__points-cell">{entry.total}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    ) : (
+                      <p className="hint">Keine Bewertungsrangliste verfügbar.</p>
+                    )}
+                  </div>
                 </>
               )}
             </div>

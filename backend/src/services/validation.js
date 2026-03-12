@@ -59,6 +59,7 @@ export const validateOfficialResultItems = (items, allowedEntryIds) => {
     throw new Error("Offizielles Ergebnis muss vollständige Rangliste enthalten.");
   }
   const seenEntries = new Set();
+  const seenRanks = new Map();
   for (const item of items) {
     const entryId = Number(item.entryId);
     const rank = Number(item.rank);
@@ -72,5 +73,17 @@ export const validateOfficialResultItems = (items, allowedEntryIds) => {
       throw new Error("Offizielles Ergebnis enthält doppelte Entries.");
     }
     seenEntries.add(entryId);
+    if (!seenRanks.has(rank)) {
+      seenRanks.set(rank, []);
+    }
+    seenRanks.get(rank).push(entryId);
+  }
+  for (const [rank, entryIds] of seenRanks.entries()) {
+    if (entryIds.length > 1) {
+      const nextRank = rank + entryIds.length;
+      if (nextRank <= expectedSize && seenRanks.has(nextRank)) {
+        throw new Error(`Offizielles Ergebnis: Mehrere Einträge haben Rang ${rank}, aber Rang ${nextRank} ist bereits besetzt.`);
+      }
+    }
   }
 };
