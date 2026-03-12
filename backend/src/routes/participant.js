@@ -4,7 +4,12 @@ import { pool, withTx } from "../db/pool.js";
 import { requireAuth, requireRole } from "../middleware/auth.js";
 import { writeAuditLog } from "../middleware/audit.js";
 import { buildParticipantRanking, buildRatingsReferenceRanking } from "../services/scoring.js";
-import { validatePredictionItems, validateRatingItems } from "../services/validation.js";
+import {
+  validatePredictionDraftItems,
+  validatePredictionItems,
+  validateRatingDraftItems,
+  validateRatingItems
+} from "../services/validation.js";
 
 export const participantRouter = express.Router();
 
@@ -82,7 +87,7 @@ participantRouter.put("/events/:id/ratings/me", async (req, res, next) => {
     if (!parsed.success) return res.status(400).json({ message: "Ungültige Nutzdaten" });
 
     const allowed = await getEntrySet(req.params.id);
-    validateRatingItems(parsed.data.items, allowed);
+    validateRatingDraftItems(parsed.data.items, allowed);
 
     const result = await withTx(async (conn) => {
       const rating = await getOrCreateRating(conn, req.params.id, req.user.id);
@@ -185,7 +190,7 @@ participantRouter.put("/events/:id/predictions/me", async (req, res, next) => {
     if (!parsed.success) return res.status(400).json({ message: "Ungültige Nutzdaten" });
 
     const allowed = await getEntrySet(req.params.id);
-    validatePredictionItems(parsed.data.items, allowed);
+    validatePredictionDraftItems(parsed.data.items, allowed);
 
     const result = await withTx(async (conn) => {
       const prediction = await getOrCreatePrediction(conn, req.params.id, req.user.id);

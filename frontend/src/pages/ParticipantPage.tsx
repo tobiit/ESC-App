@@ -68,8 +68,22 @@ export function ParticipantPage({ user, onLogout }: { user: User; onLogout: () =
 
         const myPrediction = await api.getMyPrediction(activeEvent.id);
         setPredictionSubmitted(myPrediction.status === "submitted");
-        if ((myPrediction.items || []).length === loadedEntries.length) {
-          setPrediction(myPrediction.items.map((item: any) => item.entryId));
+        if ((myPrediction.items || []).length > 0) {
+          const byRank = [...myPrediction.items].sort((a: any, b: any) => Number(a.rank) - Number(b.rank));
+          const rankedIds = byRank.map((item: any) => Number(item.entryId));
+          const remainingIds = loadedEntries
+            .map((entry: Entry) => entry.id)
+            .filter((entryId: number) => !rankedIds.includes(entryId));
+          setPrediction([...rankedIds, ...remainingIds]);
+
+          const draftRankInputs: Record<number, string> = {};
+          for (const entry of loadedEntries) {
+            draftRankInputs[entry.id] = "";
+          }
+          for (const item of byRank) {
+            draftRankInputs[Number(item.entryId)] = String(item.rank);
+          }
+          setRankInputs(draftRankInputs);
         }
 
         if (activeEvent.status === "finished") {
@@ -90,7 +104,7 @@ export function ParticipantPage({ user, onLogout }: { user: User; onLogout: () =
     if (!event) return;
     const items = Object.entries(ratingMap).map(([entryId, points]) => ({ entryId: Number(entryId), points }));
     await api.saveMyRating(event.id, items);
-    setMessage("Rating gespeichert");
+    setMessage(items.length < 10 ? "Rating-Entwurf gespeichert" : "Rating gespeichert");
   };
 
   const submitRating = async () => {
@@ -102,9 +116,22 @@ export function ParticipantPage({ user, onLogout }: { user: User; onLogout: () =
 
   const savePrediction = async () => {
     if (!event) return;
-    const items = prediction.map((entryId, index) => ({ entryId, rank: index + 1 }));
+    const items: Array<{ entryId: number; rank: number }> = [];
+    const usedRanks = new Set<number>();
+    for (const entryId of prediction) {
+      const rank = Number.parseInt((rankInputs[entryId] ?? "").trim(), 10);
+      if (Number.isNaN(rank)) continue;
+      if (rank < 1 || rank > entries.length) continue;
+      if (usedRanks.has(rank)) {
+        setMessage(`Rang ${rank} ist doppelt vergeben. Bitte korrigieren und erneut speichern.`);
+        return;
+      }
+      usedRanks.add(rank);
+      items.push({ entryId, rank });
+    }
+    items.sort((a, b) => a.rank - b.rank);
     await api.saveMyPrediction(event.id, items);
-    setMessage("Prediction gespeichert");
+    setMessage(items.length < entries.length ? "Prediction-Entwurf gespeichert" : "Prediction gespeichert");
   };
 
   const submitPrediction = async () => {
@@ -114,12 +141,21 @@ export function ParticipantPage({ user, onLogout }: { user: User; onLogout: () =
     setMessage("Prediction eingereicht");
   };
 
+  const buildSequentialRankInputs = (orderedEntryIds: number[]) => {
+    const nextInputs: Record<number, string> = {};
+    orderedEntryIds.forEach((entryId, index) => {
+      nextInputs[entryId] = String(index + 1);
+    });
+    return nextInputs;
+  };
+
   const move = (index: number, delta: -1 | 1) => {
     const next = [...prediction];
     const target = index + delta;
     if (target < 0 || target >= next.length) return;
     [next[index], next[target]] = [next[target], next[index]];
     setPrediction(next);
+    setRankInputs(buildSequentialRankInputs(next));
   };
 
   const moveToDropPosition = (fromIndex: number, targetIndex: number, position: DropIndicatorPosition) => {
@@ -134,14 +170,19 @@ export function ParticipantPage({ user, onLogout }: { user: User; onLogout: () =
     const [moved] = next.splice(fromIndex, 1);
     next.splice(insertionIndex, 0, moved);
     setPrediction(next);
+    setRankInputs(buildSequentialRankInputs(next));
   };
 
   useEffect(() => {
-    const nextInputs: Record<number, string> = {};
-    prediction.forEach((entryId, index) => {
-      nextInputs[entryId] = String(index + 1);
+    setRankInputs((previous) => {
+      const nextInputs: Record<number, string> = {};
+      prediction.forEach((entryId, index) => {
+        const defaultRank = String(index + 1);
+        const existing = previous[entryId];
+        nextInputs[entryId] = existing === undefined ? defaultRank : existing;
+      });
+      return nextInputs;
     });
-    setRankInputs(nextInputs);
   }, [prediction]);
 
   const commitRankChange = (entryId: number) => {
@@ -250,6 +291,9 @@ export function ParticipantPage({ user, onLogout }: { user: User; onLogout: () =
                   <button className="btn btn-primary" onClick={() => void submitRating()}>Einreichen</button>
                 </div>
               )}
+              {!ratingSubmitted && event.status === "open" && (
+                <p className="hint">Entwurf darf unvollständig sein. Für Einreichen müssen alle 10 Punkte vergeben sein.</p>
+              )}
               {ratingSubmitted && <p className="hint">Rating ist eingereicht und gesperrt.</p>}
             </div>
           )}
@@ -349,7 +393,7 @@ export function ParticipantPage({ user, onLogout }: { user: User; onLogout: () =
                 </tbody>
               </table>
               {!predictionSubmitted && event.status === "open" && (
-                <p className="hint">Tipp: Ziehe ein Land per Drag-and-Drop oder gib den Rang direkt numerisch ein.</p>
+                <p className="hint">Tipp: Ziehe ein Land per Drag-and-Drop oder gib den Rang direkt numerisch ein. Entwurf darf unvollständig sein.</p>
               )}
               {!predictionSubmitted && event.status === "open" && (
                 <div className="actions">

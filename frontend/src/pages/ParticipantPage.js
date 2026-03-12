@@ -61,8 +61,21 @@ export function ParticipantPage({ user, onLogout }) {
                 setRatingMap(map);
                 const myPrediction = await api.getMyPrediction(activeEvent.id);
                 setPredictionSubmitted(myPrediction.status === "submitted");
-                if ((myPrediction.items || []).length === loadedEntries.length) {
-                    setPrediction(myPrediction.items.map((item) => item.entryId));
+                if ((myPrediction.items || []).length > 0) {
+                    const byRank = [...myPrediction.items].sort((a, b) => Number(a.rank) - Number(b.rank));
+                    const rankedIds = byRank.map((item) => Number(item.entryId));
+                    const remainingIds = loadedEntries
+                        .map((entry) => entry.id)
+                        .filter((entryId) => !rankedIds.includes(entryId));
+                    setPrediction([...rankedIds, ...remainingIds]);
+                    const draftRankInputs = {};
+                    for (const entry of loadedEntries) {
+                        draftRankInputs[entry.id] = "";
+                    }
+                    for (const item of byRank) {
+                        draftRankInputs[Number(item.entryId)] = String(item.rank);
+                    }
+                    setRankInputs(draftRankInputs);
                 }
                 if (activeEvent.status === "finished") {
                     const data = await api.getResults(activeEvent.id);
@@ -89,7 +102,7 @@ export function ParticipantPage({ user, onLogout }) {
             return;
         const items = Object.entries(ratingMap).map(([entryId, points]) => ({ entryId: Number(entryId), points }));
         await api.saveMyRating(event.id, items);
-        setMessage("Rating gespeichert");
+        setMessage(items.length < 10 ? "Rating-Entwurf gespeichert" : "Rating gespeichert");
     };
     const submitRating = async () => {
         if (!event)
@@ -101,9 +114,24 @@ export function ParticipantPage({ user, onLogout }) {
     const savePrediction = async () => {
         if (!event)
             return;
-        const items = prediction.map((entryId, index) => ({ entryId, rank: index + 1 }));
+        const items = [];
+        const usedRanks = new Set();
+        for (const entryId of prediction) {
+            const rank = Number.parseInt((rankInputs[entryId] ?? "").trim(), 10);
+            if (Number.isNaN(rank))
+                continue;
+            if (rank < 1 || rank > entries.length)
+                continue;
+            if (usedRanks.has(rank)) {
+                setMessage(`Rang ${rank} ist doppelt vergeben. Bitte korrigieren und erneut speichern.`);
+                return;
+            }
+            usedRanks.add(rank);
+            items.push({ entryId, rank });
+        }
+        items.sort((a, b) => a.rank - b.rank);
         await api.saveMyPrediction(event.id, items);
-        setMessage("Prediction gespeichert");
+        setMessage(items.length < entries.length ? "Prediction-Entwurf gespeichert" : "Prediction gespeichert");
     };
     const submitPrediction = async () => {
         if (!event)
@@ -112,6 +140,13 @@ export function ParticipantPage({ user, onLogout }) {
         setPredictionSubmitted(true);
         setMessage("Prediction eingereicht");
     };
+    const buildSequentialRankInputs = (orderedEntryIds) => {
+        const nextInputs = {};
+        orderedEntryIds.forEach((entryId, index) => {
+            nextInputs[entryId] = String(index + 1);
+        });
+        return nextInputs;
+    };
     const move = (index, delta) => {
         const next = [...prediction];
         const target = index + delta;
@@ -119,6 +154,7 @@ export function ParticipantPage({ user, onLogout }) {
             return;
         [next[index], next[target]] = [next[target], next[index]];
         setPrediction(next);
+        setRankInputs(buildSequentialRankInputs(next));
     };
     const moveToDropPosition = (fromIndex, targetIndex, position) => {
         if (fromIndex < 0 || targetIndex < 0)
@@ -134,13 +170,18 @@ export function ParticipantPage({ user, onLogout }) {
         const [moved] = next.splice(fromIndex, 1);
         next.splice(insertionIndex, 0, moved);
         setPrediction(next);
+        setRankInputs(buildSequentialRankInputs(next));
     };
     useEffect(() => {
-        const nextInputs = {};
-        prediction.forEach((entryId, index) => {
-            nextInputs[entryId] = String(index + 1);
+        setRankInputs((previous) => {
+            const nextInputs = {};
+            prediction.forEach((entryId, index) => {
+                const defaultRank = String(index + 1);
+                const existing = previous[entryId];
+                nextInputs[entryId] = existing === undefined ? defaultRank : existing;
+            });
+            return nextInputs;
         });
-        setRankInputs(nextInputs);
     }, [prediction]);
     const commitRankChange = (entryId) => {
         const fromIndex = prediction.findIndex((id) => id === entryId);
@@ -180,7 +221,7 @@ export function ParticipantPage({ user, onLogout }) {
                                                                 }
                                                                 return next;
                                                             });
-                                                        }, children: [_jsx("option", { value: "", children: "0" }), ESC_POINTS.map((point) => (_jsx("option", { value: point, disabled: selectedPoints.has(point) && ratingMap[entry.id] !== point, children: point }, point)))] }) })] }, entry.id))) })] }), !ratingSubmitted && event.status === "open" && (_jsxs("div", { className: "actions", children: [_jsx("button", { className: "btn", onClick: () => void saveRating(), children: "Entwurf speichern" }), _jsx("button", { className: "btn btn-primary", onClick: () => void submitRating(), children: "Einreichen" })] })), ratingSubmitted && _jsx("p", { className: "hint", children: "Rating ist eingereicht und gesperrt." })] })), tab === "prediction" && (_jsxs("div", { className: "card", children: [_jsx("h3", { children: "Prediction Rangliste" }), _jsxs("table", { className: "data-table prediction-table", children: [_jsx("thead", { children: _jsxs("tr", { children: [_jsx("th", { className: "prediction-table__rank-header", children: "Rang" }), _jsx("th", { className: "prediction-table__country-header", children: "Land" }), _jsx("th", { className: "prediction-table__song-header", children: "Song" }), _jsx("th", { children: "Aktion" })] }) }), _jsx("tbody", { children: prediction.map((entryId, index) => {
+                                                        }, children: [_jsx("option", { value: "", children: "0" }), ESC_POINTS.map((point) => (_jsx("option", { value: point, disabled: selectedPoints.has(point) && ratingMap[entry.id] !== point, children: point }, point)))] }) })] }, entry.id))) })] }), !ratingSubmitted && event.status === "open" && (_jsxs("div", { className: "actions", children: [_jsx("button", { className: "btn", onClick: () => void saveRating(), children: "Entwurf speichern" }), _jsx("button", { className: "btn btn-primary", onClick: () => void submitRating(), children: "Einreichen" })] })), !ratingSubmitted && event.status === "open" && (_jsx("p", { className: "hint", children: "Entwurf darf unvollst\u00E4ndig sein. F\u00FCr Einreichen m\u00FCssen alle 10 Punkte vergeben sein." })), ratingSubmitted && _jsx("p", { className: "hint", children: "Rating ist eingereicht und gesperrt." })] })), tab === "prediction" && (_jsxs("div", { className: "card", children: [_jsx("h3", { children: "Prediction Rangliste" }), _jsxs("table", { className: "data-table prediction-table", children: [_jsx("thead", { children: _jsxs("tr", { children: [_jsx("th", { className: "prediction-table__rank-header", children: "Rang" }), _jsx("th", { className: "prediction-table__country-header", children: "Land" }), _jsx("th", { className: "prediction-table__song-header", children: "Song" }), _jsx("th", { children: "Aktion" })] }) }), _jsx("tbody", { children: prediction.map((entryId, index) => {
                                             const entry = entries.find((item) => item.id === entryId);
                                             const dragEnabled = !predictionSubmitted && event.status === "open";
                                             return (_jsxs("tr", { className: `prediction-table__row${dragEnabled ? " prediction-table__row--movable" : ""}${draggedEntryId === entryId ? " prediction-table__row--dragging" : ""}${dropIndicator?.entryId === entryId && dropIndicator.position === "before" ? " prediction-table__row--drop-before" : ""}${dropIndicator?.entryId === entryId && dropIndicator.position === "after" ? " prediction-table__row--drop-after" : ""}`, draggable: dragEnabled, onDragStart: () => {
@@ -227,7 +268,7 @@ export function ParticipantPage({ user, onLogout }) {
                                                                     commitRankChange(entryId);
                                                                 }
                                                             } }) }), _jsx("td", { className: "prediction-table__country-cell", children: getCountryNameDe(entry?.countryCode ?? "") ?? "-" }), _jsx("td", { className: "prediction-table__song-cell", title: entry?.songTitle ?? "", children: truncateSongTitle(entry?.songTitle) }), _jsx("td", { children: _jsxs("div", { className: "inline", children: [_jsx("button", { className: "btn btn-icon", disabled: !dragEnabled, onClick: () => move(index, -1), children: "\u2191" }), _jsx("button", { className: "btn btn-icon", disabled: !dragEnabled, onClick: () => move(index, 1), children: "\u2193" })] }) })] }, entryId));
-                                        }) })] }), !predictionSubmitted && event.status === "open" && (_jsx("p", { className: "hint", children: "Tipp: Ziehe ein Land per Drag-and-Drop oder gib den Rang direkt numerisch ein." })), !predictionSubmitted && event.status === "open" && (_jsxs("div", { className: "actions", children: [_jsx("button", { className: "btn", onClick: () => void savePrediction(), children: "Entwurf speichern" }), _jsx("button", { className: "btn btn-primary", onClick: () => void submitPrediction(), children: "Einreichen" })] })), predictionSubmitted && _jsx("p", { className: "hint", children: "Prediction ist eingereicht und gesperrt." })] })), tab === "results" && (_jsxs("div", { className: "card", children: [_jsx("h3", { children: "Ergebnisse" }), event.status !== "finished" && _jsx("p", { children: "Ergebnisse werden nach Event-Abschluss angezeigt." }), results && (_jsxs(_Fragment, { children: [_jsxs("div", { className: "results-section", children: [_jsx("h4", { children: "Platzierungen gegen offizielles Ranking" }), results.leaderboardB && results.leaderboardB.length > 0 ? (_jsxs(_Fragment, { children: [_jsxs("table", { className: "data-table results-table", children: [_jsx("thead", { children: _jsxs("tr", { children: [_jsx("th", { className: "results-table__rank", children: "Platz" }), _jsx("th", { children: "Teilnehmer" }), _jsx("th", { className: "results-table__points", children: "Punkte" })] }) }), _jsx("tbody", { children: (expandedLeaderboardB ? results.leaderboardB : results.leaderboardB.slice(0, 5)).map((participant, idx) => (_jsxs("tr", { className: `results-table__row${participant.rank <= 3 ? ` results-table__row--top-${participant.rank}` : ""}${participant.participantId === Number(user.id) ? " results-table__row--me" : ""}`, children: [_jsx("td", { className: "results-table__rank-cell", children: participant.rank === 1
+                                        }) })] }), !predictionSubmitted && event.status === "open" && (_jsx("p", { className: "hint", children: "Tipp: Ziehe ein Land per Drag-and-Drop oder gib den Rang direkt numerisch ein. Entwurf darf unvollst\u00E4ndig sein." })), !predictionSubmitted && event.status === "open" && (_jsxs("div", { className: "actions", children: [_jsx("button", { className: "btn", onClick: () => void savePrediction(), children: "Entwurf speichern" }), _jsx("button", { className: "btn btn-primary", onClick: () => void submitPrediction(), children: "Einreichen" })] })), predictionSubmitted && _jsx("p", { className: "hint", children: "Prediction ist eingereicht und gesperrt." })] })), tab === "results" && (_jsxs("div", { className: "card", children: [_jsx("h3", { children: "Ergebnisse" }), event.status !== "finished" && _jsx("p", { children: "Ergebnisse werden nach Event-Abschluss angezeigt." }), results && (_jsxs(_Fragment, { children: [_jsxs("div", { className: "results-section", children: [_jsx("h4", { children: "Platzierungen gegen offizielles Ranking" }), results.leaderboardB && results.leaderboardB.length > 0 ? (_jsxs(_Fragment, { children: [_jsxs("table", { className: "data-table results-table", children: [_jsx("thead", { children: _jsxs("tr", { children: [_jsx("th", { className: "results-table__rank", children: "Platz" }), _jsx("th", { children: "Teilnehmer" }), _jsx("th", { className: "results-table__points", children: "Punkte" })] }) }), _jsx("tbody", { children: (expandedLeaderboardB ? results.leaderboardB : results.leaderboardB.slice(0, 5)).map((participant, idx) => (_jsxs("tr", { className: `results-table__row${participant.rank <= 3 ? ` results-table__row--top-${participant.rank}` : ""}${participant.participantId === Number(user.id) ? " results-table__row--me" : ""}`, children: [_jsx("td", { className: "results-table__rank-cell", children: participant.rank === 1
                                                                                 ? "🥇"
                                                                                 : participant.rank === 2
                                                                                     ? "🥈"
