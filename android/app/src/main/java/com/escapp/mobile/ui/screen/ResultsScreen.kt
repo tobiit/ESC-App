@@ -6,13 +6,19 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.border
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.escapp.mobile.model.RankingEntry
 import com.escapp.mobile.model.ResultsDto
 import com.escapp.mobile.model.ScoreDto
+import com.escapp.mobile.ui.getCountryNameDe
 import com.escapp.mobile.ui.theme.*
 
 /**
@@ -30,6 +36,9 @@ fun ResultsScreen(
     results: ResultsDto?,
     highlightOverview: Boolean = false
 ) {
+    var showFullA by rememberSaveable { mutableStateOf(false) }
+    var showFullB by rememberSaveable { mutableStateOf(false) }
+
     if (eventStatus != "finished") {
         Box(
             modifier = Modifier.fillMaxSize().padding(32.dp),
@@ -75,7 +84,7 @@ fun ResultsScreen(
     ) {
         /* ── My scores ── */
         Text(
-            "Dein Ergebnis",
+            "Deine Platzierung & Punkte",
             style = MaterialTheme.typography.titleLarge,
             color = DarkBlue1000
         )
@@ -86,25 +95,56 @@ fun ResultsScreen(
         )
 
         ScoreCard(
-            label = "Liste B – gegen offizielles Ranking",
+            label = "Liste B – gegen offizielles Ergebnis",
             score = me?.scoreAgainstOfficialRanking
         )
 
         /* ── Top 3 Liste A ── */
         if (results.top3A.isNotEmpty()) {
             Spacer(Modifier.height(8.dp))
-            Text("Top 3 · Teilnehmer-Ranking", style = MaterialTheme.typography.titleMedium, color = DarkBlue1000)
+            Text("Top 3 · Teilnehmer-Ranking (gegen Teilnehmer-Bewertungen)", style = MaterialTheme.typography.titleMedium, color = DarkBlue1000)
             results.top3A.forEachIndexed { i, dto ->
                 PodiumRow(rank = i + 1, score = dto)
             }
+
+            TextButton(onClick = { showFullA = !showFullA }) {
+                Text(if (showFullA) "Vollständige Rangliste ausblenden" else "Vollständige Rangliste anzeigen")
+            }
+
+            if (showFullA) {
+                RankingListHeader()
+                results.leaderboardA.forEach { row ->
+                    ParticipantRankingRow(score = row)
+                }
+            }
         }
 
-        /* ── Top 3 Liste B ── */
+        /* ── Top 3 Liste B (gegen offizielles Ergebnis) ── */
         if (results.top3B.isNotEmpty()) {
             Spacer(Modifier.height(8.dp))
-            Text("Top 3 · Offizielles Ranking", style = MaterialTheme.typography.titleMedium, color = DarkBlue1000)
+            Text("Top 3 · Teilnehmer-Ranking (gegen offizielles Ergebnis)", style = MaterialTheme.typography.titleMedium, color = DarkBlue1000)
             results.top3B.forEachIndexed { i, dto ->
                 PodiumRow(rank = i + 1, score = dto)
+            }
+
+            TextButton(onClick = { showFullB = !showFullB }) {
+                Text(if (showFullB) "Vollständige Rangliste ausblenden" else "Vollständige Rangliste anzeigen")
+            }
+
+            if (showFullB) {
+                RankingListHeader()
+                results.leaderboardB.forEach { row ->
+                    ParticipantRankingRow(score = row)
+                }
+            }
+        }
+
+        /* ── Vollständige Teilnehmer-Rangliste (aus Ratings) ── */
+        if (results.ratingRanking.isNotEmpty()) {
+            Spacer(Modifier.height(8.dp))
+            Text("Rangliste · Teilnehmer-Bewertungen", style = MaterialTheme.typography.titleMedium, color = DarkBlue1000)
+            results.ratingRanking.forEach { rankingEntry ->
+                RankingRow(rankingEntry)
             }
         }
 
@@ -126,6 +166,112 @@ fun ResultsScreen(
                     color = DarkBlue700
                 )
             }
+        }
+    }
+}
+
+@Composable
+private fun RankingListHeader() {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp, vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            "Platz",
+            style = MaterialTheme.typography.labelMedium,
+            color = Blue700,
+            modifier = Modifier.width(52.dp)
+        )
+        Text(
+            "Teilnehmer",
+            style = MaterialTheme.typography.labelMedium,
+            color = Blue700,
+            modifier = Modifier.weight(1f)
+        )
+        Text(
+            "Punkte",
+            style = MaterialTheme.typography.labelMedium,
+            color = Blue700
+        )
+    }
+}
+
+@Composable
+private fun ParticipantRankingRow(score: ScoreDto) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        shape = MaterialTheme.shapes.small
+    ) {
+        Row(
+            modifier = Modifier.padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Surface(
+                shape = MaterialTheme.shapes.small,
+                color = Blue200,
+                modifier = Modifier.size(36.dp)
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Text(
+                        "${score.rank}.",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = Blue900
+                    )
+                }
+            }
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    score.displayName ?: "Teilnehmer ${score.participantId}",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = DarkBlue1000
+                )
+            }
+            Text(
+                "${score.points} Pkt.",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = Blue900
+            )
+        }
+    }
+}
+
+@Composable
+private fun RankingRow(entry: RankingEntry) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        shape = MaterialTheme.shapes.small
+    ) {
+        Row(
+            modifier = Modifier.padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Surface(
+                shape = MaterialTheme.shapes.small,
+                color = Blue200,
+                modifier = Modifier.size(36.dp)
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Text(
+                        "${entry.rank}.",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = Blue900
+                    )
+                }
+            }
+            Text(
+                text = getCountryNameDe(entry.countryCode),
+                style = MaterialTheme.typography.bodyLarge,
+                color = DarkBlue1000
+            )
         }
     }
 }

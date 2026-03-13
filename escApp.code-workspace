@@ -6,6 +6,7 @@
 		}
 	],
 	"settings": {
-		"android-dev-ext.appSourceRoot": "android/app/src/main"
+		"android-dev-ext.appSourceRoot": "android/app/src/main",
+		"java.configuration.updateBuildConfiguration": "interactive"
 	}
 }

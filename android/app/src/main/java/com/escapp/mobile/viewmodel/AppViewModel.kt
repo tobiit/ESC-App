@@ -34,6 +34,8 @@ class AppViewModel(
     private val draftStore: DraftStore
 ) : ViewModel() {
 
+    private val requiredEscPoints = setOf(1, 2, 3, 4, 5, 6, 7, 8, 10, 12)
+
     var ui by mutableStateOf(UiState())
         private set
 
@@ -205,6 +207,10 @@ class AppViewModel(
 
     fun submitRating() {
         val event = ui.event ?: return
+        if (!isRatingComplete()) {
+            showMessage("Für das Einreichen müssen 1–8, 10 und 12 Punkte vollständig vergeben sein.")
+            return
+        }
         viewModelScope.launch {
             runCatching {
                 // save first, then submit
@@ -252,6 +258,26 @@ class AppViewModel(
         }
     }
 
+    fun movePredictionToRank(entryId: Long, rank: Int) {
+        if (ui.predictionSubmitted) return
+        val list = ui.predictionOrder.toMutableList()
+        if (rank !in 1..list.size) return
+
+        val fromIndex = list.indexOf(entryId)
+        if (fromIndex == -1) return
+
+        val toIndex = rank - 1
+        if (fromIndex == toIndex) return
+
+        val item = list.removeAt(fromIndex)
+        list.add(toIndex, item)
+
+        ui = ui.copy(predictionOrder = list.toList())
+        ui.event?.let { event ->
+            viewModelScope.launch { draftStore.writePredictionDraft(event.id, list) }
+        }
+    }
+
     fun savePrediction() {
         val event = ui.event ?: return
         val items = ui.predictionOrder.mapIndexed { i, id -> PredictionItemBody(id, i + 1) }
@@ -269,6 +295,10 @@ class AppViewModel(
 
     fun submitPrediction() {
         val event = ui.event ?: return
+        if (!isPredictionComplete()) {
+            showMessage("Für das Einreichen müssen alle Songs/Länder vollständig auf Ränge verteilt sein.")
+            return
+        }
         viewModelScope.launch {
             runCatching {
                 val items = ui.predictionOrder.mapIndexed { i, id -> PredictionItemBody(id, i + 1) }
@@ -299,6 +329,17 @@ class AppViewModel(
             delay(3000)
             if (ui.message == msg) ui = ui.copy(message = null)
         }
+    }
+
+    private fun isRatingComplete(): Boolean {
+        val points = ui.ratingMap.values
+        return points.size == requiredEscPoints.size && points.toSet() == requiredEscPoints
+    }
+
+    private fun isPredictionComplete(): Boolean {
+        val entryIds = ui.entries.map { it.id }
+        val order = ui.predictionOrder
+        return order.size == entryIds.size && order.toSet() == entryIds.toSet()
     }
 
     private fun parseError(err: Throwable): String {

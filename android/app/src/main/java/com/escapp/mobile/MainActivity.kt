@@ -205,7 +205,7 @@ private fun EscApp(vm: AppViewModel) {
             ),
             TutorialStep(
                 title = "Tab: Ergebnis",
-                text = "Nach dem Event sehen Sie hier Ihre Punkte und die Ranglisten gegen internes und offizielles Ranking.",
+                text = "Nach dem Event sehen Sie hier Ihre Punkte und die Teilnehmer-Ranglisten auf Basis aller Bewertungen.",
                 tabIndex = 2,
                 target = TutorialTarget.TAB_RESULTS
             ),
@@ -435,6 +435,7 @@ private fun EscApp(vm: AppViewModel) {
                             eventOpen = ui.event.status == "open",
                             onMove = vm::movePrediction,
                             onMoveTo = vm::movePredictionToPosition,
+                            onMoveToRank = vm::movePredictionToRank,
                             onSave = vm::savePrediction,
                             onSubmit = vm::submitPrediction,
                             highlightList = tutorialOpen && tutorialStep.target == TutorialTarget.PREDICTION_LIST,

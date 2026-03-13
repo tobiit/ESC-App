@@ -5,16 +5,36 @@ plugins {
   id("org.jetbrains.kotlin.plugin.serialization")
 }
 
+fun Project.propOrEnv(propKey: String, envKey: String): String? {
+  return (findProperty(propKey) as String?) ?: System.getenv(envKey)
+}
+
 android {
   namespace = "com.escapp.mobile"
   compileSdk = 35
+
+  signingConfigs {
+    create("release") {
+      val storeFilePath = project.propOrEnv("ESCAPP_RELEASE_STORE_FILE", "ESCAPP_RELEASE_STORE_FILE")
+      val storePwd = project.propOrEnv("ESCAPP_RELEASE_STORE_PASSWORD", "ESCAPP_RELEASE_STORE_PASSWORD")
+      val keyAliasValue = project.propOrEnv("ESCAPP_RELEASE_KEY_ALIAS", "ESCAPP_RELEASE_KEY_ALIAS")
+      val keyPwd = project.propOrEnv("ESCAPP_RELEASE_KEY_PASSWORD", "ESCAPP_RELEASE_KEY_PASSWORD")
+
+      if (!storeFilePath.isNullOrBlank() && !storePwd.isNullOrBlank() && !keyAliasValue.isNullOrBlank() && !keyPwd.isNullOrBlank()) {
+        storeFile = file(storeFilePath)
+        storePassword = storePwd
+        keyAlias = keyAliasValue
+        keyPassword = keyPwd
+      }
+    }
+  }
 
   defaultConfig {
     applicationId = "com.escapp.mobile"
     minSdk = 26
     targetSdk = 35
-    versionCode = 1
-    versionName = "1.0.0"
+    versionCode = 3
+    versionName = "3.0.0"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     buildConfigField("String", "API_BASE_URL", "\"https://api.basisadresse.de/escappapi/\"")
@@ -24,6 +44,7 @@ android {
     release {
       isMinifyEnabled = true
       isShrinkResources = true
+      signingConfig = signingConfigs.getByName("release")
       proguardFiles(
         getDefaultProguardFile("proguard-android-optimize.txt"),
         "proguard-rules.pro"

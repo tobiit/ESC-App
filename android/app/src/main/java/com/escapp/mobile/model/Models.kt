@@ -122,7 +122,9 @@ data class RankingEntry(
 data class ResultsDto(
     val me: MeDto? = null,
     val ratingRanking: List<RankingEntry> = emptyList(),
+    val leaderboardA: List<ScoreDto> = emptyList(),
     val top3A: List<ScoreDto> = emptyList(),
+    val leaderboardB: List<ScoreDto> = emptyList(),
     val top3B: List<ScoreDto> = emptyList(),
     val officialRanking: List<RankingEntry> = emptyList()
 )

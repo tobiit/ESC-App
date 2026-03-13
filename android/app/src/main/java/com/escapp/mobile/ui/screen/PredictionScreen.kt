@@ -5,14 +5,25 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.escapp.mobile.model.EntryDto
 import com.escapp.mobile.ui.getCountryNameDe
@@ -38,12 +49,14 @@ fun PredictionScreen(
     eventOpen: Boolean,
     onMove: (Int, Int) -> Unit,
     onMoveTo: (Int, Int) -> Unit,
+    onMoveToRank: (Long, Int) -> Unit,
     onSave: () -> Unit,
     onSubmit: () -> Unit,
     highlightList: Boolean = false,
     highlightActions: Boolean = false
 ) {
     val enabled = !isSubmitted && eventOpen
+    val focusManager = LocalFocusManager.current
     
     val lazyListState = rememberLazyListState()
     val reorderableState = rememberReorderableLazyListState(
@@ -88,19 +101,50 @@ fun PredictionScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         /* ── Rank badge ── */
-                        Surface(
-                            shape = MaterialTheme.shapes.small,
-                            color = Blue200,
-                            modifier = Modifier.size(36.dp)
-                        ) {
-                            Box(contentAlignment = Alignment.Center) {
-                                Text(
-                                    "${index + 1}",
-                                    style = MaterialTheme.typography.titleSmall,
-                                    color = Blue900
-                                )
-                            }
+                        var rankInput by remember(entryId) { mutableStateOf((index + 1).toString()) }
+                        LaunchedEffect(index) {
+                            rankInput = (index + 1).toString()
                         }
+
+                        OutlinedTextField(
+                            value = rankInput,
+                            onValueChange = { value ->
+                                if (value.isEmpty() || value.all(Char::isDigit)) {
+                                    rankInput = value
+                                }
+                            },
+                            singleLine = true,
+                            enabled = enabled,
+                            textStyle = MaterialTheme.typography.titleSmall,
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Number,
+                                imeAction = ImeAction.Done
+                            ),
+                            keyboardActions = KeyboardActions(
+                                onDone = { focusManager.clearFocus() }
+                            ),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = Blue900,
+                                unfocusedBorderColor = Blue700,
+                                focusedTextColor = Blue900,
+                                unfocusedTextColor = Blue900,
+                                focusedContainerColor = Blue200,
+                                unfocusedContainerColor = Blue200,
+                                disabledContainerColor = Blue200,
+                                disabledTextColor = Blue900
+                            ),
+                            modifier = Modifier
+                                .width(56.dp)
+                                .onFocusChanged { focusState ->
+                                    if (!focusState.isFocused) {
+                                        val rank = rankInput.toIntOrNull()
+                                        if (rank != null) {
+                                            onMoveToRank(entryId, rank)
+                                        }
+                                        rankInput = (index + 1).toString()
+                                    }
+                                }
+                        )
 
                         Spacer(Modifier.width(12.dp))
 
