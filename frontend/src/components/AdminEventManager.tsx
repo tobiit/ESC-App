@@ -148,10 +148,6 @@ function validateOfficialResults(results: CsvRow[], songCount: number): string[]
     errors.push(`Offizielles Ergebnis: ${results.length} Einträge statt ${songCount}`);
   }
   const ranks = results.map((item) => Number(item.rank));
-  const uniqueRanks = new Set(ranks);
-  if (uniqueRanks.size !== ranks.length) {
-    errors.push("Offizielles Ergebnis: Doppelte Platzierungen");
-  }
   ranks.forEach((rank) => {
     if (rank < 1 || rank > songCount) {
       errors.push(`Offizielles Ergebnis: Ungültiger Platz ${rank} (muss 1-${songCount} sein)`);
@@ -736,7 +732,7 @@ export function AdminEventManager({ events, onSave }: AdminEventManagerProps) {
       <div className="card">
         <h3>Offizielles Ergebnis (TV-Rangliste)</h3>
         <p style={{ fontSize: "14px", color: "#666", marginBottom: "12px" }}>
-          Die Datei muss genau {songs.length} Einträge enthalten. Jeder Platz (1-{songs.length}) darf nur einmal vorkommen.
+          Die Datei muss genau {songs.length} Einträge enthalten. Mehrfachbelegungen desselben Platzes sind erlaubt.
         </p>
         <div style={{ marginBottom: "12px" }}>
           <button onClick={importOfficialFromEurovisionApi} style={{ marginBottom: "8px" }}>

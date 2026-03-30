@@ -107,10 +107,6 @@ describe("CSV Upload Validation", () => {
       errors.push(`Offizielles Ergebnis: ${results.length} Einträge statt ${songCount}`);
     }
     const ranks = results.map((item: Record<string, string>) => Number(item.rank));
-    const uniqueRanks = new Set(ranks);
-    if (uniqueRanks.size !== ranks.length) {
-      errors.push("Offizielles Ergebnis: Doppelte Platzierungen");
-    }
     ranks.forEach((rank: number) => {
       if (rank < 1 || rank > songCount) {
         errors.push(`Offizielles Ergebnis: Ungültiger Platz ${rank} (muss 1-${songCount} sein)`);
@@ -291,14 +287,14 @@ describe("CSV Upload Validation", () => {
       expect(errors).toHaveLength(0);
     });
 
-    it("sollte Fehler bei doppelten Platzierungen zurückgeben", () => {
+    it("sollte gleiche Platzierungen im offiziellen Ergebnis erlauben", () => {
       const results = [
         { country: "Schweden", rank: "1" },
         { country: "Deutschland", rank: "1" },
         { country: "Italien", rank: "3" }
       ];
       const errors = validateOfficialResults(results, 3);
-      expect(errors.some((e) => e.includes("Doppelte Platzierungen"))).toBe(true);
+      expect(errors).toHaveLength(0);
     });
   });
 });

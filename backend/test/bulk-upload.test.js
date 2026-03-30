@@ -6,24 +6,34 @@ import { pool } from "../src/db/pool.js";
 describe("Admin Bulk Upload API", () => {
   let adminToken = "";
   let eventId = 0;
+  let dbReady = false;
   const fullEntries = [
-    { country: "Schweden", song: "Unicorn", artist: "Jane Doe" },
-    { country: "Deutschland", song: "Fireworks", artist: "Max Mustermann" },
-    { country: "Italien", song: "Amore", artist: "Maria Rossi" },
-    { country: "Frankreich", song: "Chanson", artist: "Pierre Dubois" },
-    { country: "Norwegen", song: "Storm", artist: "Lena Nord" },
-    { country: "Spanien", song: "Luz", artist: "Sofia" },
-    { country: "UK", song: "Skyline", artist: "John Smith" },
-    { country: "Polen", song: "Echo", artist: "Anna" },
-    { country: "Malta", song: "Wave", artist: "Mia" },
-    { country: "Portugal", song: "Saudade", artist: "Luis" }
+    { country: "SE", song: "Unicorn", artist: "Jane Doe" },
+    { country: "DE", song: "Fireworks", artist: "Max Mustermann" },
+    { country: "IT", song: "Amore", artist: "Maria Rossi" },
+    { country: "FR", song: "Chanson", artist: "Pierre Dubois" },
+    { country: "NO", song: "Storm", artist: "Lena Nord" },
+    { country: "ES", song: "Luz", artist: "Sofia" },
+    { country: "GB", song: "Skyline", artist: "John Smith" },
+    { country: "PL", song: "Echo", artist: "Anna" },
+    { country: "MT", song: "Wave", artist: "Mia" },
+    { country: "PT", song: "Saudade", artist: "Luis" }
   ];
 
   beforeAll(async () => {
+    await pool.query("SELECT 1");
+    dbReady = true;
+
     // Login as admin to get token
     const loginResponse = await request(app)
       .post("/auth/admin/login")
       .send({ username: "admin", password: "admin123" });
+
+    if (loginResponse.status !== 200 || !loginResponse.body.accessToken) {
+      throw new Error(
+        `Admin login fehlgeschlagen: ${loginResponse.status} ${JSON.stringify(loginResponse.body)}`
+      );
+    }
     
     adminToken = loginResponse.body.accessToken;
 
@@ -32,19 +42,30 @@ describe("Admin Bulk Upload API", () => {
       .post("/admin/events")
       .set("Authorization", `Bearer ${adminToken}`)
       .send({ name: "Test ESC 2026", year: 2026, status: "draft", isActive: true });
+
+    if (eventResponse.status !== 201) {
+      throw new Error(
+        `Test-Event konnte nicht erstellt werden: ${eventResponse.status} ${JSON.stringify(eventResponse.body)}`
+      );
+    }
     
     const events = await pool.query("SELECT id FROM events WHERE name = 'Test ESC 2026' ORDER BY id DESC LIMIT 1");
+    if (!events[0]?.id) {
+      throw new Error("Test-Event wurde nicht in der Datenbank gefunden.");
+    }
     eventId = events[0].id;
-  });
+  }, 30_000);
 
   afterAll(async () => {
+    if (!dbReady) return;
+
     // Cleanup: Delete test data
     if (eventId) {
       await pool.query("DELETE FROM entries WHERE event_id = ?", [eventId]);
       await pool.query("DELETE FROM events WHERE id = ?", [eventId]);
     }
     await pool.query("DELETE FROM users WHERE username IN ('testuser1', 'testuser2')");
-  });
+  }, 30_000);
 
   describe("POST /admin/events/:id/entries/bulk", () => {
     it("sollte Songs/Länder per Bulk-Upload erstellen", async () => {
@@ -62,15 +83,15 @@ describe("Admin Bulk Upload API", () => {
       // Verify entries were created
       const dbEntries = await pool.query("SELECT * FROM entries WHERE event_id = ? ORDER BY sort_order", [eventId]);
       expect(dbEntries).toHaveLength(10);
-      expect(dbEntries[0].country_name).toBe("Schweden");
-      expect(dbEntries[1].country_name).toBe("Deutschland");
-      expect(dbEntries[2].country_name).toBe("Italien");
+      expect(dbEntries[0].country_code).toBe("SE");
+      expect(dbEntries[1].country_code).toBe("DE");
+      expect(dbEntries[2].country_code).toBe("IT");
     });
 
     it("sollte bestehende Einträge ersetzen", async () => {
       const newEntries = [
-        { country: "Österreich", song: "Alpen", artist: "Klara" },
-        { country: "Schweiz", song: "Alpenlicht", artist: "Marco" }
+        { country: "AT", song: "Alpen", artist: "Klara" },
+        { country: "CH", song: "Alpenlicht", artist: "Marco" }
       ];
 
       const response = await request(app)
@@ -83,7 +104,7 @@ describe("Admin Bulk Upload API", () => {
       // Verify old entries were replaced
       const dbEntries = await pool.query("SELECT * FROM entries WHERE event_id = ?", [eventId]);
       expect(dbEntries).toHaveLength(2);
-      expect(dbEntries[0].country_name).toBe("Österreich");
+      expect(dbEntries[0].country_code).toBe("AT");
     });
   });
 
@@ -140,16 +161,16 @@ describe("Admin Bulk Upload API", () => {
     });
     it("sollte Ranglistentipps per Bulk-Upload erstellen", async () => {
       const rankings = [
-        { username: "testuser1", country: "Schweden", rank: "1" },
-        { username: "testuser1", country: "Deutschland", rank: "2" },
-        { username: "testuser1", country: "Italien", rank: "3" },
-        { username: "testuser1", country: "Frankreich", rank: "4" },
-        { username: "testuser1", country: "Norwegen", rank: "5" },
-        { username: "testuser1", country: "Spanien", rank: "6" },
-        { username: "testuser1", country: "UK", rank: "7" },
-        { username: "testuser1", country: "Polen", rank: "8" },
-        { username: "testuser1", country: "Malta", rank: "9" },
-        { username: "testuser1", country: "Portugal", rank: "10" }
+        { username: "testuser1", country: "SE", rank: "1" },
+        { username: "testuser1", country: "DE", rank: "2" },
+        { username: "testuser1", country: "IT", rank: "3" },
+        { username: "testuser1", country: "FR", rank: "4" },
+        { username: "testuser1", country: "NO", rank: "5" },
+        { username: "testuser1", country: "ES", rank: "6" },
+        { username: "testuser1", country: "GB", rank: "7" },
+        { username: "testuser1", country: "PL", rank: "8" },
+        { username: "testuser1", country: "MT", rank: "9" },
+        { username: "testuser1", country: "PT", rank: "10" }
       ];
 
       const response = await request(app)
@@ -175,26 +196,26 @@ describe("Admin Bulk Upload API", () => {
 
     it("sollte mehrere Benutzer gleichzeitig verarbeiten", async () => {
       const rankings = [
-        { username: "testuser1", country: "Schweden", rank: "10" },
-        { username: "testuser1", country: "Deutschland", rank: "9" },
-        { username: "testuser1", country: "Italien", rank: "8" },
-        { username: "testuser1", country: "Frankreich", rank: "7" },
-        { username: "testuser1", country: "Norwegen", rank: "6" },
-        { username: "testuser1", country: "Spanien", rank: "5" },
-        { username: "testuser1", country: "UK", rank: "4" },
-        { username: "testuser1", country: "Polen", rank: "3" },
-        { username: "testuser1", country: "Malta", rank: "2" },
-        { username: "testuser1", country: "Portugal", rank: "1" },
-        { username: "testuser2", country: "Schweden", rank: "1" },
-        { username: "testuser2", country: "Deutschland", rank: "2" },
-        { username: "testuser2", country: "Italien", rank: "3" },
-        { username: "testuser2", country: "Frankreich", rank: "4" },
-        { username: "testuser2", country: "Norwegen", rank: "5" },
-        { username: "testuser2", country: "Spanien", rank: "6" },
-        { username: "testuser2", country: "UK", rank: "7" },
-        { username: "testuser2", country: "Polen", rank: "8" },
-        { username: "testuser2", country: "Malta", rank: "9" },
-        { username: "testuser2", country: "Portugal", rank: "10" }
+        { username: "testuser1", country: "SE", rank: "10" },
+        { username: "testuser1", country: "DE", rank: "9" },
+        { username: "testuser1", country: "IT", rank: "8" },
+        { username: "testuser1", country: "FR", rank: "7" },
+        { username: "testuser1", country: "NO", rank: "6" },
+        { username: "testuser1", country: "ES", rank: "5" },
+        { username: "testuser1", country: "GB", rank: "4" },
+        { username: "testuser1", country: "PL", rank: "3" },
+        { username: "testuser1", country: "MT", rank: "2" },
+        { username: "testuser1", country: "PT", rank: "1" },
+        { username: "testuser2", country: "SE", rank: "1" },
+        { username: "testuser2", country: "DE", rank: "2" },
+        { username: "testuser2", country: "IT", rank: "3" },
+        { username: "testuser2", country: "FR", rank: "4" },
+        { username: "testuser2", country: "NO", rank: "5" },
+        { username: "testuser2", country: "ES", rank: "6" },
+        { username: "testuser2", country: "GB", rank: "7" },
+        { username: "testuser2", country: "PL", rank: "8" },
+        { username: "testuser2", country: "MT", rank: "9" },
+        { username: "testuser2", country: "PT", rank: "10" }
       ];
 
       const response = await request(app)
@@ -217,16 +238,16 @@ describe("Admin Bulk Upload API", () => {
   describe("POST /admin/events/:id/ratings/bulk", () => {
     it("sollte Ratings per Bulk-Upload erstellen", async () => {
       const ratings = [
-        { username: "testuser1", country: "Schweden", points: "12" },
-        { username: "testuser1", country: "Deutschland", points: "10" },
-        { username: "testuser1", country: "Italien", points: "8" },
-        { username: "testuser1", country: "Frankreich", points: "7" },
-        { username: "testuser1", country: "Norwegen", points: "6" },
-        { username: "testuser1", country: "Spanien", points: "5" },
-        { username: "testuser1", country: "UK", points: "4" },
-        { username: "testuser1", country: "Polen", points: "3" },
-        { username: "testuser1", country: "Malta", points: "2" },
-        { username: "testuser1", country: "Portugal", points: "1" }
+        { username: "testuser1", country: "SE", points: "12" },
+        { username: "testuser1", country: "DE", points: "10" },
+        { username: "testuser1", country: "IT", points: "8" },
+        { username: "testuser1", country: "FR", points: "7" },
+        { username: "testuser1", country: "NO", points: "6" },
+        { username: "testuser1", country: "ES", points: "5" },
+        { username: "testuser1", country: "GB", points: "4" },
+        { username: "testuser1", country: "PL", points: "3" },
+        { username: "testuser1", country: "MT", points: "2" },
+        { username: "testuser1", country: "PT", points: "1" }
       ];
 
       const response = await request(app)
@@ -252,16 +273,16 @@ describe("Admin Bulk Upload API", () => {
   describe("POST /admin/events/:id/officialresult/bulk", () => {
     it("sollte offizielles Ergebnis per Bulk-Upload erstellen", async () => {
       const results = [
-        { country: "Schweden", rank: "1" },
-        { country: "Deutschland", rank: "2" },
-        { country: "Italien", rank: "3" },
-        { country: "Frankreich", rank: "4" },
-        { country: "Norwegen", rank: "5" },
-        { country: "Spanien", rank: "6" },
-        { country: "UK", rank: "7" },
-        { country: "Polen", rank: "8" },
-        { country: "Malta", rank: "9" },
-        { country: "Portugal", rank: "10" }
+        { country: "SE", rank: "1" },
+        { country: "DE", rank: "2" },
+        { country: "IT", rank: "3" },
+        { country: "FR", rank: "4" },
+        { country: "NO", rank: "5" },
+        { country: "ES", rank: "6" },
+        { country: "GB", rank: "7" },
+        { country: "PL", rank: "8" },
+        { country: "MT", rank: "9" },
+        { country: "PT", rank: "10" }
       ];
 
       const response = await request(app)

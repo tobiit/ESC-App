@@ -2,6 +2,7 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import express from "express";
 import helmet from "helmet";
+import { pathToFileURL } from "node:url";
 import { config } from "./config.js";
 import { pool } from "./db/pool.js";
 import { adminRouter } from "./routes/admin.js";
@@ -40,8 +41,17 @@ app.use((error, _req, res, _next) => {
   res.status(status).json({ message });
 });
 
-app.listen(config.port, () => {
-  process.stdout.write(`ESC backend listening on ${config.port}\n`);
-});
+const startServer = (port = config.port) =>
+  app.listen(port, () => {
+    process.stdout.write(`ESC backend listening on ${port}\n`);
+  });
 
-export { app };
+const isDirectRun = process.argv[1]
+  ? pathToFileURL(process.argv[1]).href === import.meta.url
+  : false;
+
+if (isDirectRun) {
+  startServer();
+}
+
+export { app, startServer };

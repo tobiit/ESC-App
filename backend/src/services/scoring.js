@@ -10,7 +10,12 @@ export const getThird = (rank, total) => {
   return "bottom";
 };
 
-export const scorePrediction = (predictedRank, actualRank, validRanks, total) => {
+export const scorePrediction = (predictedRank, actualRank, validRanksOrTotal, maybeTotal) => {
+  const validRanks = Array.isArray(validRanksOrTotal) ? validRanksOrTotal : [actualRank];
+  const total = Number(
+    Array.isArray(validRanksOrTotal) ? maybeTotal : validRanksOrTotal
+  );
+
   if (validRanks.includes(predictedRank)) {
     return { points: 3, exact: 1, near: 0, diffAbs: 0, sameThird: 0 };
   }
@@ -41,7 +46,13 @@ export const buildRatingsReferenceRanking = (entries, allRatingItems) => {
       Number(entry.id),
       {
         entryId: Number(entry.id),
-        countryCode: entry.country_code,
+        countryCode:
+          entry.country_code ||
+          entry.countryCode ||
+          entry.country_name ||
+          entry.countryName ||
+          "",
+        countryName: entry.country_name || entry.countryName || entry.country_code || entry.countryCode || "",
         total: 0,
         counts: Object.fromEntries([12, 10, 8, 7, 6, 5, 4, 3, 2, 1].map((point) => [point, 0]))
       }
@@ -63,7 +74,7 @@ export const buildRatingsReferenceRanking = (entries, allRatingItems) => {
       for (const p of ESC_POINTS) {
         if (b.counts[p] !== a.counts[p]) return b.counts[p] - a.counts[p];
       }
-      return a.countryCode.localeCompare(b.countryCode, "de");
+      return String(a.countryCode).localeCompare(String(b.countryCode), "de");
     });
 
   const result = [];
@@ -121,7 +132,7 @@ export const buildParticipantRanking = (participantsWithPredictions, referenceRa
       diffSum += part.diffAbs;
       perEntry.push({
         entryId,
-        countryCode: entry.country_code,
+        countryCode: entry.country_code || entry.countryCode || entry.country_name || entry.countryName || "",
         predictedRank,
         actualRank,
         points: part.points

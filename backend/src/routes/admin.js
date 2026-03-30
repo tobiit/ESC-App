@@ -356,7 +356,7 @@ adminRouter.post("/events/:id/officialresult/bulk", async (req, res, next) => {
         if (!entryId) throw new Error(`Ungültiges Land: ${result.country}`);
         return { entryId, rank: Number(result.rank) };
       });
-      validatePredictionItems(items, entrySet);
+      validateOfficialResultItems(items, entrySet);
 
       const existing = await conn.query("SELECT id FROM official_results WHERE event_id = ? LIMIT 1", [req.params.id]);
       let officialResultId = existing[0]?.id;

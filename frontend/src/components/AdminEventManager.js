@@ -142,10 +142,6 @@ function validateOfficialResults(results, songCount) {
         errors.push(`Offizielles Ergebnis: ${results.length} Einträge statt ${songCount}`);
     }
     const ranks = results.map((item) => Number(item.rank));
-    const uniqueRanks = new Set(ranks);
-    if (uniqueRanks.size !== ranks.length) {
-        errors.push("Offizielles Ergebnis: Doppelte Platzierungen");
-    }
     ranks.forEach((rank) => {
         if (rank < 1 || rank > songCount) {
             errors.push(`Offizielles Ergebnis: Ungültiger Platz ${rank} (muss 1-${songCount} sein)`);
@@ -514,7 +510,7 @@ export function AdminEventManager({ events, onSave }) {
                                     const next = [...ratings];
                                     next[i][k] = v;
                                     setRatings(next);
-                                } }), _jsxs("div", { className: "admin-actions", children: [_jsx("button", { onClick: addRatingRow, children: "Zeile hinzuf\u00FCgen" }), _jsx("button", { onClick: saveRatings, className: "primary", children: "Ratings speichern" })] })] }), _jsxs("div", { className: "card", children: [_jsx("h3", { children: "Offizielles Ergebnis (TV-Rangliste)" }), _jsxs("p", { style: { fontSize: "14px", color: "#666", marginBottom: "12px" }, children: ["Die Datei muss genau ", songs.length, " Eintr\u00E4ge enthalten. Jeder Platz (1-", songs.length, ") darf nur einmal vorkommen."] }), _jsxs("div", { style: { marginBottom: "12px" }, children: [_jsx("button", { onClick: importOfficialFromEurovisionApi, style: { marginBottom: "8px" }, children: "\uD83C\uDF0D Aus Eurovision API importieren" }), _jsx("span", { style: { fontSize: "13px", color: "#666", marginLeft: "12px" }, children: "L\u00E4dt offizielle Finalergebnisse basierend auf dem Event-Jahr" })] }), _jsx(CsvUpload, { label: "Offizielles Ergebnis CSV hochladen", onUpload: handleOfficialUpload, example: "data:text/csv;charset=utf-8," +
+                                } }), _jsxs("div", { className: "admin-actions", children: [_jsx("button", { onClick: addRatingRow, children: "Zeile hinzuf\u00FCgen" }), _jsx("button", { onClick: saveRatings, className: "primary", children: "Ratings speichern" })] })] }), _jsxs("div", { className: "card", children: [_jsx("h3", { children: "Offizielles Ergebnis (TV-Rangliste)" }), _jsxs("p", { style: { fontSize: "14px", color: "#666", marginBottom: "12px" }, children: ["Die Datei muss genau ", songs.length, " Eintr\u00E4ge enthalten. Mehrfachbelegungen desselben Platzes sind erlaubt."] }), _jsxs("div", { style: { marginBottom: "12px" }, children: [_jsx("button", { onClick: importOfficialFromEurovisionApi, style: { marginBottom: "8px" }, children: "\uD83C\uDF0D Aus Eurovision API importieren" }), _jsx("span", { style: { fontSize: "13px", color: "#666", marginLeft: "12px" }, children: "L\u00E4dt offizielle Finalergebnisse basierend auf dem Event-Jahr" })] }), _jsx(CsvUpload, { label: "Offizielles Ergebnis CSV hochladen", onUpload: handleOfficialUpload, example: "data:text/csv;charset=utf-8," +
                                     encodeURIComponent(OFFICIAL_HEADER + "SE,1\nDE,23\nIT,3\nMT,18") }), _jsx(DataTable, { columns: [
                                     {
                                         key: "country",
