@@ -337,6 +337,17 @@ export function AdminPage({ user, onLogout }: { user: User; onLogout: () => void
 
         {message && <div className={`toast ${toastFading ? 'toast--fade-out' : ''}`}>{message}</div>}
       </div>
+      <footer style={{ textAlign: "center", padding: "1.5rem 0 1rem", color: "var(--esc-color-blue-400, #888)", fontSize: "0.72rem", opacity: 0.7 }}>
+        ESC-App &middot; Commit{" "}
+        <a
+          href={`https://github.com/tobiit/ESC-App/commit/${__GIT_COMMIT__}`}
+          target="_blank"
+          rel="noreferrer"
+          style={{ color: "inherit", fontFamily: "monospace" }}
+        >
+          {__GIT_COMMIT__}
+        </a>
+      </footer>
     </div>
   );
 }
