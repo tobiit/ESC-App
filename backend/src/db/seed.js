@@ -14,8 +14,8 @@ const run = async () => {
     }
     const passwordHash = await bcrypt.hash(config.adminBootstrap.password, 12);
     await conn.query(
-      `INSERT INTO users (role, username, password_hash, display_name, is_active)
-       VALUES ('admin', ?, ?, ?, TRUE)`,
+      `INSERT INTO users (role, username, password_hash, display_name, is_active, is_approved)
+       VALUES ('admin', ?, ?, ?, TRUE, TRUE)`,
       [config.adminBootstrap.username, passwordHash, config.adminBootstrap.displayName]
     );
     process.stdout.write("Bootstrap admin created\n");

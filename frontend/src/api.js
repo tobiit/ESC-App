@@ -96,6 +96,25 @@ export const api = {
     adminBulkUploadRankings: (eventId, rankings) => request(`/admin/events/${eventId}/predictions/bulk`, { method: "POST", body: JSON.stringify({ rankings }) }),
     adminBulkUploadRatings: (eventId, ratings) => request(`/admin/events/${eventId}/ratings/bulk`, { method: "POST", body: JSON.stringify({ ratings }) }),
     adminBulkUploadOfficialResults: (eventId, results) => request(`/admin/events/${eventId}/officialresult/bulk`, { method: "POST", body: JSON.stringify({ results }) }),
+    adminPhotoExtractOfficialResults: (eventId, imageFile) => new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            try {
+                const imageBase64 = e.target?.result;
+                const mimeType = imageFile.type || "image/jpeg";
+                const data = await request(`/admin/events/${eventId}/officialresult/photo-extract`, {
+                    method: "POST",
+                    body: JSON.stringify({ imageBase64, mimeType })
+                });
+                resolve(data);
+            }
+            catch (err) {
+                reject(err);
+            }
+        };
+        reader.onerror = () => reject(new Error("Bilddatei konnte nicht gelesen werden"));
+        reader.readAsDataURL(imageFile);
+    }),
     // Soft-delete events
     adminSoftDeleteEvent: (eventId) => request(`/admin/events/${eventId}/soft-delete`, { method: "POST" }),
     adminRestoreEvent: (eventId) => request(`/admin/events/${eventId}/restore`, { method: "POST" }),

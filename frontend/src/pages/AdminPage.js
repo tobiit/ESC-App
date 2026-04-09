@@ -9,6 +9,9 @@ export function AdminPage({ user, onLogout }) {
     const [eventRows, setEventRows] = useState([]);
     const [participantRows, setParticipantRows] = useState([]);
     const [pendingParticipants, setPendingParticipants] = useState([]);
+    const [submissionStatusByParticipant, setSubmissionStatusByParticipant] = useState({});
+    const [activeEventForStatus, setActiveEventForStatus] = useState(null);
+    const [showOnlyOpenParticipants, setShowOnlyOpenParticipants] = useState(false);
     const [message, setMessage] = useState("");
     const [toastFading, setToastFading] = useState(false);
     const navigate = useNavigate();
@@ -37,14 +40,63 @@ export function AdminPage({ user, onLogout }) {
         void load();
     }, [user, navigate]);
     const load = async () => {
-        const [eventRowsResponse, participantRowsResponse, pendingResponse] = await Promise.all([
-            api.adminEvents(),
-            api.adminParticipants(),
-            api.adminPendingParticipants()
-        ]);
-        setEventRows(eventRowsResponse.map((event) => ({ ...event, isNew: false })));
-        setParticipantRows(participantRowsResponse.map((participant) => ({ ...participant, password: "", isNew: false })));
-        setPendingParticipants(pendingResponse);
+        try {
+            const [eventRowsResponse, participantRowsResponse, pendingResponse] = await Promise.all([
+                api.adminEvents(),
+                api.adminParticipants(),
+                api.adminPendingParticipants()
+            ]);
+            const normalizedEvents = eventRowsResponse.map((event) => ({ ...event, isNew: false }));
+            const normalizedParticipants = participantRowsResponse.map((participant) => ({
+                ...participant,
+                password: "",
+                isNew: false
+            }));
+            setEventRows(normalizedEvents);
+            setParticipantRows(normalizedParticipants);
+            setPendingParticipants(pendingResponse);
+            const activeEvent = normalizedEvents.find((event) => Boolean(event.isActive) && !event.deletedAt);
+            if (!activeEvent?.id) {
+                setSubmissionStatusByParticipant({});
+                setActiveEventForStatus(null);
+                return;
+            }
+            const [ratingsData, predictionsData] = await Promise.all([
+                api.adminRatings(activeEvent.id),
+                api.adminPredictions(activeEvent.id)
+            ]);
+            const nextStatusMap = {};
+            for (const participant of normalizedParticipants) {
+                if (participant?.id) {
+                    nextStatusMap[participant.id] = { ratingSubmitted: false, predictionSubmitted: false };
+                }
+            }
+            for (const rating of (ratingsData || [])) {
+                const participantId = Number(rating.participantId);
+                if (!Number.isFinite(participantId))
+                    continue;
+                const current = nextStatusMap[participantId] || { ratingSubmitted: false, predictionSubmitted: false };
+                nextStatusMap[participantId] = {
+                    ...current,
+                    ratingSubmitted: rating.status === "submitted"
+                };
+            }
+            for (const prediction of (predictionsData || [])) {
+                const participantId = Number(prediction.participantId);
+                if (!Number.isFinite(participantId))
+                    continue;
+                const current = nextStatusMap[participantId] || { ratingSubmitted: false, predictionSubmitted: false };
+                nextStatusMap[participantId] = {
+                    ...current,
+                    predictionSubmitted: prediction.status === "submitted"
+                };
+            }
+            setSubmissionStatusByParticipant(nextStatusMap);
+            setActiveEventForStatus({ id: activeEvent.id, name: activeEvent.name || `Event ${activeEvent.id}` });
+        }
+        catch (err) {
+            setMessage(`Fehler beim Laden: ${err.message}`);
+        }
     };
     const handleLogout = async () => {
         try {
@@ -178,9 +230,45 @@ export function AdminPage({ user, onLogout }) {
         setMessage("Event wiederhergestellt");
         await load();
     };
-    return (_jsxs("div", { className: "shell shell--admin", children: [_jsxs("div", { className: "topbar topbar--admin", children: [_jsx("strong", { children: "ESCAPP Verwaltung" }), _jsx("span", { children: user.displayName }), _jsx("button", { className: "btn btn-plain btn-plain--on-dark", onClick: () => void handleLogout(), children: "Logout" })] }), _jsxs("div", { className: "layout", children: [pendingParticipants.length > 0 && (_jsxs("div", { className: "card", style: { borderLeft: "4px solid #ff6b35" }, children: [_jsxs("h3", { children: ["Ausstehende Freischaltungen (", pendingParticipants.length, ")"] }), _jsx("p", { style: { marginBottom: "1rem", color: "#666" }, children: "Neue Teilnehmer m\u00FCssen freigeschaltet werden, bevor sie sich anmelden k\u00F6nnen." }), _jsxs("table", { className: "data-table", children: [_jsx("thead", { children: _jsxs("tr", { children: [_jsx("th", { children: "Benutzername" }), _jsx("th", { children: "Anzeigename" }), _jsx("th", { children: "Vollst\u00E4ndiger Name" }), _jsx("th", { children: "Registriert am" }), _jsx("th", { children: "Aktionen" })] }) }), _jsx("tbody", { children: pendingParticipants.map((participant) => (_jsxs("tr", { children: [_jsx("td", { children: participant.username }), _jsx("td", { children: participant.displayName }), _jsx("td", { children: participant.fullName || "—" }), _jsx("td", { children: new Date(participant.createdAt).toLocaleString("de-DE") }), _jsx("td", { children: _jsxs("div", { style: { display: "flex", gap: "8px" }, children: [_jsx("button", { className: "btn btn-success btn-sm", onClick: () => void approveParticipant(participant.id), children: "Freischalten" }), _jsx("button", { className: "btn btn-danger btn-sm", onClick: () => void rejectParticipant(participant.id), children: "Ablehnen" })] }) })] }, participant.id))) })] })] })), _jsxs("div", { className: "card", children: [_jsx("h3", { children: "Teilnehmer Verwaltung" }), _jsx(DataTable, { columns: [
+    const isParticipantOpenForActiveEvent = (participantId) => {
+        const status = submissionStatusByParticipant[participantId] || { ratingSubmitted: false, predictionSubmitted: false };
+        return !status.ratingSubmitted || !status.predictionSubmitted;
+    };
+    const visibleParticipantRows = showOnlyOpenParticipants
+        ? participantRows.filter((participant) => {
+            if (!activeEventForStatus)
+                return true;
+            if (!participant?.id)
+                return true;
+            return isParticipantOpenForActiveEvent(Number(participant.id));
+        })
+        : participantRows;
+    const openParticipantsCount = participantRows.filter((participant) => {
+        if (!participant?.id || !activeEventForStatus)
+            return false;
+        return isParticipantOpenForActiveEvent(Number(participant.id));
+    }).length;
+    return (_jsxs("div", { className: "shell shell--admin", children: [_jsxs("div", { className: "topbar topbar--admin", children: [_jsx("strong", { children: "ESCAPP Verwaltung" }), _jsx("span", { children: user.displayName }), _jsx("button", { className: "btn btn-plain btn-plain--on-dark", onClick: () => void handleLogout(), children: "Logout" })] }), _jsxs("div", { className: "layout", children: [pendingParticipants.length > 0 && (_jsxs("div", { className: "card", style: { borderLeft: "4px solid #ff6b35" }, children: [_jsxs("h3", { children: ["Ausstehende Freischaltungen (", pendingParticipants.length, ")"] }), _jsx("p", { style: { marginBottom: "1rem", color: "#666" }, children: "Neue Teilnehmer m\u00FCssen freigeschaltet werden, bevor sie sich anmelden k\u00F6nnen." }), _jsxs("table", { className: "data-table", children: [_jsx("thead", { children: _jsxs("tr", { children: [_jsx("th", { children: "Benutzername" }), _jsx("th", { children: "Anzeigename" }), _jsx("th", { children: "Vollst\u00E4ndiger Name" }), _jsx("th", { children: "Registriert am" }), _jsx("th", { children: "Aktionen" })] }) }), _jsx("tbody", { children: pendingParticipants.map((participant) => (_jsxs("tr", { children: [_jsx("td", { children: participant.username }), _jsx("td", { children: participant.displayName }), _jsx("td", { children: participant.fullName || "—" }), _jsx("td", { children: new Date(participant.createdAt).toLocaleString("de-DE") }), _jsx("td", { children: _jsxs("div", { style: { display: "flex", gap: "8px" }, children: [_jsx("button", { className: "btn btn-success btn-sm", onClick: () => void approveParticipant(participant.id), children: "Freischalten" }), _jsx("button", { className: "btn btn-danger btn-sm", onClick: () => void rejectParticipant(participant.id), children: "Ablehnen" })] }) })] }, participant.id))) })] })] })), _jsxs("div", { className: "card", children: [_jsx("h3", { children: "Teilnehmer Verwaltung" }), _jsxs("p", { style: { marginTop: "-0.4rem", marginBottom: "0.8rem", color: "#666", fontSize: "0.9rem" }, children: ["Status bezieht sich auf aktives Event: ", activeEventForStatus ? `${activeEventForStatus.name} (#${activeEventForStatus.id})` : "kein aktives Event"] }), _jsxs("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: "1rem", marginBottom: "0.8rem", flexWrap: "wrap" }, children: [_jsxs("label", { style: { display: "flex", alignItems: "center", gap: "0.45rem", color: "#333", fontSize: "0.92rem" }, children: [_jsx("input", { type: "checkbox", checked: showOnlyOpenParticipants, onChange: (e) => setShowOnlyOpenParticipants(e.target.checked) }), "Nur offene Teilnehmer anzeigen"] }), activeEventForStatus && (_jsxs("span", { style: { color: "#666", fontSize: "0.9rem" }, children: ["Offen: ", _jsx("strong", { children: openParticipantsCount }), " von ", _jsx("strong", { children: participantRows.filter((p) => p?.id).length })] }))] }), _jsx(DataTable, { columns: [
                                     { key: "username", label: "Benutzername", editable: true },
                                     { key: "displayName", label: "Anzeigename", editable: true },
+                                    {
+                                        key: "ratingSubmitted",
+                                        label: "Bewertung abgegeben",
+                                        render: (row) => {
+                                            if (!row?.id || !activeEventForStatus)
+                                                return "—";
+                                            return submissionStatusByParticipant[row.id]?.ratingSubmitted ? "✅ Ja" : "❌ Nein";
+                                        }
+                                    },
+                                    {
+                                        key: "predictionSubmitted",
+                                        label: "Tipp abgegeben",
+                                        render: (row) => {
+                                            if (!row?.id || !activeEventForStatus)
+                                                return "—";
+                                            return submissionStatusByParticipant[row.id]?.predictionSubmitted ? "✅ Ja" : "❌ Nein";
+                                        }
+                                    },
                                     { key: "isActive", label: "Aktiv", editable: true, type: "checkbox" },
                                     { key: "password", label: "Passwort (neu/Reset)", editable: true, type: "password" },
                                     {
@@ -188,7 +276,7 @@ export function AdminPage({ user, onLogout }) {
                                         label: "Aktionen",
                                         render: (row) => row.id ? (_jsx("button", { className: "btn btn-danger btn-sm", onClick: () => void deleteParticipant(row.id), children: "L\u00F6schen" })) : ""
                                     }
-                                ], data: participantRows, onChange: updateParticipantRow }), _jsxs("div", { className: "admin-actions", children: [_jsx("button", { className: "btn", onClick: addParticipantRow, children: "Zeile hinzuf\u00FCgen" }), _jsx("button", { className: "btn btn-primary", onClick: () => void saveParticipants(), children: "Teilnehmer speichern" })] })] }), _jsxs("div", { className: "card", children: [_jsx("h3", { children: "Event Verwaltung" }), _jsx(DataTable, { columns: [
+                                ], data: visibleParticipantRows, onChange: updateParticipantRow }), _jsxs("div", { className: "admin-actions", children: [_jsx("button", { className: "btn", onClick: addParticipantRow, children: "Zeile hinzuf\u00FCgen" }), _jsx("button", { className: "btn btn-primary", onClick: () => void saveParticipants(), children: "Teilnehmer speichern" })] })] }), _jsxs("div", { className: "card", children: [_jsx("h3", { children: "Event Verwaltung" }), _jsx(DataTable, { columns: [
                                     { key: "name", label: "Event Name", editable: true },
                                     { key: "year", label: "Jahr", editable: true },
                                     {

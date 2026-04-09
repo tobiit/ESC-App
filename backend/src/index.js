@@ -15,7 +15,7 @@ const app = express();
 app.set("trust proxy", 1);
 app.use(helmet());
 app.use(cors({ origin: config.corsOrigin, credentials: true }));
-app.use(express.json({ limit: "1mb" }));
+app.use(express.json({ limit: "10mb" }));
 app.use(cookieParser());
 
 app.get("/health", async (_req, res) => {

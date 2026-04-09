@@ -1,5 +1,5 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { CsvUpload } from "./CsvUpload";
 import { DataTable } from "./DataTable";
 import { api } from "../api";
@@ -159,6 +159,8 @@ export function AdminEventManager({ events, onSave }) {
     const [officialResults, setOfficialResults] = useState([]);
     const [message, setMessage] = useState("");
     const [error, setError] = useState("");
+    const [photoLoading, setPhotoLoading] = useState(false);
+    const photoInputRef = useRef(null);
     useEffect(() => {
         if (eventId && !manageableEvents.some((e) => e.id === eventId)) {
             setEventId(manageableEvents[0]?.id ?? null);
@@ -264,6 +266,27 @@ export function AdminEventManager({ events, onSave }) {
     };
     const addOfficialRow = () => {
         setOfficialResults([...officialResults, { country: "", rank: "" }]);
+    };
+    const handleOfficialPhotoUpload = async (file) => {
+        if (!eventId) {
+            showMessage("Kein Event ausgewählt.", true);
+            return;
+        }
+        setPhotoLoading(true);
+        try {
+            const result = await api.adminPhotoExtractOfficialResults(eventId, file);
+            const extracted = result.results.map((r) => ({ country: r.country, rank: r.rank }));
+            setOfficialResults(extracted);
+            showMessage(`${extracted.length} Platzierungen aus Foto erkannt (${result.model}) – bitte prüfen und speichern`);
+        }
+        catch (err) {
+            showMessage("Fotoerkennung fehlgeschlagen: " + err.message, true);
+        }
+        finally {
+            setPhotoLoading(false);
+            if (photoInputRef.current)
+                photoInputRef.current.value = "";
+        }
     };
     const importOfficialFromEurovisionApi = async () => {
         try {
@@ -510,7 +533,11 @@ export function AdminEventManager({ events, onSave }) {
                                     const next = [...ratings];
                                     next[i][k] = v;
                                     setRatings(next);
-                                } }), _jsxs("div", { className: "admin-actions", children: [_jsx("button", { onClick: addRatingRow, children: "Zeile hinzuf\u00FCgen" }), _jsx("button", { onClick: saveRatings, className: "primary", children: "Ratings speichern" })] })] }), _jsxs("div", { className: "card", children: [_jsx("h3", { children: "Offizielles Ergebnis (TV-Rangliste)" }), _jsxs("p", { style: { fontSize: "14px", color: "#666", marginBottom: "12px" }, children: ["Die Datei muss genau ", songs.length, " Eintr\u00E4ge enthalten. Mehrfachbelegungen desselben Platzes sind erlaubt."] }), _jsxs("div", { style: { marginBottom: "12px" }, children: [_jsx("button", { onClick: importOfficialFromEurovisionApi, style: { marginBottom: "8px" }, children: "\uD83C\uDF0D Aus Eurovision API importieren" }), _jsx("span", { style: { fontSize: "13px", color: "#666", marginLeft: "12px" }, children: "L\u00E4dt offizielle Finalergebnisse basierend auf dem Event-Jahr" })] }), _jsx(CsvUpload, { label: "Offizielles Ergebnis CSV hochladen", onUpload: handleOfficialUpload, example: "data:text/csv;charset=utf-8," +
+                                } }), _jsxs("div", { className: "admin-actions", children: [_jsx("button", { onClick: addRatingRow, children: "Zeile hinzuf\u00FCgen" }), _jsx("button", { onClick: saveRatings, className: "primary", children: "Ratings speichern" })] })] }), _jsxs("div", { className: "card", children: [_jsx("h3", { children: "Offizielles Ergebnis (TV-Rangliste)" }), _jsxs("p", { style: { fontSize: "14px", color: "#666", marginBottom: "12px" }, children: ["Die Datei muss genau ", songs.length, " Eintr\u00E4ge enthalten. Mehrfachbelegungen desselben Platzes sind erlaubt."] }), _jsxs("div", { style: { marginBottom: "12px" }, children: [_jsx("button", { onClick: importOfficialFromEurovisionApi, style: { marginBottom: "8px" }, children: "\uD83C\uDF0D Aus Eurovision API importieren" }), _jsx("span", { style: { fontSize: "13px", color: "#666", marginLeft: "12px" }, children: "L\u00E4dt offizielle Finalergebnisse basierend auf dem Event-Jahr" })] }), _jsxs("div", { style: { marginBottom: "12px", display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap" }, children: [_jsx("input", { ref: photoInputRef, type: "file", accept: "image/*", style: { display: "none" }, onChange: (e) => {
+                                            const file = e.target.files?.[0];
+                                            if (file)
+                                                void handleOfficialPhotoUpload(file);
+                                        } }), _jsx("button", { onClick: () => photoInputRef.current?.click(), disabled: photoLoading, style: { opacity: photoLoading ? 0.6 : 1 }, children: photoLoading ? "⏳ Wird erkannt…" : "📷 Endergebnisfoto hochladen" }), _jsx("span", { style: { fontSize: "13px", color: "#666" }, children: "Rangliste wird automatisch per KI aus dem Foto ausgelesen und zur Pr\u00FCfung vorbelegt" })] }), _jsx(CsvUpload, { label: "Offizielles Ergebnis CSV hochladen", onUpload: handleOfficialUpload, example: "data:text/csv;charset=utf-8," +
                                     encodeURIComponent(OFFICIAL_HEADER + "SE,1\nDE,23\nIT,3\nMT,18") }), _jsx(DataTable, { columns: [
                                     {
                                         key: "country",

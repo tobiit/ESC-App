@@ -6,11 +6,15 @@ import { DataTable } from "../components/DataTable";
 import { EscImport } from "../components/EscImport";
 
 type User = { id: number; role: "admin" | "participant"; username: string; displayName: string };
+type SubmissionStatus = { ratingSubmitted: boolean; predictionSubmitted: boolean };
 
 export function AdminPage({ user, onLogout }: { user: User; onLogout: () => void }) {
   const [eventRows, setEventRows] = useState<any[]>([]);
   const [participantRows, setParticipantRows] = useState<any[]>([]);
   const [pendingParticipants, setPendingParticipants] = useState<any[]>([]);
+  const [submissionStatusByParticipant, setSubmissionStatusByParticipant] = useState<Record<number, SubmissionStatus>>({});
+  const [activeEventForStatus, setActiveEventForStatus] = useState<{ id: number; name: string } | null>(null);
+  const [showOnlyOpenParticipants, setShowOnlyOpenParticipants] = useState(false);
 
   const [message, setMessage] = useState("");
   const [toastFading, setToastFading] = useState(false);
@@ -43,18 +47,68 @@ export function AdminPage({ user, onLogout }: { user: User; onLogout: () => void
   }, [user, navigate]);
 
   const load = async () => {
-    const [eventRowsResponse, participantRowsResponse, pendingResponse] = await Promise.all([
-      api.adminEvents(),
-      api.adminParticipants(),
-      api.adminPendingParticipants()
-    ]);
-    setEventRows(
-      eventRowsResponse.map((event: any) => ({ ...event, isNew: false }))
-    );
-    setParticipantRows(
-      participantRowsResponse.map((participant: any) => ({ ...participant, password: "", isNew: false }))
-    );
-    setPendingParticipants(pendingResponse);
+    try {
+      const [eventRowsResponse, participantRowsResponse, pendingResponse] = await Promise.all([
+        api.adminEvents(),
+        api.adminParticipants(),
+        api.adminPendingParticipants()
+      ]);
+
+      const normalizedEvents = eventRowsResponse.map((event: any) => ({ ...event, isNew: false }));
+      const normalizedParticipants = participantRowsResponse.map((participant: any) => ({
+        ...participant,
+        password: "",
+        isNew: false
+      }));
+
+      setEventRows(normalizedEvents);
+      setParticipantRows(normalizedParticipants);
+      setPendingParticipants(pendingResponse);
+
+      const activeEvent = normalizedEvents.find((event: any) => Boolean(event.isActive) && !event.deletedAt);
+      if (!activeEvent?.id) {
+        setSubmissionStatusByParticipant({});
+        setActiveEventForStatus(null);
+        return;
+      }
+
+      const [ratingsData, predictionsData] = await Promise.all([
+        api.adminRatings(activeEvent.id),
+        api.adminPredictions(activeEvent.id)
+      ]);
+
+      const nextStatusMap: Record<number, SubmissionStatus> = {};
+      for (const participant of normalizedParticipants) {
+        if (participant?.id) {
+          nextStatusMap[participant.id] = { ratingSubmitted: false, predictionSubmitted: false };
+        }
+      }
+
+      for (const rating of (ratingsData || [])) {
+        const participantId = Number(rating.participantId);
+        if (!Number.isFinite(participantId)) continue;
+        const current = nextStatusMap[participantId] || { ratingSubmitted: false, predictionSubmitted: false };
+        nextStatusMap[participantId] = {
+          ...current,
+          ratingSubmitted: rating.status === "submitted"
+        };
+      }
+
+      for (const prediction of (predictionsData || [])) {
+        const participantId = Number(prediction.participantId);
+        if (!Number.isFinite(participantId)) continue;
+        const current = nextStatusMap[participantId] || { ratingSubmitted: false, predictionSubmitted: false };
+        nextStatusMap[participantId] = {
+          ...current,
+          predictionSubmitted: prediction.status === "submitted"
+        };
+      }
+
+      setSubmissionStatusByParticipant(nextStatusMap);
+      setActiveEventForStatus({ id: activeEvent.id, name: activeEvent.name || `Event ${activeEvent.id}` });
+    } catch (err) {
+      setMessage(`Fehler beim Laden: ${(err as Error).message}`);
+    }
   };
 
   const handleLogout = async () => {
@@ -189,6 +243,24 @@ export function AdminPage({ user, onLogout }: { user: User; onLogout: () => void
     await load();
   };
 
+  const isParticipantOpenForActiveEvent = (participantId: number) => {
+    const status = submissionStatusByParticipant[participantId] || { ratingSubmitted: false, predictionSubmitted: false };
+    return !status.ratingSubmitted || !status.predictionSubmitted;
+  };
+
+  const visibleParticipantRows = showOnlyOpenParticipants
+    ? participantRows.filter((participant: any) => {
+        if (!activeEventForStatus) return true;
+        if (!participant?.id) return true;
+        return isParticipantOpenForActiveEvent(Number(participant.id));
+      })
+    : participantRows;
+
+  const openParticipantsCount = participantRows.filter((participant: any) => {
+    if (!participant?.id || !activeEventForStatus) return false;
+    return isParticipantOpenForActiveEvent(Number(participant.id));
+  }).length;
+
   return (
     <div className="shell shell--admin">
       <div className="topbar topbar--admin">
@@ -248,10 +320,44 @@ export function AdminPage({ user, onLogout }: { user: User; onLogout: () => void
         {/* Teilnehmer Verwaltung */}
         <div className="card">
           <h3>Teilnehmer Verwaltung</h3>
+          <p style={{ marginTop: "-0.4rem", marginBottom: "0.8rem", color: "#666", fontSize: "0.9rem" }}>
+            Status bezieht sich auf aktives Event: {activeEventForStatus ? `${activeEventForStatus.name} (#${activeEventForStatus.id})` : "kein aktives Event"}
+          </p>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "1rem", marginBottom: "0.8rem", flexWrap: "wrap" }}>
+            <label style={{ display: "flex", alignItems: "center", gap: "0.45rem", color: "#333", fontSize: "0.92rem" }}>
+              <input
+                type="checkbox"
+                checked={showOnlyOpenParticipants}
+                onChange={(e) => setShowOnlyOpenParticipants(e.target.checked)}
+              />
+              Nur offene Teilnehmer anzeigen
+            </label>
+            {activeEventForStatus && (
+              <span style={{ color: "#666", fontSize: "0.9rem" }}>
+                Offen: <strong>{openParticipantsCount}</strong> von <strong>{participantRows.filter((p: any) => p?.id).length}</strong>
+              </span>
+            )}
+          </div>
           <DataTable
             columns={[
               { key: "username", label: "Benutzername", editable: true },
               { key: "displayName", label: "Anzeigename", editable: true },
+              {
+                key: "ratingSubmitted",
+                label: "Bewertung abgegeben",
+                render: (row: any) => {
+                  if (!row?.id || !activeEventForStatus) return "—";
+                  return submissionStatusByParticipant[row.id]?.ratingSubmitted ? "✅ Ja" : "❌ Nein";
+                }
+              },
+              {
+                key: "predictionSubmitted",
+                label: "Tipp abgegeben",
+                render: (row: any) => {
+                  if (!row?.id || !activeEventForStatus) return "—";
+                  return submissionStatusByParticipant[row.id]?.predictionSubmitted ? "✅ Ja" : "❌ Nein";
+                }
+              },
               { key: "isActive", label: "Aktiv", editable: true, type: "checkbox" },
               { key: "password", label: "Passwort (neu/Reset)", editable: true, type: "password" },
               {
@@ -265,7 +371,7 @@ export function AdminPage({ user, onLogout }: { user: User; onLogout: () => void
                   ) : ""
               }
             ]}
-            data={participantRows}
+            data={visibleParticipantRows}
             onChange={updateParticipantRow}
           />
           <div className="admin-actions">

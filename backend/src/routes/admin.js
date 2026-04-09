@@ -154,10 +154,9 @@ adminRouter.post("/events/:id/entries/bulk", async (req, res, next) => {
         if (!isValidCountryCode(countryCode)) {
           throw new Error(`Ungültiger Ländercode: ${entry.country}`);
         }
-        const countryName = resolveCountryName(countryCode, null);
         await conn.query(
-          "INSERT INTO entries (event_id, country_name, country_code, song_title, artist_name, sort_order) VALUES (?, ?, ?, ?, ?, ?)",
-          [req.params.id, countryName, countryCode, entry.song || null, entry.artist || null, i + 1]
+          "INSERT INTO entries (event_id, country_code, song_title, artist_name, sort_order) VALUES (?, ?, ?, ?, ?)",
+          [req.params.id, countryCode, entry.song || null, entry.artist || null, i + 1]
         );
       }
     });
@@ -382,6 +381,107 @@ adminRouter.post("/events/:id/officialresult/bulk", async (req, res, next) => {
   }
 });
 
+/* ── Endergebnisfoto → KI-Erkennung (kein DB-Speichern, nur Extraktion) ── */
+
+adminRouter.post("/events/:id/officialresult/photo-extract", async (req, res, next) => {
+  try {
+    const schema = z.object({
+      imageBase64: z.string().min(1),
+      mimeType: z.string().default("image/jpeg")
+    });
+    const parsed = schema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ message: "Ungültige Nutzdaten: imageBase64 und mimeType erwartet" });
+
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+    if (!apiKey) return res.status(503).json({ message: "ANTHROPIC_API_KEY nicht konfiguriert" });
+
+    const model = process.env.ANTHROPIC_MODEL || "claude-sonnet-4-5";
+
+    // Base64-Präfix (data:image/jpeg;base64,...) entfernen, falls vorhanden
+    const rawBase64 = parsed.data.imageBase64.replace(/^data:[^;]+;base64,/, "");
+
+    const anthropicResp = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "x-api-key": apiKey,
+        "anthropic-version": "2023-06-01",
+        "content-type": "application/json"
+      },
+      body: JSON.stringify({
+        model,
+        max_tokens: 2048,
+        messages: [{
+          role: "user",
+          content: [
+            {
+              type: "image",
+              source: {
+                type: "base64",
+                media_type: parsed.data.mimeType,
+                data: rawBase64
+              }
+            },
+            {
+              type: "text",
+              text: `Du analysierst ein Ergebnis-Leaderboard des Eurovision Song Contest Finales.
+Extrahiere die vollständige Rangliste und gib NUR ein JSON-Array in dieser exakten Form zurück:
+[{"rank":"1","country":"AT"},{"rank":"2","country":"IL"},...]
+Regeln:
+- Verwende ISO 3166-1 alpha-2 Ländercodes (genau 2 Großbuchstaben)
+- "rank" ist die Platzierung als String (z.B. "1", "2", ...)
+- Gib NUR das JSON-Array zurück, keinen anderen Text, keine Erklärungen`
+            }
+          ]
+        }]
+      })
+    });
+
+    if (!anthropicResp.ok) {
+      const errBody = await anthropicResp.json().catch(() => ({}));
+      return res.status(502).json({ message: `Anthropic API Fehler: ${errBody?.error?.message || anthropicResp.status}` });
+    }
+
+    const anthropicData = await anthropicResp.json();
+    const rawText = (anthropicData.content?.[0]?.text || "").trim();
+
+    // JSON-Array aus Antwort extrahieren
+    const jsonMatch = rawText.match(/\[[\s\S]*\]/);
+    if (!jsonMatch) {
+      return res.status(502).json({ message: "Keine gültige JSON-Rangliste in der KI-Antwort gefunden", raw: rawText.slice(0, 300) });
+    }
+
+    let results;
+    try {
+      results = JSON.parse(jsonMatch[0]);
+    } catch {
+      return res.status(502).json({ message: "JSON-Parse-Fehler in KI-Antwort", raw: rawText.slice(0, 300) });
+    }
+
+    if (!Array.isArray(results) || results.length === 0) {
+      return res.status(502).json({ message: "Leere Rangliste in KI-Antwort" });
+    }
+
+    for (const item of results) {
+      if (!item.rank || !item.country) {
+        return res.status(502).json({ message: "Ungültige Eintragsstruktur in KI-Antwort (rank/country fehlt)" });
+      }
+    }
+
+    await writeAuditLog({
+      actorUserId: req.user.id,
+      actionType: "PHOTO_EXTRACT_PREVIEW",
+      entityType: "official_result",
+      entityId: req.params.id,
+      before: null,
+      after: { count: results.length, model }
+    });
+
+    res.json({ results, count: results.length, model });
+  } catch (error) {
+    next(error);
+  }
+});
+
 adminRouter.post("/participants", async (req, res, next) => {
   try {
     const schema = z.object({ username: z.string().min(2), password: z.string().min(6), displayName: z.string().min(1) });
@@ -562,10 +662,9 @@ adminRouter.put("/entries/:entryId", async (req, res, next) => {
     if (!isValidCountryCode(parsed.data.countryCode)) {
       return res.status(400).json({ message: "Ungültiger Ländercode" });
     }
-    const countryName = resolveCountryName(parsed.data.countryCode, null);
     await pool.query(
-      "UPDATE entries SET country_name = ?, country_code = ?, song_title = ?, artist_name = ?, sort_order = ? WHERE id = ?",
-      [countryName, parsed.data.countryCode, parsed.data.songTitle || null, parsed.data.artistName || null, parsed.data.sortOrder, req.params.entryId]
+      "UPDATE entries SET country_code = ?, song_title = ?, artist_name = ?, sort_order = ? WHERE id = ?",
+      [parsed.data.countryCode, parsed.data.songTitle || null, parsed.data.artistName || null, parsed.data.sortOrder, req.params.entryId]
     );
     res.json({ ok: true });
   } catch (error) {
@@ -997,10 +1096,9 @@ adminRouter.post("/esc-import", async (req, res, next) => {
           console.warn(`Skipping invalid country code: ${entry.countryCode}`);
           continue;
         }
-        const countryName = entry.countryName || resolveCountryName(code, countriesData);
         await conn.query(
-          "INSERT INTO entries (event_id, country_name, country_code, song_title, artist_name, sort_order) VALUES (?, ?, ?, ?, ?, ?)",
-          [eventId, countryName, code, entry.song, entry.artist, entry.sortOrder]
+          "INSERT INTO entries (event_id, country_code, song_title, artist_name, sort_order) VALUES (?, ?, ?, ?, ?)",
+          [eventId, code, entry.song, entry.artist, entry.sortOrder]
         );
       }
 

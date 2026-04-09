@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { CsvUpload } from "./CsvUpload";
 import { DataTable } from "./DataTable";
 import { api } from "../api";
@@ -205,6 +205,8 @@ export function AdminEventManager({ events, onSave }: AdminEventManagerProps) {
   const [officialResults, setOfficialResults] = useState<OfficialRow[]>([]);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [photoLoading, setPhotoLoading] = useState(false);
+  const photoInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     if (eventId && !manageableEvents.some((e) => e.id === eventId)) {
@@ -315,6 +317,25 @@ export function AdminEventManager({ events, onSave }: AdminEventManagerProps) {
 
   const addOfficialRow = () => {
     setOfficialResults([...officialResults, { country: "", rank: "" }]);
+  };
+
+  const handleOfficialPhotoUpload = async (file: File) => {
+    if (!eventId) {
+      showMessage("Kein Event ausgewählt.", true);
+      return;
+    }
+    setPhotoLoading(true);
+    try {
+      const result = await api.adminPhotoExtractOfficialResults(eventId, file);
+      const extracted = result.results.map((r) => ({ country: r.country, rank: r.rank })) as OfficialRow[];
+      setOfficialResults(extracted);
+      showMessage(`${extracted.length} Platzierungen aus Foto erkannt (${result.model}) – bitte prüfen und speichern`);
+    } catch (err: any) {
+      showMessage("Fotoerkennung fehlgeschlagen: " + err.message, true);
+    } finally {
+      setPhotoLoading(false);
+      if (photoInputRef.current) photoInputRef.current.value = "";
+    }
   };
 
   const importOfficialFromEurovisionApi = async () => {
@@ -740,6 +761,28 @@ export function AdminEventManager({ events, onSave }: AdminEventManagerProps) {
           </button>
           <span style={{ fontSize: "13px", color: "#666", marginLeft: "12px" }}>
             Lädt offizielle Finalergebnisse basierend auf dem Event-Jahr
+          </span>
+        </div>
+        <div style={{ marginBottom: "12px", display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap" }}>
+          <input
+            ref={photoInputRef}
+            type="file"
+            accept="image/*"
+            style={{ display: "none" }}
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) void handleOfficialPhotoUpload(file);
+            }}
+          />
+          <button
+            onClick={() => photoInputRef.current?.click()}
+            disabled={photoLoading}
+            style={{ opacity: photoLoading ? 0.6 : 1 }}
+          >
+            {photoLoading ? "⏳ Wird erkannt…" : "📷 Endergebnisfoto hochladen"}
+          </button>
+          <span style={{ fontSize: "13px", color: "#666" }}>
+            Rangliste wird automatisch per KI aus dem Foto ausgelesen und zur Prüfung vorbelegt
           </span>
         </div>
         <CsvUpload

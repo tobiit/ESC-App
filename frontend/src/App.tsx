@@ -9,8 +9,16 @@ import { AdminResultsPage } from "./pages/AdminResultsPage";
 
 type User = { id: number; role: "admin" | "participant"; username: string; displayName: string };
 
-const storedUserRaw = localStorage.getItem("esc_user");
-const storedUser: User | null = storedUserRaw ? JSON.parse(storedUserRaw) : null;
+const storedUser = (() => {
+  const storedUserRaw = localStorage.getItem("esc_user");
+  if (!storedUserRaw) return null;
+  try {
+    return JSON.parse(storedUserRaw) as User;
+  } catch {
+    localStorage.removeItem("esc_user");
+    return null;
+  }
+})();
 
 export function App() {
   const [user, setUser] = useState<User | null>(storedUser);

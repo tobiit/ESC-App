@@ -124,6 +124,25 @@ export const api = {
     request(`/admin/events/${eventId}/ratings/bulk`, { method: "POST", body: JSON.stringify({ ratings }) }),
   adminBulkUploadOfficialResults: (eventId: number, results: Array<{ country: string; rank: string }>) =>
     request(`/admin/events/${eventId}/officialresult/bulk`, { method: "POST", body: JSON.stringify({ results }) }),
+  adminPhotoExtractOfficialResults: (eventId: number, imageFile: File): Promise<{ results: Array<{ rank: string; country: string }>; count: number; model: string }> =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        try {
+          const imageBase64 = e.target?.result as string;
+          const mimeType = imageFile.type || "image/jpeg";
+          const data = await request(`/admin/events/${eventId}/officialresult/photo-extract`, {
+            method: "POST",
+            body: JSON.stringify({ imageBase64, mimeType })
+          });
+          resolve(data as { results: Array<{ rank: string; country: string }>; count: number; model: string });
+        } catch (err) {
+          reject(err);
+        }
+      };
+      reader.onerror = () => reject(new Error("Bilddatei konnte nicht gelesen werden"));
+      reader.readAsDataURL(imageFile);
+    }),
   // Soft-delete events
   adminSoftDeleteEvent: (eventId: number) =>
     request(`/admin/events/${eventId}/soft-delete`, { method: "POST" }),

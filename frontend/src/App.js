@@ -7,8 +7,18 @@ import { AdminLogin } from "./pages/AdminLogin";
 import { ParticipantPage } from "./pages/ParticipantPage";
 import { AdminPage } from "./pages/AdminPage";
 import { AdminResultsPage } from "./pages/AdminResultsPage";
-const storedUserRaw = localStorage.getItem("esc_user");
-const storedUser = storedUserRaw ? JSON.parse(storedUserRaw) : null;
+const storedUser = (() => {
+    const storedUserRaw = localStorage.getItem("esc_user");
+    if (!storedUserRaw)
+        return null;
+    try {
+        return JSON.parse(storedUserRaw);
+    }
+    catch {
+        localStorage.removeItem("esc_user");
+        return null;
+    }
+})();
 export function App() {
     const [user, setUser] = useState(storedUser);
     const handleLogout = () => {
