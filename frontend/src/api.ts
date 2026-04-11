@@ -4,6 +4,20 @@ export type AuthPayload = {
   user: { id: number; role: "admin" | "participant"; username: string; displayName: string };
 };
 
+export type AnthropicIntegrationPayload = {
+  apiKey: string;
+  model: string;
+  configured: boolean;
+  updatedAt?: string | null;
+  updatedByUserId?: number | null;
+};
+
+export type AnthropicModelPayload = {
+  id: string;
+  displayName: string;
+  createdAt?: string | null;
+};
+
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 let accessToken: string | null = localStorage.getItem("esc_access_token");
@@ -93,6 +107,12 @@ export const api = {
   adminResetPassword: (id: number, password: string) =>
     request(`/admin/participants/${id}/reset-password`, { method: "POST", body: JSON.stringify({ password }) }),
   adminDeleteParticipant: (id: number) => request(`/admin/participants/${id}`, { method: "DELETE" }),
+  adminAnthropicConfig: () => request("/admin/integrations/anthropic") as Promise<AnthropicIntegrationPayload>,
+  adminSaveAnthropicConfig: (payload: { apiKey: string; model?: string | null }) =>
+    request("/admin/integrations/anthropic", { method: "PUT", body: JSON.stringify(payload) }) as Promise<{ ok: boolean; configured: boolean; model: string | null }>,
+  adminDeleteAnthropicConfig: () => request("/admin/integrations/anthropic", { method: "DELETE" }) as Promise<{ ok: boolean }>,
+  adminAnthropicModels: () =>
+    request("/admin/integrations/anthropic/models") as Promise<{ models: AnthropicModelPayload[]; count: number }>,
   adminEvents: () => request("/admin/events"),
   adminCreateEvent: (payload: { name: string; year?: number; status: string; isActive: boolean }) =>
     request("/admin/events", { method: "POST", body: JSON.stringify(payload) }),

@@ -1,0 +1,9 @@
+CREATE TABLE IF NOT EXISTS app_integrations (
+  provider VARCHAR(50) PRIMARY KEY,
+  api_key TEXT NULL,
+  model VARCHAR(120) NULL,
+  updated_by_user_id BIGINT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_app_integrations_updated_by_user FOREIGN KEY (updated_by_user_id) REFERENCES users(id) ON DELETE SET NULL
+);

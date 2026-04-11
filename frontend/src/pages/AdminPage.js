@@ -12,6 +12,11 @@ export function AdminPage({ user, onLogout }) {
     const [submissionStatusByParticipant, setSubmissionStatusByParticipant] = useState({});
     const [activeEventForStatus, setActiveEventForStatus] = useState(null);
     const [showOnlyOpenParticipants, setShowOnlyOpenParticipants] = useState(false);
+    const [anthropicApiKey, setAnthropicApiKey] = useState("");
+    const [anthropicModel, setAnthropicModel] = useState("");
+    const [anthropicModels, setAnthropicModels] = useState([]);
+    const [anthropicLoading, setAnthropicLoading] = useState(false);
+    const [anthropicSaving, setAnthropicSaving] = useState(false);
     const [message, setMessage] = useState("");
     const [toastFading, setToastFading] = useState(false);
     const navigate = useNavigate();
@@ -39,6 +44,33 @@ export function AdminPage({ user, onLogout }) {
         }
         void load();
     }, [user, navigate]);
+    const loadAnthropicConfig = async () => {
+        setAnthropicLoading(true);
+        try {
+            const config = await api.adminAnthropicConfig();
+            const nextApiKey = config.apiKey || "";
+            const nextModel = config.model || "";
+            setAnthropicApiKey(nextApiKey);
+            setAnthropicModel(nextModel);
+            if (!nextApiKey) {
+                setAnthropicModels([]);
+                return;
+            }
+            const modelResponse = await api.adminAnthropicModels();
+            const availableModels = modelResponse.models || [];
+            setAnthropicModels(availableModels);
+            if (!nextModel && availableModels.length > 0) {
+                setAnthropicModel(availableModels[0].id);
+            }
+        }
+        catch (err) {
+            setAnthropicModels([]);
+            setMessage(`Fehler beim Laden der Anthropic-Konfiguration: ${err.message}`);
+        }
+        finally {
+            setAnthropicLoading(false);
+        }
+    };
     const load = async () => {
         try {
             const [eventRowsResponse, participantRowsResponse, pendingResponse] = await Promise.all([
@@ -55,6 +87,7 @@ export function AdminPage({ user, onLogout }) {
             setEventRows(normalizedEvents);
             setParticipantRows(normalizedParticipants);
             setPendingParticipants(pendingResponse);
+            await loadAnthropicConfig();
             const activeEvent = normalizedEvents.find((event) => Boolean(event.isActive) && !event.deletedAt);
             if (!activeEvent?.id) {
                 setSubmissionStatusByParticipant({});
@@ -106,6 +139,77 @@ export function AdminPage({ user, onLogout }) {
             clearTokens();
             onLogout();
             navigate("/verwaltung/login");
+        }
+    };
+    const saveAnthropicConfig = async () => {
+        const trimmedApiKey = anthropicApiKey.trim();
+        if (!trimmedApiKey) {
+            setMessage("Anthropic API-Key darf nicht leer sein.");
+            return;
+        }
+        setAnthropicSaving(true);
+        try {
+            await api.adminSaveAnthropicConfig({ apiKey: trimmedApiKey, model: anthropicModel || null });
+            const modelResponse = await api.adminAnthropicModels();
+            const availableModels = modelResponse.models || [];
+            setAnthropicModels(availableModels);
+            let nextModel = anthropicModel;
+            if (!nextModel || !availableModels.some((model) => model.id === nextModel)) {
+                nextModel = availableModels[0]?.id || "";
+                setAnthropicModel(nextModel);
+            }
+            if (nextModel) {
+                await api.adminSaveAnthropicConfig({ apiKey: trimmedApiKey, model: nextModel });
+            }
+            setAnthropicApiKey(trimmedApiKey);
+            setMessage("Anthropic-Konfiguration gespeichert");
+        }
+        catch (err) {
+            setMessage(`Fehler beim Speichern der Anthropic-Konfiguration: ${err.message}`);
+        }
+        finally {
+            setAnthropicSaving(false);
+        }
+    };
+    const refreshAnthropicModels = async () => {
+        if (!anthropicApiKey.trim()) {
+            setMessage("Zuerst einen Anthropic API-Key speichern.");
+            return;
+        }
+        setAnthropicLoading(true);
+        try {
+            const modelResponse = await api.adminAnthropicModels();
+            const availableModels = modelResponse.models || [];
+            setAnthropicModels(availableModels);
+            if (availableModels.length > 0 && !availableModels.some((model) => model.id === anthropicModel)) {
+                setAnthropicModel(availableModels[0].id);
+            }
+            setMessage(`${availableModels.length} Anthropic-Modelle geladen`);
+        }
+        catch (err) {
+            setMessage(`Fehler beim Laden der Anthropic-Modelle: ${err.message}`);
+        }
+        finally {
+            setAnthropicLoading(false);
+        }
+    };
+    const deleteAnthropicConfig = async () => {
+        if (!confirm("Anthropic-Konfiguration wirklich löschen?")) {
+            return;
+        }
+        setAnthropicSaving(true);
+        try {
+            await api.adminDeleteAnthropicConfig();
+            setAnthropicApiKey("");
+            setAnthropicModel("");
+            setAnthropicModels([]);
+            setMessage("Anthropic-Konfiguration gelöscht");
+        }
+        catch (err) {
+            setMessage(`Fehler beim Löschen der Anthropic-Konfiguration: ${err.message}`);
+        }
+        finally {
+            setAnthropicSaving(false);
         }
     };
     const updateParticipantRow = (rowIndex, key, value) => {
@@ -297,5 +401,5 @@ export function AdminPage({ user, onLogout }) {
                                         label: "Aktionen",
                                         render: (row) => row.id ? (_jsxs("div", { style: { display: "flex", gap: "6px", flexWrap: "wrap" }, children: [row.status === "finished" && (_jsx("button", { className: "btn btn-sm", onClick: () => navigate(`/verwaltung/ergebnis/${row.id}`), children: "Ergebnis" })), row.deletedAt ? (_jsx("button", { className: "btn btn-sm", onClick: () => void restoreEvent(row.id), children: "Wiederherstellen" })) : (_jsx("button", { className: "btn btn-danger btn-sm", onClick: () => void softDeleteEvent(row.id), children: "L\u00F6schen" }))] })) : ""
                                     }
-                                ], data: eventRows, onChange: updateEventRow, rowClassName: (row) => row.deletedAt ? "row--deleted" : "" }), _jsxs("div", { className: "admin-actions", children: [_jsx("button", { className: "btn", onClick: addEventRow, children: "Zeile hinzuf\u00FCgen" }), _jsx("button", { className: "btn btn-primary", onClick: () => void saveEvents(), children: "Events speichern" })] })] }), _jsx(EscImport, { onImported: load }), eventRows.length > 0 && _jsx(AdminEventManager, { events: eventRows, onSave: load }), message && _jsx("div", { className: `toast ${toastFading ? 'toast--fade-out' : ''}`, children: message })] }), _jsxs("footer", { style: { textAlign: "center", padding: "1.5rem 0 1rem", color: "var(--esc-color-blue-400, #888)", fontSize: "0.72rem", opacity: 0.7 }, children: ["ESC-App \u00B7 Commit", " ", _jsx("a", { href: `https://github.com/tobiit/ESC-App/commit/${__GIT_COMMIT__}`, target: "_blank", rel: "noreferrer", style: { color: "inherit", fontFamily: "monospace" }, children: __GIT_COMMIT__ })] })] }));
+                                ], data: eventRows, onChange: updateEventRow, rowClassName: (row) => row.deletedAt ? "row--deleted" : "" }), _jsxs("div", { className: "admin-actions", children: [_jsx("button", { className: "btn", onClick: addEventRow, children: "Zeile hinzuf\u00FCgen" }), _jsx("button", { className: "btn btn-primary", onClick: () => void saveEvents(), children: "Events speichern" })] })] }), _jsxs("div", { className: "card", children: [_jsx("h3", { children: "Anthropic KI-Konfiguration" }), _jsx("p", { style: { marginTop: "-0.4rem", marginBottom: "0.8rem", color: "#666", fontSize: "0.92rem" }, children: "API-Key und Modell werden global f\u00FCr die Fotoerkennung der offiziellen Finalrangliste verwendet." }), _jsxs("div", { style: { display: "grid", gap: "12px", maxWidth: "760px" }, children: [_jsxs("label", { style: { display: "grid", gap: "6px" }, children: [_jsx("span", { children: "Anthropic API-Key" }), _jsx("input", { type: "text", value: anthropicApiKey, onChange: (e) => setAnthropicApiKey(e.target.value), placeholder: "sk-ant-...", disabled: anthropicSaving })] }), _jsxs("label", { style: { display: "grid", gap: "6px" }, children: [_jsx("span", { children: "Claude-Modell" }), _jsxs("select", { value: anthropicModel, onChange: (e) => setAnthropicModel(e.target.value), disabled: anthropicSaving || anthropicLoading || anthropicModels.length === 0, children: [anthropicModels.length === 0 && _jsx("option", { value: "", children: "Keine Modelle geladen" }), anthropicModels.map((model) => (_jsxs("option", { value: model.id, children: [model.displayName, " (", model.id, ")"] }, model.id)))] })] }), _jsxs("div", { style: { display: "flex", gap: "10px", flexWrap: "wrap", alignItems: "center" }, children: [_jsx("button", { className: "btn btn-primary", onClick: () => void saveAnthropicConfig(), disabled: anthropicSaving, children: anthropicSaving ? "Speichert…" : "Konfiguration speichern" }), _jsx("button", { className: "btn", onClick: () => void refreshAnthropicModels(), disabled: anthropicLoading || anthropicSaving, children: anthropicLoading ? "Lädt Modelle…" : "Modelle neu laden" }), _jsx("button", { className: "btn btn-danger", onClick: () => void deleteAnthropicConfig(), disabled: anthropicSaving, children: "Konfiguration l\u00F6schen" })] }), _jsxs("span", { style: { color: "#666", fontSize: "0.88rem" }, children: ["Verf\u00FCgbare Modelle: ", _jsx("strong", { children: anthropicModels.length })] })] })] }), _jsx(EscImport, { onImported: load }), eventRows.length > 0 && _jsx(AdminEventManager, { events: eventRows, onSave: load }), message && _jsx("div", { className: `toast ${toastFading ? 'toast--fade-out' : ''}`, children: message })] }), _jsxs("footer", { style: { textAlign: "center", padding: "1.5rem 0 1rem", color: "var(--esc-color-blue-400, #888)", fontSize: "0.72rem", opacity: 0.7 }, children: ["ESC-App \u00B7 Commit", " ", _jsx("a", { href: `https://github.com/tobiit/ESC-App/commit/${__GIT_COMMIT__}`, target: "_blank", rel: "noreferrer", style: { color: "inherit", fontFamily: "monospace" }, children: __GIT_COMMIT__ })] })] }));
 }

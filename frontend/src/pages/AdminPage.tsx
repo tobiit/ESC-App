@@ -7,6 +7,7 @@ import { EscImport } from "../components/EscImport";
 
 type User = { id: number; role: "admin" | "participant"; username: string; displayName: string };
 type SubmissionStatus = { ratingSubmitted: boolean; predictionSubmitted: boolean };
+type AnthropicModelOption = { id: string; displayName: string; createdAt?: string | null };
 
 export function AdminPage({ user, onLogout }: { user: User; onLogout: () => void }) {
   const [eventRows, setEventRows] = useState<any[]>([]);
@@ -15,6 +16,11 @@ export function AdminPage({ user, onLogout }: { user: User; onLogout: () => void
   const [submissionStatusByParticipant, setSubmissionStatusByParticipant] = useState<Record<number, SubmissionStatus>>({});
   const [activeEventForStatus, setActiveEventForStatus] = useState<{ id: number; name: string } | null>(null);
   const [showOnlyOpenParticipants, setShowOnlyOpenParticipants] = useState(false);
+  const [anthropicApiKey, setAnthropicApiKey] = useState("");
+  const [anthropicModel, setAnthropicModel] = useState("");
+  const [anthropicModels, setAnthropicModels] = useState<AnthropicModelOption[]>([]);
+  const [anthropicLoading, setAnthropicLoading] = useState(false);
+  const [anthropicSaving, setAnthropicSaving] = useState(false);
 
   const [message, setMessage] = useState("");
   const [toastFading, setToastFading] = useState(false);
@@ -46,6 +52,35 @@ export function AdminPage({ user, onLogout }: { user: User; onLogout: () => void
     void load();
   }, [user, navigate]);
 
+  const loadAnthropicConfig = async () => {
+    setAnthropicLoading(true);
+    try {
+      const config = await api.adminAnthropicConfig();
+      const nextApiKey = config.apiKey || "";
+      const nextModel = config.model || "";
+      setAnthropicApiKey(nextApiKey);
+      setAnthropicModel(nextModel);
+
+      if (!nextApiKey) {
+        setAnthropicModels([]);
+        return;
+      }
+
+      const modelResponse = await api.adminAnthropicModels();
+      const availableModels = modelResponse.models || [];
+      setAnthropicModels(availableModels);
+
+      if (!nextModel && availableModels.length > 0) {
+        setAnthropicModel(availableModels[0].id);
+      }
+    } catch (err) {
+      setAnthropicModels([]);
+      setMessage(`Fehler beim Laden der Anthropic-Konfiguration: ${(err as Error).message}`);
+    } finally {
+      setAnthropicLoading(false);
+    }
+  };
+
   const load = async () => {
     try {
       const [eventRowsResponse, participantRowsResponse, pendingResponse] = await Promise.all([
@@ -64,6 +99,8 @@ export function AdminPage({ user, onLogout }: { user: User; onLogout: () => void
       setEventRows(normalizedEvents);
       setParticipantRows(normalizedParticipants);
       setPendingParticipants(pendingResponse);
+
+      await loadAnthropicConfig();
 
       const activeEvent = normalizedEvents.find((event: any) => Boolean(event.isActive) && !event.deletedAt);
       if (!activeEvent?.id) {
@@ -113,6 +150,81 @@ export function AdminPage({ user, onLogout }: { user: User; onLogout: () => void
 
   const handleLogout = async () => {
     try { await api.logout(); } finally { clearTokens(); onLogout(); navigate("/verwaltung/login"); }
+  };
+
+  const saveAnthropicConfig = async () => {
+    const trimmedApiKey = anthropicApiKey.trim();
+    if (!trimmedApiKey) {
+      setMessage("Anthropic API-Key darf nicht leer sein.");
+      return;
+    }
+
+    setAnthropicSaving(true);
+    try {
+      await api.adminSaveAnthropicConfig({ apiKey: trimmedApiKey, model: anthropicModel || null });
+
+      const modelResponse = await api.adminAnthropicModels();
+      const availableModels = modelResponse.models || [];
+      setAnthropicModels(availableModels);
+
+      let nextModel = anthropicModel;
+      if (!nextModel || !availableModels.some((model) => model.id === nextModel)) {
+        nextModel = availableModels[0]?.id || "";
+        setAnthropicModel(nextModel);
+      }
+
+      if (nextModel) {
+        await api.adminSaveAnthropicConfig({ apiKey: trimmedApiKey, model: nextModel });
+      }
+
+      setAnthropicApiKey(trimmedApiKey);
+      setMessage("Anthropic-Konfiguration gespeichert");
+    } catch (err) {
+      setMessage(`Fehler beim Speichern der Anthropic-Konfiguration: ${(err as Error).message}`);
+    } finally {
+      setAnthropicSaving(false);
+    }
+  };
+
+  const refreshAnthropicModels = async () => {
+    if (!anthropicApiKey.trim()) {
+      setMessage("Zuerst einen Anthropic API-Key speichern.");
+      return;
+    }
+
+    setAnthropicLoading(true);
+    try {
+      const modelResponse = await api.adminAnthropicModels();
+      const availableModels = modelResponse.models || [];
+      setAnthropicModels(availableModels);
+      if (availableModels.length > 0 && !availableModels.some((model) => model.id === anthropicModel)) {
+        setAnthropicModel(availableModels[0].id);
+      }
+      setMessage(`${availableModels.length} Anthropic-Modelle geladen`);
+    } catch (err) {
+      setMessage(`Fehler beim Laden der Anthropic-Modelle: ${(err as Error).message}`);
+    } finally {
+      setAnthropicLoading(false);
+    }
+  };
+
+  const deleteAnthropicConfig = async () => {
+    if (!confirm("Anthropic-Konfiguration wirklich löschen?")) {
+      return;
+    }
+
+    setAnthropicSaving(true);
+    try {
+      await api.adminDeleteAnthropicConfig();
+      setAnthropicApiKey("");
+      setAnthropicModel("");
+      setAnthropicModels([]);
+      setMessage("Anthropic-Konfiguration gelöscht");
+    } catch (err) {
+      setMessage(`Fehler beim Löschen der Anthropic-Konfiguration: ${(err as Error).message}`);
+    } finally {
+      setAnthropicSaving(false);
+    }
   };
 
   const updateParticipantRow = (rowIndex: number, key: string, value: any) => {
@@ -433,6 +545,57 @@ export function AdminPage({ user, onLogout }: { user: User; onLogout: () => void
             <button className="btn btn-primary" onClick={() => void saveEvents()}>Events speichern</button>
           </div>
 
+        </div>
+
+        <div className="card">
+          <h3>Anthropic KI-Konfiguration</h3>
+          <p style={{ marginTop: "-0.4rem", marginBottom: "0.8rem", color: "#666", fontSize: "0.92rem" }}>
+            API-Key und Modell werden global für die Fotoerkennung der offiziellen Finalrangliste verwendet.
+          </p>
+          <div style={{ display: "grid", gap: "12px", maxWidth: "760px" }}>
+            <label style={{ display: "grid", gap: "6px" }}>
+              <span>Anthropic API-Key</span>
+              <input
+                type="text"
+                value={anthropicApiKey}
+                onChange={(e) => setAnthropicApiKey(e.target.value)}
+                placeholder="sk-ant-..."
+                disabled={anthropicSaving}
+              />
+            </label>
+
+            <label style={{ display: "grid", gap: "6px" }}>
+              <span>Claude-Modell</span>
+              <select
+                value={anthropicModel}
+                onChange={(e) => setAnthropicModel(e.target.value)}
+                disabled={anthropicSaving || anthropicLoading || anthropicModels.length === 0}
+              >
+                {anthropicModels.length === 0 && <option value="">Keine Modelle geladen</option>}
+                {anthropicModels.map((model) => (
+                  <option key={model.id} value={model.id}>
+                    {model.displayName} ({model.id})
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", alignItems: "center" }}>
+              <button className="btn btn-primary" onClick={() => void saveAnthropicConfig()} disabled={anthropicSaving}>
+                {anthropicSaving ? "Speichert…" : "Konfiguration speichern"}
+              </button>
+              <button className="btn" onClick={() => void refreshAnthropicModels()} disabled={anthropicLoading || anthropicSaving}>
+                {anthropicLoading ? "Lädt Modelle…" : "Modelle neu laden"}
+              </button>
+              <button className="btn btn-danger" onClick={() => void deleteAnthropicConfig()} disabled={anthropicSaving}>
+                Konfiguration löschen
+              </button>
+            </div>
+
+            <span style={{ color: "#666", fontSize: "0.88rem" }}>
+              Verfügbare Modelle: <strong>{anthropicModels.length}</strong>
+            </span>
+          </div>
         </div>
 
         {/* ESC API Import */}

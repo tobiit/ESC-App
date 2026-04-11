@@ -66,11 +66,152 @@ export const adminRouter = express.Router();
 
 adminRouter.use(requireAuth, requireRole("admin"));
 
+const ANTHROPIC_API_VERSION = "2023-06-01";
+
+const getAnthropicIntegration = async () => {
+  const rows = await pool.query(
+    `SELECT provider, api_key AS apiKey, model, updated_by_user_id AS updatedByUserId, updated_at AS updatedAt
+     FROM app_integrations
+     WHERE provider = 'anthropic'
+     LIMIT 1`
+  );
+  return rows[0] || null;
+};
+
+const fetchAnthropicModels = async (apiKey) => {
+  const response = await fetch("https://api.anthropic.com/v1/models", {
+    method: "GET",
+    headers: {
+      "x-api-key": apiKey,
+      "anthropic-version": ANTHROPIC_API_VERSION,
+      "content-type": "application/json"
+    }
+  });
+
+  if (!response.ok) {
+    const errorBody = await response.json().catch(() => ({}));
+    throw new Error(errorBody?.error?.message || `Anthropic API Fehler: ${response.status}`);
+  }
+
+  const payload = await response.json();
+  const models = Array.isArray(payload?.data) ? payload.data : [];
+
+  return models
+    .map((model) => ({
+      id: String(model?.id || "").trim(),
+      displayName: String(model?.display_name || model?.id || "").trim(),
+      createdAt: model?.created_at || null
+    }))
+    .filter((model) => model.id)
+    .sort((left, right) => left.displayName.localeCompare(right.displayName, "de", { sensitivity: "base" }));
+};
+
 const eventSchema = z.object({
   name: z.string().min(2),
   year: z.number().int().optional(),
   status: z.enum(["draft", "open", "locked", "finished"]).optional(),
   isActive: z.boolean().optional()
+});
+
+adminRouter.get("/integrations/anthropic", async (_req, res, next) => {
+  try {
+    const integration = await getAnthropicIntegration();
+    res.json({
+      apiKey: integration?.apiKey || "",
+      model: integration?.model || "",
+      configured: Boolean(integration?.apiKey),
+      updatedAt: integration?.updatedAt || null,
+      updatedByUserId: integration?.updatedByUserId || null
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+adminRouter.put("/integrations/anthropic", async (req, res, next) => {
+  try {
+    const schema = z.object({
+      apiKey: z.string().trim().min(1),
+      model: z.string().trim().min(1).nullable().optional()
+    });
+    const parsed = schema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ message: "Ungültige Nutzdaten: apiKey erwartet" });
+
+    const previous = await getAnthropicIntegration();
+    const apiKey = parsed.data.apiKey.trim();
+    const model = typeof parsed.data.model === "string" ? parsed.data.model.trim() : null;
+
+    await pool.query(
+      `INSERT INTO app_integrations (provider, api_key, model, updated_by_user_id)
+       VALUES ('anthropic', ?, ?, ?)
+       ON DUPLICATE KEY UPDATE
+         api_key = VALUES(api_key),
+         model = VALUES(model),
+         updated_by_user_id = VALUES(updated_by_user_id),
+         updated_at = CURRENT_TIMESTAMP`,
+      [apiKey, model, req.user.id]
+    );
+
+    await writeAuditLog({
+      actorUserId: req.user.id,
+      actionType: "anthropic_config_update",
+      entityType: "integration",
+      entityId: "anthropic",
+      before: {
+        configured: Boolean(previous?.apiKey),
+        model: previous?.model || null
+      },
+      after: {
+        configured: true,
+        model
+      }
+    });
+
+    res.json({ ok: true, configured: true, model });
+  } catch (error) {
+    next(error);
+  }
+});
+
+adminRouter.delete("/integrations/anthropic", async (req, res, next) => {
+  try {
+    const previous = await getAnthropicIntegration();
+    await pool.query("DELETE FROM app_integrations WHERE provider = 'anthropic'");
+
+    await writeAuditLog({
+      actorUserId: req.user.id,
+      actionType: "anthropic_config_delete",
+      entityType: "integration",
+      entityId: "anthropic",
+      before: {
+        configured: Boolean(previous?.apiKey),
+        model: previous?.model || null
+      },
+      after: {
+        configured: false,
+        model: null
+      }
+    });
+
+    res.json({ ok: true });
+  } catch (error) {
+    next(error);
+  }
+});
+
+adminRouter.get("/integrations/anthropic/models", async (_req, res, next) => {
+  try {
+    const integration = await getAnthropicIntegration();
+    const apiKey = String(integration?.apiKey || "").trim();
+    if (!apiKey) {
+      return res.status(503).json({ message: "Anthropic API-Key ist nicht konfiguriert" });
+    }
+
+    const models = await fetchAnthropicModels(apiKey);
+    res.json({ models, count: models.length });
+  } catch (error) {
+    next(error);
+  }
 });
 
 adminRouter.get("/participants", async (_req, res, next) => {
@@ -392,10 +533,12 @@ adminRouter.post("/events/:id/officialresult/photo-extract", async (req, res, ne
     const parsed = schema.safeParse(req.body);
     if (!parsed.success) return res.status(400).json({ message: "Ungültige Nutzdaten: imageBase64 und mimeType erwartet" });
 
-    const apiKey = process.env.ANTHROPIC_API_KEY;
-    if (!apiKey) return res.status(503).json({ message: "ANTHROPIC_API_KEY nicht konfiguriert" });
-
-    const model = process.env.ANTHROPIC_MODEL || "claude-sonnet-4-5";
+    const integration = await getAnthropicIntegration();
+    const apiKey = String(integration?.apiKey || "").trim();
+    const model = String(integration?.model || "").trim();
+    if (!apiKey || !model) {
+      return res.status(503).json({ message: "Anthropic-Konfiguration fehlt. API-Key und Modell im Verwaltungsbereich hinterlegen." });
+    }
 
     // Base64-Präfix (data:image/jpeg;base64,...) entfernen, falls vorhanden
     const rawBase64 = parsed.data.imageBase64.replace(/^data:[^;]+;base64,/, "");
@@ -404,7 +547,7 @@ adminRouter.post("/events/:id/officialresult/photo-extract", async (req, res, ne
       method: "POST",
       headers: {
         "x-api-key": apiKey,
-        "anthropic-version": "2023-06-01",
+        "anthropic-version": ANTHROPIC_API_VERSION,
         "content-type": "application/json"
       },
       body: JSON.stringify({
