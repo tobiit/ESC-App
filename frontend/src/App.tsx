@@ -6,6 +6,7 @@ import { AdminLogin } from "./pages/AdminLogin";
 import { ParticipantPage } from "./pages/ParticipantPage";
 import { AdminPage } from "./pages/AdminPage";
 import { AdminResultsPage } from "./pages/AdminResultsPage";
+import { PublicLivePage } from "./pages/PublicLivePage";
 
 type User = { id: number; role: "admin" | "participant"; username: string; displayName: string };
 
@@ -42,6 +43,7 @@ export function App() {
         />
         <Route path="/login" element={<ParticipantLogin onLogin={setUser} />} />
         <Route path="/registrieren" element={<ParticipantRegister />} />
+        <Route path="/live" element={<PublicLivePage />} />
 
         {/* Admin-Bereich */}
         <Route

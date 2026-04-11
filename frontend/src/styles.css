@@ -95,6 +95,67 @@ textarea {
   gap: 16px;
 }
 
+.public-live-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+}
+
+.public-live-hero h1 {
+  margin: 0 0 6px;
+}
+
+.public-live-hero__subtitle {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--core-color-blue-900, #003781);
+}
+
+.public-live-hero__meta {
+  margin: 8px 0 0;
+  color: var(--core-color-blue-700, #5371a4);
+}
+
+.public-live-table__flag {
+  font-size: 1.35rem;
+  text-align: center;
+}
+
+.public-live-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.public-live-status__dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.public-live-status--done {
+  color: #156f3d;
+  background: #dff5e7;
+}
+
+.public-live-status--open {
+  color: #9a4d00;
+  background: #ffe8d1;
+}
+
+@media (max-width: 900px) {
+  .public-live-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* ── Card ── */
 
 .card {

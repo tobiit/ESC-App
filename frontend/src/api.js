@@ -54,6 +54,7 @@ export const api = {
         method: "POST",
         body: JSON.stringify({ refreshToken })
     }),
+    getPublicLiveDashboard: () => request("/events/public/live"),
     getActiveEvent: async () => {
         try {
             return await request("/events/active");

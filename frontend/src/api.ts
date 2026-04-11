@@ -18,6 +18,30 @@ export type AnthropicModelPayload = {
   createdAt?: string | null;
 };
 
+export type PublicLiveParticipantPayload = {
+  participantId: number;
+  displayName: string;
+  ratingSubmitted: boolean;
+  predictionSubmitted: boolean;
+};
+
+export type PublicLiveRankingPayload = {
+  entryId: number;
+  rank: number;
+  countryCode: string;
+  artistName: string;
+  songTitle: string;
+  votes: number;
+  points: number;
+};
+
+export type PublicLiveDashboardPayload = {
+  event: { id: number; name: string; year?: number; status: string; isActive: boolean };
+  participants: PublicLiveParticipantPayload[];
+  localRanking: PublicLiveRankingPayload[];
+  updatedAt: string;
+};
+
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 let accessToken: string | null = localStorage.getItem("esc_access_token");
@@ -82,6 +106,7 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ refreshToken })
     }),
+  getPublicLiveDashboard: () => request("/events/public/live") as Promise<PublicLiveDashboardPayload>,
   getActiveEvent: async () => {
     try { return await request("/events/active"); }
     catch { return null; }
