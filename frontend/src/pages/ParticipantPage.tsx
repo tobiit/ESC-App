@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api, clearTokens } from "../api";
 import { getCountryNameDe } from "../lib/countries";
@@ -37,11 +37,14 @@ export function ParticipantPage({ user, onLogout }: { user: User; onLogout: () =
   const [draggedEntryId, setDraggedEntryId] = useState<number | null>(null);
   const [dropIndicator, setDropIndicator] = useState<{ entryId: number; position: DropIndicatorPosition } | null>(null);
   const [rankInputs, setRankInputs] = useState<Record<number, string>>({});
+  const [predictionOrderLocked, setPredictionOrderLocked] = useState(false);
+  const [predictionRankErrors, setPredictionRankErrors] = useState<Record<number, string>>({});
   const [expandedLeaderboardA, setExpandedLeaderboardA] = useState(false);
   const [expandedLeaderboardB, setExpandedLeaderboardB] = useState(false);
   const [tutorialOpen, setTutorialOpen] = useState(false);
   const [tutorialIndex, setTutorialIndex] = useState(0);
   const [submitConfirmation, setSubmitConfirmation] = useState<null | "rating" | "prediction">(null);
+  const rankInputRefs = useRef<Record<number, HTMLInputElement | null>>({});
   const navigate = useNavigate();
 
   const tutorialSteps: TutorialStep[] = [
@@ -71,7 +74,7 @@ export function ParticipantPage({ user, onLogout }: { user: User; onLogout: () =
     },
     {
       title: "Tippliste sortieren",
-      body: "Ordnen Sie Länder per Drag-and-Drop, Pfeiltasten oder direkter Rang-Eingabe. Die Rangnummern passen sich sofort an.",
+      body: "Ordnen Sie Länder per Drag-and-Drop oder Pfeiltasten. Mit 'Startreihenfolge fixieren' geben Sie Ränge ein und sortieren danach per Button.",
       tab: "prediction",
       target: "prediction-table"
     },
@@ -180,7 +183,9 @@ export function ParticipantPage({ user, onLogout }: { user: User; onLogout: () =
     for (const entryId of prediction) {
       const rank = Number.parseInt((rankInputs[entryId] ?? "").trim(), 10);
       if (Number.isNaN(rank)) continue;
-      if (rank < 1 || rank > entries.length) continue;
+      if (rank < 1 || rank > entries.length) {
+        throw new Error(`Ungültiger Rang für ${getCountryNameDe(entries.find((e) => e.id === entryId)?.countryCode ?? "") ?? "Eintrag"}.`);
+      }
       if (usedRanks.has(rank)) {
         throw new Error(`Rang ${rank} ist doppelt vergeben. Bitte korrigieren und erneut speichern.`);
       }
@@ -254,6 +259,7 @@ export function ParticipantPage({ user, onLogout }: { user: User; onLogout: () =
     [next[index], next[target]] = [next[target], next[index]];
     setPrediction(next);
     setRankInputs(buildSequentialRankInputs(next));
+    setPredictionRankErrors({});
   };
 
   const moveToDropPosition = (fromIndex: number, targetIndex: number, position: DropIndicatorPosition) => {
@@ -269,6 +275,7 @@ export function ParticipantPage({ user, onLogout }: { user: User; onLogout: () =
     next.splice(insertionIndex, 0, moved);
     setPrediction(next);
     setRankInputs(buildSequentialRankInputs(next));
+    setPredictionRankErrors({});
   };
 
   useEffect(() => {
@@ -345,22 +352,85 @@ export function ParticipantPage({ user, onLogout }: { user: User; onLogout: () =
     };
   }, [tutorialOpen, tutorialIndex, tab, tutorialStep.target, results, entries.length, prediction.length]);
 
-  const commitRankChange = (entryId: number) => {
-    const fromIndex = prediction.findIndex((id) => id === entryId);
-    if (fromIndex < 0) return;
+  const validatePredictionRankInputs = (
+    source: Record<number, string>,
+    options?: { requireComplete?: boolean; focusFirstError?: boolean }
+  ) => {
+    const errors: Record<number, string> = {};
+    const firstByRank = new Map<number, number>();
+    let firstInvalidId: number | null = null;
 
-    const typedRank = Number.parseInt((rankInputs[entryId] ?? "").trim(), 10);
-    if (Number.isNaN(typedRank)) return;
+    for (const entryId of prediction) {
+      const raw = (source[entryId] ?? "").trim();
+      if (!raw) {
+        if (options?.requireComplete) {
+          errors[entryId] = "Bitte Rang eingeben.";
+          if (firstInvalidId === null) firstInvalidId = entryId;
+        }
+        continue;
+      }
 
-    const clampedRank = Math.min(prediction.length, Math.max(1, typedRank));
-    const targetIndex = clampedRank - 1;
-    if (targetIndex === fromIndex) return;
+      const rank = Number.parseInt(raw, 10);
+      if (Number.isNaN(rank) || rank < 1 || rank > prediction.length) {
+        errors[entryId] = `Erlaubt sind nur Werte von 1 bis ${prediction.length}.`;
+        if (firstInvalidId === null) firstInvalidId = entryId;
+        continue;
+      }
 
-    if (targetIndex > fromIndex) {
-      moveToDropPosition(fromIndex, targetIndex, "after");
+      const existingEntryId = firstByRank.get(rank);
+      if (existingEntryId !== undefined && existingEntryId !== entryId) {
+        errors[entryId] = `Rang ${rank} ist doppelt vergeben.`;
+        if (!errors[existingEntryId]) {
+          errors[existingEntryId] = `Rang ${rank} ist doppelt vergeben.`;
+        }
+        if (firstInvalidId === null) firstInvalidId = existingEntryId;
+        continue;
+      }
+
+      firstByRank.set(rank, entryId);
+    }
+
+    setPredictionRankErrors(errors);
+
+    if (options?.focusFirstError && firstInvalidId !== null) {
+      const element = rankInputRefs.current[firstInvalidId];
+      if (element) {
+        element.focus();
+        element.select();
+      }
+    }
+
+    return { valid: Object.keys(errors).length === 0, errors };
+  };
+
+  const handlePredictionSortModeToggle = () => {
+    if (predictionSubmitted || event?.status !== "open") return;
+
+    if (!predictionOrderLocked) {
+      setPredictionOrderLocked(true);
+      setPredictionRankErrors({});
       return;
     }
-    moveToDropPosition(fromIndex, targetIndex, "before");
+
+    const validation = validatePredictionRankInputs(rankInputs, {
+      requireComplete: true,
+      focusFirstError: true
+    });
+    if (!validation.valid) {
+      setMessage("Bitte korrigieren Sie die markierten Rangfelder.");
+      return;
+    }
+
+    const sorted = [...prediction].sort((leftId, rightId) => {
+      const leftRank = Number.parseInt((rankInputs[leftId] ?? "").trim(), 10);
+      const rightRank = Number.parseInt((rankInputs[rightId] ?? "").trim(), 10);
+      return leftRank - rightRank;
+    });
+
+    setPrediction(sorted);
+    setRankInputs(buildSequentialRankInputs(sorted));
+    setPredictionOrderLocked(false);
+    setPredictionRankErrors({});
   };
 
   const truncateSongTitle = (songTitle?: string) => {
@@ -463,7 +533,14 @@ export function ParticipantPage({ user, onLogout }: { user: User; onLogout: () =
 
           {tab === "prediction" && (
             <div className="card">
-              <h3>Prediction Rangliste</h3>
+              <h3>Ihr Gewinntipp auf die Rangliste</h3>
+              {!predictionSubmitted && event.status === "open" && (
+                <div className="actions--prediction-sort-mode">
+                  <button className="btn btn-primary" onClick={handlePredictionSortModeToggle}>
+                    {predictionOrderLocked ? "Tabelle nach Rangeingabe neu sortieren" : "Startreihenfolge fixieren"}
+                  </button>
+                </div>
+              )}
               <table className={`data-table prediction-table${tutorialHighlightClass("prediction-table")}`}>
                 <thead>
                   <tr>
@@ -476,7 +553,8 @@ export function ParticipantPage({ user, onLogout }: { user: User; onLogout: () =
                 <tbody>
                   {prediction.map((entryId, index) => {
                     const entry = entries.find((item) => item.id === entryId);
-                    const dragEnabled = !predictionSubmitted && event.status === "open";
+                    const dragEnabled = !predictionSubmitted && event.status === "open" && !predictionOrderLocked;
+                    const rankInputEnabled = !predictionSubmitted && event.status === "open" && predictionOrderLocked;
                     return (
                       <tr
                         key={entryId}
@@ -516,29 +594,31 @@ export function ParticipantPage({ user, onLogout }: { user: User; onLogout: () =
                       >
                         <td className="prediction-table__rank-cell">
                           <input
-                            className="prediction-table__rank-input"
+                            ref={(element) => {
+                              rankInputRefs.current[entryId] = element;
+                            }}
+                            className={`prediction-table__rank-input${predictionRankErrors[entryId] ? " prediction-table__rank-input--error" : ""}`}
                             type="number"
                             min={1}
                             max={prediction.length}
                             inputMode="numeric"
-                            disabled={!dragEnabled}
+                            disabled={!rankInputEnabled}
                             value={rankInputs[entryId] ?? String(index + 1)}
                             onChange={(inputEvent) => {
                               const nextValue = inputEvent.target.value;
-                              setRankInputs((previous) => ({ ...previous, [entryId]: nextValue }));
-                            }}
-                            onBlur={() => {
-                              commitRankChange(entryId);
-                            }}
-                            onKeyDown={(keyboardEvent) => {
-                              if (keyboardEvent.key === "Enter") {
-                                keyboardEvent.preventDefault();
-                                commitRankChange(entryId);
-                                keyboardEvent.currentTarget.blur();
+                              if (nextValue !== "") {
+                                const parsed = Number.parseInt(nextValue, 10);
+                                if (Number.isNaN(parsed) || parsed < 1 || parsed > prediction.length) {
+                                  setPredictionRankErrors((previous) => ({
+                                    ...previous,
+                                    [entryId]: `Erlaubt sind nur Werte von 1 bis ${prediction.length}.`
+                                  }));
+                                  return;
+                                }
                               }
-                              if (keyboardEvent.key === "Tab") {
-                                commitRankChange(entryId);
-                              }
+                              const nextInputs = { ...rankInputs, [entryId]: nextValue };
+                              setRankInputs(nextInputs);
+                              validatePredictionRankInputs(nextInputs);
                             }}
                           />
                         </td>
@@ -546,8 +626,8 @@ export function ParticipantPage({ user, onLogout }: { user: User; onLogout: () =
                         <td className="prediction-table__song-cell" title={entry?.songTitle ?? ""}>{truncateSongTitle(entry?.songTitle)}</td>
                         <td>
                           <div className="inline">
-                            <button className="btn btn-icon" disabled={!dragEnabled} onClick={() => move(index, -1)}>↑</button>
-                            <button className="btn btn-icon" disabled={!dragEnabled} onClick={() => move(index, 1)}>↓</button>
+                            <button className="btn btn-icon prediction-table__move-btn" disabled={!dragEnabled} onClick={() => move(index, -1)}>↑</button>
+                            <button className="btn btn-icon prediction-table__move-btn" disabled={!dragEnabled} onClick={() => move(index, 1)}>↓</button>
                           </div>
                         </td>
                       </tr>

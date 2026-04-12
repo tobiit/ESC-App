@@ -791,6 +791,36 @@ textarea {
   cursor: not-allowed;
 }
 
+.prediction-table__rank-input--error {
+  border-color: var(--core-color-red-700, #DD0A42);
+  background: rgba(221, 10, 66, 0.08);
+  color: var(--core-color-red-900, #7C0007);
+  box-shadow: 0 0 0 2px rgba(221, 10, 66, 0.18);
+}
+
+.prediction-table__move-btn {
+  border-color: var(--core-color-blue-700, #5371a4);
+  color: var(--core-color-blue-900, #003781);
+  background: var(--core-color-blue-100, #f0f7fc);
+}
+
+.prediction-table__move-btn:hover:not(:disabled) {
+  border-color: var(--core-color-blue-900, #003781);
+  color: var(--core-color-blue-900, #003781);
+  background: #d9e8f7;
+}
+
+.prediction-table__move-btn:disabled {
+  border-color: var(--core-color-gray-400, #b7bcc1);
+  color: var(--core-color-gray-500, #959ba3);
+  background: var(--core-color-gray-100, #f3f4f5);
+}
+
+.actions--prediction-sort-mode {
+  margin-top: 12px;
+  margin-bottom: 12px;
+}
+
 .prediction-table__row--movable {
   cursor: grab;
 }

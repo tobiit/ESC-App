@@ -1,5 +1,5 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api, clearTokens } from "../api";
 import { getCountryNameDe } from "../lib/countries";
@@ -18,11 +18,14 @@ export function ParticipantPage({ user, onLogout }) {
     const [draggedEntryId, setDraggedEntryId] = useState(null);
     const [dropIndicator, setDropIndicator] = useState(null);
     const [rankInputs, setRankInputs] = useState({});
+    const [predictionOrderLocked, setPredictionOrderLocked] = useState(false);
+    const [predictionRankErrors, setPredictionRankErrors] = useState({});
     const [expandedLeaderboardA, setExpandedLeaderboardA] = useState(false);
     const [expandedLeaderboardB, setExpandedLeaderboardB] = useState(false);
     const [tutorialOpen, setTutorialOpen] = useState(false);
     const [tutorialIndex, setTutorialIndex] = useState(0);
     const [submitConfirmation, setSubmitConfirmation] = useState(null);
+    const rankInputRefs = useRef({});
     const navigate = useNavigate();
     const tutorialSteps = [
         {
@@ -51,7 +54,7 @@ export function ParticipantPage({ user, onLogout }) {
         },
         {
             title: "Tippliste sortieren",
-            body: "Ordnen Sie Länder per Drag-and-Drop, Pfeiltasten oder direkter Rang-Eingabe. Die Rangnummern passen sich sofort an.",
+            body: "Ordnen Sie Länder per Drag-and-Drop oder Pfeiltasten. Mit 'Startreihenfolge fixieren' geben Sie Ränge ein und sortieren danach per Button.",
             tab: "prediction",
             target: "prediction-table"
         },
@@ -160,8 +163,9 @@ export function ParticipantPage({ user, onLogout }) {
             const rank = Number.parseInt((rankInputs[entryId] ?? "").trim(), 10);
             if (Number.isNaN(rank))
                 continue;
-            if (rank < 1 || rank > entries.length)
-                continue;
+            if (rank < 1 || rank > entries.length) {
+                throw new Error(`Ungültiger Rang für ${getCountryNameDe(entries.find((e) => e.id === entryId)?.countryCode ?? "") ?? "Eintrag"}.`);
+            }
             if (usedRanks.has(rank)) {
                 throw new Error(`Rang ${rank} ist doppelt vergeben. Bitte korrigieren und erneut speichern.`);
             }
@@ -237,6 +241,7 @@ export function ParticipantPage({ user, onLogout }) {
         [next[index], next[target]] = [next[target], next[index]];
         setPrediction(next);
         setRankInputs(buildSequentialRankInputs(next));
+        setPredictionRankErrors({});
     };
     const moveToDropPosition = (fromIndex, targetIndex, position) => {
         if (fromIndex < 0 || targetIndex < 0)
@@ -253,6 +258,7 @@ export function ParticipantPage({ user, onLogout }) {
         next.splice(insertionIndex, 0, moved);
         setPrediction(next);
         setRankInputs(buildSequentialRankInputs(next));
+        setPredictionRankErrors({});
     };
     useEffect(() => {
         setRankInputs((previous) => {
@@ -315,22 +321,74 @@ export function ParticipantPage({ user, onLogout }) {
             cancelAnimationFrame(frame);
         };
     }, [tutorialOpen, tutorialIndex, tab, tutorialStep.target, results, entries.length, prediction.length]);
-    const commitRankChange = (entryId) => {
-        const fromIndex = prediction.findIndex((id) => id === entryId);
-        if (fromIndex < 0)
+    const validatePredictionRankInputs = (source, options) => {
+        const errors = {};
+        const firstByRank = new Map();
+        let firstInvalidId = null;
+        for (const entryId of prediction) {
+            const raw = (source[entryId] ?? "").trim();
+            if (!raw) {
+                if (options?.requireComplete) {
+                    errors[entryId] = "Bitte Rang eingeben.";
+                    if (firstInvalidId === null)
+                        firstInvalidId = entryId;
+                }
+                continue;
+            }
+            const rank = Number.parseInt(raw, 10);
+            if (Number.isNaN(rank) || rank < 1 || rank > prediction.length) {
+                errors[entryId] = `Erlaubt sind nur Werte von 1 bis ${prediction.length}.`;
+                if (firstInvalidId === null)
+                    firstInvalidId = entryId;
+                continue;
+            }
+            const existingEntryId = firstByRank.get(rank);
+            if (existingEntryId !== undefined && existingEntryId !== entryId) {
+                errors[entryId] = `Rang ${rank} ist doppelt vergeben.`;
+                if (!errors[existingEntryId]) {
+                    errors[existingEntryId] = `Rang ${rank} ist doppelt vergeben.`;
+                }
+                if (firstInvalidId === null)
+                    firstInvalidId = existingEntryId;
+                continue;
+            }
+            firstByRank.set(rank, entryId);
+        }
+        setPredictionRankErrors(errors);
+        if (options?.focusFirstError && firstInvalidId !== null) {
+            const element = rankInputRefs.current[firstInvalidId];
+            if (element) {
+                element.focus();
+                element.select();
+            }
+        }
+        return { valid: Object.keys(errors).length === 0, errors };
+    };
+    const handlePredictionSortModeToggle = () => {
+        if (predictionSubmitted || event?.status !== "open")
             return;
-        const typedRank = Number.parseInt((rankInputs[entryId] ?? "").trim(), 10);
-        if (Number.isNaN(typedRank))
-            return;
-        const clampedRank = Math.min(prediction.length, Math.max(1, typedRank));
-        const targetIndex = clampedRank - 1;
-        if (targetIndex === fromIndex)
-            return;
-        if (targetIndex > fromIndex) {
-            moveToDropPosition(fromIndex, targetIndex, "after");
+        if (!predictionOrderLocked) {
+            setPredictionOrderLocked(true);
+            setPredictionRankErrors({});
             return;
         }
-        moveToDropPosition(fromIndex, targetIndex, "before");
+        const validation = validatePredictionRankInputs(rankInputs, {
+            requireComplete: true,
+            focusFirstError: true
+        });
+        if (!validation.valid) {
+            setMessage("Bitte korrigieren Sie die markierten Rangfelder.");
+            return;
+        }
+        const sorted = [...prediction].sort((leftId, rightId) => {
+            const leftRank = Number.parseInt((rankInputs[leftId] ?? "").trim(), 10);
+            const rightRank = Number.parseInt((rankInputs[rightId] ?? "").trim(), 10);
+            return leftRank - rightRank;
+        });
+        setPrediction(sorted);
+        setRankInputs(buildSequentialRankInputs(sorted));
+        setPredictionOrderLocked(false);
+        setPredictionRankErrors({});
     };
     const truncateSongTitle = (songTitle) => {
         if (!songTitle)
@@ -353,9 +411,10 @@ export function ParticipantPage({ user, onLogout }) {
                                                                 }
                                                                 return next;
                                                             });
-                                                        }, children: [_jsx("option", { value: "", children: "0" }), ESC_POINTS.map((point) => (_jsx("option", { value: point, disabled: selectedPoints.has(point) && ratingMap[entry.id] !== point, children: point }, point)))] }) })] }, entry.id))) })] }), !ratingSubmitted && event.status === "open" && (_jsxs("div", { className: `actions${tutorialHighlightClass("rating-actions")}`, children: [_jsx("button", { className: "btn", onClick: () => void saveRating(), children: "Entwurf speichern" }), _jsx("button", { className: "btn btn-primary", onClick: () => setSubmitConfirmation("rating"), children: "Einreichen" })] })), !ratingSubmitted && event.status === "open" && (_jsx("p", { className: "hint", children: "Entwurf darf unvollst\u00E4ndig sein. F\u00FCr Einreichen m\u00FCssen alle 10 Punkte vergeben sein." })), ratingSubmitted && _jsx("p", { className: "hint", children: "Rating ist eingereicht und gesperrt." })] })), tab === "prediction" && (_jsxs("div", { className: "card", children: [_jsx("h3", { children: "Prediction Rangliste" }), _jsxs("table", { className: `data-table prediction-table${tutorialHighlightClass("prediction-table")}`, children: [_jsx("thead", { children: _jsxs("tr", { children: [_jsx("th", { className: "prediction-table__rank-header", children: "Rang" }), _jsx("th", { className: "prediction-table__country-header", children: "Land" }), _jsx("th", { className: "prediction-table__song-header", children: "Song" }), _jsx("th", { children: "Aktion" })] }) }), _jsx("tbody", { children: prediction.map((entryId, index) => {
+                                                        }, children: [_jsx("option", { value: "", children: "0" }), ESC_POINTS.map((point) => (_jsx("option", { value: point, disabled: selectedPoints.has(point) && ratingMap[entry.id] !== point, children: point }, point)))] }) })] }, entry.id))) })] }), !ratingSubmitted && event.status === "open" && (_jsxs("div", { className: `actions${tutorialHighlightClass("rating-actions")}`, children: [_jsx("button", { className: "btn", onClick: () => void saveRating(), children: "Entwurf speichern" }), _jsx("button", { className: "btn btn-primary", onClick: () => setSubmitConfirmation("rating"), children: "Einreichen" })] })), !ratingSubmitted && event.status === "open" && (_jsx("p", { className: "hint", children: "Entwurf darf unvollst\u00E4ndig sein. F\u00FCr Einreichen m\u00FCssen alle 10 Punkte vergeben sein." })), ratingSubmitted && _jsx("p", { className: "hint", children: "Rating ist eingereicht und gesperrt." })] })), tab === "prediction" && (_jsxs("div", { className: "card", children: [_jsx("h3", { children: "Ihr Gewinntipp auf die Rangliste" }), !predictionSubmitted && event.status === "open" && (_jsx("div", { className: "actions--prediction-sort-mode", children: _jsx("button", { className: "btn btn-primary", onClick: handlePredictionSortModeToggle, children: predictionOrderLocked ? "Tabelle nach Rangeingabe neu sortieren" : "Startreihenfolge fixieren" }) })), _jsxs("table", { className: `data-table prediction-table${tutorialHighlightClass("prediction-table")}`, children: [_jsx("thead", { children: _jsxs("tr", { children: [_jsx("th", { className: "prediction-table__rank-header", children: "Rang" }), _jsx("th", { className: "prediction-table__country-header", children: "Land" }), _jsx("th", { className: "prediction-table__song-header", children: "Song" }), _jsx("th", { children: "Aktion" })] }) }), _jsx("tbody", { children: prediction.map((entryId, index) => {
                                             const entry = entries.find((item) => item.id === entryId);
-                                            const dragEnabled = !predictionSubmitted && event.status === "open";
+                                            const dragEnabled = !predictionSubmitted && event.status === "open" && !predictionOrderLocked;
+                                            const rankInputEnabled = !predictionSubmitted && event.status === "open" && predictionOrderLocked;
                                             return (_jsxs("tr", { className: `prediction-table__row${dragEnabled ? " prediction-table__row--movable" : ""}${draggedEntryId === entryId ? " prediction-table__row--dragging" : ""}${dropIndicator?.entryId === entryId && dropIndicator.position === "before" ? " prediction-table__row--drop-before" : ""}${dropIndicator?.entryId === entryId && dropIndicator.position === "after" ? " prediction-table__row--drop-after" : ""}`, draggable: dragEnabled, onDragStart: () => {
                                                     setDraggedEntryId(entryId);
                                                     setDropIndicator(null);
@@ -385,21 +444,24 @@ export function ParticipantPage({ user, onLogout }) {
                                                     moveToDropPosition(fromIndex, index, dropIndicator.position);
                                                     setDraggedEntryId(null);
                                                     setDropIndicator(null);
-                                                }, children: [_jsx("td", { className: "prediction-table__rank-cell", children: _jsx("input", { className: "prediction-table__rank-input", type: "number", min: 1, max: prediction.length, inputMode: "numeric", disabled: !dragEnabled, value: rankInputs[entryId] ?? String(index + 1), onChange: (inputEvent) => {
+                                                }, children: [_jsx("td", { className: "prediction-table__rank-cell", children: _jsx("input", { ref: (element) => {
+                                                                rankInputRefs.current[entryId] = element;
+                                                            }, className: `prediction-table__rank-input${predictionRankErrors[entryId] ? " prediction-table__rank-input--error" : ""}`, type: "number", min: 1, max: prediction.length, inputMode: "numeric", disabled: !rankInputEnabled, value: rankInputs[entryId] ?? String(index + 1), onChange: (inputEvent) => {
                                                                 const nextValue = inputEvent.target.value;
-                                                                setRankInputs((previous) => ({ ...previous, [entryId]: nextValue }));
-                                                            }, onBlur: () => {
-                                                                commitRankChange(entryId);
-                                                            }, onKeyDown: (keyboardEvent) => {
-                                                                if (keyboardEvent.key === "Enter") {
-                                                                    keyboardEvent.preventDefault();
-                                                                    commitRankChange(entryId);
-                                                                    keyboardEvent.currentTarget.blur();
+                                                                if (nextValue !== "") {
+                                                                    const parsed = Number.parseInt(nextValue, 10);
+                                                                    if (Number.isNaN(parsed) || parsed < 1 || parsed > prediction.length) {
+                                                                        setPredictionRankErrors((previous) => ({
+                                                                            ...previous,
+                                                                            [entryId]: `Erlaubt sind nur Werte von 1 bis ${prediction.length}.`
+                                                                        }));
+                                                                        return;
+                                                                    }
                                                                 }
-                                                                if (keyboardEvent.key === "Tab") {
-                                                                    commitRankChange(entryId);
-                                                                }
-                                                            } }) }), _jsx("td", { className: "prediction-table__country-cell", children: getCountryNameDe(entry?.countryCode ?? "") ?? "-" }), _jsx("td", { className: "prediction-table__song-cell", title: entry?.songTitle ?? "", children: truncateSongTitle(entry?.songTitle) }), _jsx("td", { children: _jsxs("div", { className: "inline", children: [_jsx("button", { className: "btn btn-icon", disabled: !dragEnabled, onClick: () => move(index, -1), children: "\u2191" }), _jsx("button", { className: "btn btn-icon", disabled: !dragEnabled, onClick: () => move(index, 1), children: "\u2193" })] }) })] }, entryId));
+                                                                const nextInputs = { ...rankInputs, [entryId]: nextValue };
+                                                                setRankInputs(nextInputs);
+                                                                validatePredictionRankInputs(nextInputs);
+                                                            } }) }), _jsx("td", { className: "prediction-table__country-cell", children: getCountryNameDe(entry?.countryCode ?? "") ?? "-" }), _jsx("td", { className: "prediction-table__song-cell", title: entry?.songTitle ?? "", children: truncateSongTitle(entry?.songTitle) }), _jsx("td", { children: _jsxs("div", { className: "inline", children: [_jsx("button", { className: "btn btn-icon prediction-table__move-btn", disabled: !dragEnabled, onClick: () => move(index, -1), children: "\u2191" }), _jsx("button", { className: "btn btn-icon prediction-table__move-btn", disabled: !dragEnabled, onClick: () => move(index, 1), children: "\u2193" })] }) })] }, entryId));
                                         }) })] }), !predictionSubmitted && event.status === "open" && (_jsx("p", { className: "hint", children: "Tipp: Ziehe ein Land per Drag-and-Drop oder gib den Rang direkt numerisch ein. Entwurf darf unvollst\u00E4ndig sein." })), !predictionSubmitted && event.status === "open" && (_jsxs("div", { className: `actions${tutorialHighlightClass("prediction-actions")}`, children: [_jsx("button", { className: "btn", onClick: () => void savePrediction(), children: "Entwurf speichern" }), _jsx("button", { className: "btn btn-primary", onClick: () => setSubmitConfirmation("prediction"), children: "Einreichen" })] })), predictionSubmitted && _jsx("p", { className: "hint", children: "Prediction ist eingereicht und gesperrt." })] })), tab === "results" && (_jsxs("div", { className: `card${tutorialHighlightClass("results-section")}`, children: [_jsx("h3", { children: "Ergebnisse" }), event.status !== "finished" && _jsx("p", { children: "Ergebnisse werden nach Event-Abschluss angezeigt." }), results && (_jsxs(_Fragment, { children: [_jsxs("div", { className: "results-section", children: [_jsx("h4", { children: "Platzierungen gegen offizielles Ranking" }), results.leaderboardB && results.leaderboardB.length > 0 ? (_jsxs(_Fragment, { children: [_jsxs("table", { className: "data-table results-table", children: [_jsx("thead", { children: _jsxs("tr", { children: [_jsx("th", { className: "results-table__rank", children: "Platz" }), _jsx("th", { children: "Teilnehmer" }), _jsx("th", { className: "results-table__points", children: "Punkte" })] }) }), _jsx("tbody", { children: (expandedLeaderboardB ? results.leaderboardB : results.leaderboardB.slice(0, 5)).map((participant, idx) => (_jsxs("tr", { className: `results-table__row${participant.rank <= 3 ? ` results-table__row--top-${participant.rank}` : ""}${participant.participantId === Number(user.id) ? " results-table__row--me" : ""}`, children: [_jsx("td", { className: "results-table__rank-cell", children: participant.rank === 1
                                                                                 ? "🥇"
                                                                                 : participant.rank === 2
