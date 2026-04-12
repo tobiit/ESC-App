@@ -39,6 +39,7 @@ fun RatingScreen(
 ) {
     val usedPoints = remember(ratingMap) { ratingMap.values.toSet() }
     val enabled = !isSubmitted && eventOpen
+    var showSubmitConfirmation by remember { mutableStateOf(false) }
 
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(2.dp),
@@ -95,7 +96,7 @@ fun RatingScreen(
                         Text("Entwurf speichern")
                     }
                     Button(
-                        onClick = onSubmit,
+                        onClick = { showSubmitConfirmation = true },
                         modifier = Modifier.weight(1f),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = Blue900,  // semantic-color-action-primary-resting
@@ -114,6 +115,32 @@ fun RatingScreen(
                 )
             }
         }
+    }
+
+    if (showSubmitConfirmation) {
+        AlertDialog(
+            onDismissRequest = { showSubmitConfirmation = false },
+            text = {
+                Text(
+                    "Sie reichen Ihre Bewertung endgültig ein. Danach können Sie daran nichts mehr ändern. Wollen Sie jetzt einreichen?"
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showSubmitConfirmation = false
+                        onSubmit()
+                    }
+                ) {
+                    Text("Ja")
+                }
+            },
+            dismissButton = {
+                OutlinedButton(onClick = { showSubmitConfirmation = false }) {
+                    Text("Nein")
+                }
+            }
+        )
     }
 }
 

@@ -528,6 +528,45 @@ textarea {
   color: var(--core-color-darkblue-900, #1c3a6c);
 }
 
+.submit-confirmation {
+  position: fixed;
+  inset: 0;
+  z-index: 1600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.submit-confirmation__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(8, 18, 38, 0.68);
+  backdrop-filter: blur(4px);
+}
+
+.submit-confirmation__card {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 32rem);
+}
+
+.submit-confirmation__card h3 {
+  margin-top: 0;
+}
+
+.submit-confirmation__card p {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.submit-confirmation__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
 .tutorial-target--active {
   position: relative;
   z-index: 1300;

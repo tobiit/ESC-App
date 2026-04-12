@@ -22,6 +22,7 @@ export function ParticipantPage({ user, onLogout }) {
     const [expandedLeaderboardB, setExpandedLeaderboardB] = useState(false);
     const [tutorialOpen, setTutorialOpen] = useState(false);
     const [tutorialIndex, setTutorialIndex] = useState(0);
+    const [submitConfirmation, setSubmitConfirmation] = useState(null);
     const navigate = useNavigate();
     const tutorialSteps = [
         {
@@ -151,23 +152,8 @@ export function ParticipantPage({ user, onLogout }) {
             navigate("/");
         }
     };
-    const saveRating = async () => {
-        if (!event)
-            return;
-        const items = Object.entries(ratingMap).map(([entryId, points]) => ({ entryId: Number(entryId), points }));
-        await api.saveMyRating(event.id, items);
-        setMessage(items.length < 10 ? "Rating-Entwurf gespeichert" : "Rating gespeichert");
-    };
-    const submitRating = async () => {
-        if (!event)
-            return;
-        await api.submitMyRating(event.id);
-        setRatingSubmitted(true);
-        setMessage("Rating eingereicht");
-    };
-    const savePrediction = async () => {
-        if (!event)
-            return;
+    const buildRatingItems = () => Object.entries(ratingMap).map(([entryId, points]) => ({ entryId: Number(entryId), points }));
+    const buildPredictionItems = () => {
         const items = [];
         const usedRanks = new Set();
         for (const entryId of prediction) {
@@ -177,22 +163,64 @@ export function ParticipantPage({ user, onLogout }) {
             if (rank < 1 || rank > entries.length)
                 continue;
             if (usedRanks.has(rank)) {
-                setMessage(`Rang ${rank} ist doppelt vergeben. Bitte korrigieren und erneut speichern.`);
-                return;
+                throw new Error(`Rang ${rank} ist doppelt vergeben. Bitte korrigieren und erneut speichern.`);
             }
             usedRanks.add(rank);
             items.push({ entryId, rank });
         }
         items.sort((a, b) => a.rank - b.rank);
+        return items;
+    };
+    const saveRating = async () => {
+        if (!event)
+            return;
+        const items = buildRatingItems();
+        await api.saveMyRating(event.id, items);
+        setMessage(items.length < 10 ? "Rating-Entwurf gespeichert" : "Rating gespeichert");
+    };
+    const submitRating = async () => {
+        if (!event)
+            return;
+        try {
+            const items = buildRatingItems();
+            await api.saveMyRating(event.id, items);
+            await api.submitMyRating(event.id);
+            setRatingSubmitted(true);
+            setSubmitConfirmation(null);
+            setMessage("Rating eingereicht");
+        }
+        catch (error) {
+            setMessage(error.message);
+        }
+    };
+    const savePrediction = async () => {
+        if (!event)
+            return;
+        let items;
+        try {
+            items = buildPredictionItems();
+        }
+        catch (error) {
+            setMessage(error.message);
+            return;
+        }
         await api.saveMyPrediction(event.id, items);
         setMessage(items.length < entries.length ? "Prediction-Entwurf gespeichert" : "Prediction gespeichert");
     };
     const submitPrediction = async () => {
         if (!event)
             return;
-        await api.submitMyPrediction(event.id);
-        setPredictionSubmitted(true);
-        setMessage("Prediction eingereicht");
+        try {
+            const items = buildPredictionItems();
+            await api.saveMyPrediction(event.id, items);
+            await api.submitMyPrediction(event.id);
+            setPredictionSubmitted(true);
+            setSubmitConfirmation(null);
+            setMessage("Prediction eingereicht");
+        }
+        catch (error) {
+            setMessage(error.message);
+        }
     };
     const buildSequentialRankInputs = (orderedEntryIds) => {
         const nextInputs = {};
@@ -325,7 +353,7 @@ export function ParticipantPage({ user, onLogout }) {
                                                                 }
                                                                 return next;
                                                             });
-                                                        }, children: [_jsx("option", { value: "", children: "0" }), ESC_POINTS.map((point) => (_jsx("option", { value: point, disabled: selectedPoints.has(point) && ratingMap[entry.id] !== point, children: point }, point)))] }) })] }, entry.id))) })] }), !ratingSubmitted && event.status === "open" && (_jsxs("div", { className: `actions${tutorialHighlightClass("rating-actions")}`, children: [_jsx("button", { className: "btn", onClick: () => void saveRating(), children: "Entwurf speichern" }), _jsx("button", { className: "btn btn-primary", onClick: () => void submitRating(), children: "Einreichen" })] })), !ratingSubmitted && event.status === "open" && (_jsx("p", { className: "hint", children: "Entwurf darf unvollst\u00E4ndig sein. F\u00FCr Einreichen m\u00FCssen alle 10 Punkte vergeben sein." })), ratingSubmitted && _jsx("p", { className: "hint", children: "Rating ist eingereicht und gesperrt." })] })), tab === "prediction" && (_jsxs("div", { className: "card", children: [_jsx("h3", { children: "Prediction Rangliste" }), _jsxs("table", { className: `data-table prediction-table${tutorialHighlightClass("prediction-table")}`, children: [_jsx("thead", { children: _jsxs("tr", { children: [_jsx("th", { className: "prediction-table__rank-header", children: "Rang" }), _jsx("th", { className: "prediction-table__country-header", children: "Land" }), _jsx("th", { className: "prediction-table__song-header", children: "Song" }), _jsx("th", { children: "Aktion" })] }) }), _jsx("tbody", { children: prediction.map((entryId, index) => {
+                                                        }, children: [_jsx("option", { value: "", children: "0" }), ESC_POINTS.map((point) => (_jsx("option", { value: point, disabled: selectedPoints.has(point) && ratingMap[entry.id] !== point, children: point }, point)))] }) })] }, entry.id))) })] }), !ratingSubmitted && event.status === "open" && (_jsxs("div", { className: `actions${tutorialHighlightClass("rating-actions")}`, children: [_jsx("button", { className: "btn", onClick: () => void saveRating(), children: "Entwurf speichern" }), _jsx("button", { className: "btn btn-primary", onClick: () => setSubmitConfirmation("rating"), children: "Einreichen" })] })), !ratingSubmitted && event.status === "open" && (_jsx("p", { className: "hint", children: "Entwurf darf unvollst\u00E4ndig sein. F\u00FCr Einreichen m\u00FCssen alle 10 Punkte vergeben sein." })), ratingSubmitted && _jsx("p", { className: "hint", children: "Rating ist eingereicht und gesperrt." })] })), tab === "prediction" && (_jsxs("div", { className: "card", children: [_jsx("h3", { children: "Prediction Rangliste" }), _jsxs("table", { className: `data-table prediction-table${tutorialHighlightClass("prediction-table")}`, children: [_jsx("thead", { children: _jsxs("tr", { children: [_jsx("th", { className: "prediction-table__rank-header", children: "Rang" }), _jsx("th", { className: "prediction-table__country-header", children: "Land" }), _jsx("th", { className: "prediction-table__song-header", children: "Song" }), _jsx("th", { children: "Aktion" })] }) }), _jsx("tbody", { children: prediction.map((entryId, index) => {
                                             const entry = entries.find((item) => item.id === entryId);
                                             const dragEnabled = !predictionSubmitted && event.status === "open";
                                             return (_jsxs("tr", { className: `prediction-table__row${dragEnabled ? " prediction-table__row--movable" : ""}${draggedEntryId === entryId ? " prediction-table__row--dragging" : ""}${dropIndicator?.entryId === entryId && dropIndicator.position === "before" ? " prediction-table__row--drop-before" : ""}${dropIndicator?.entryId === entryId && dropIndicator.position === "after" ? " prediction-table__row--drop-after" : ""}`, draggable: dragEnabled, onDragStart: () => {
@@ -372,7 +400,7 @@ export function ParticipantPage({ user, onLogout }) {
                                                                     commitRankChange(entryId);
                                                                 }
                                                             } }) }), _jsx("td", { className: "prediction-table__country-cell", children: getCountryNameDe(entry?.countryCode ?? "") ?? "-" }), _jsx("td", { className: "prediction-table__song-cell", title: entry?.songTitle ?? "", children: truncateSongTitle(entry?.songTitle) }), _jsx("td", { children: _jsxs("div", { className: "inline", children: [_jsx("button", { className: "btn btn-icon", disabled: !dragEnabled, onClick: () => move(index, -1), children: "\u2191" }), _jsx("button", { className: "btn btn-icon", disabled: !dragEnabled, onClick: () => move(index, 1), children: "\u2193" })] }) })] }, entryId));
-                                        }) })] }), !predictionSubmitted && event.status === "open" && (_jsx("p", { className: "hint", children: "Tipp: Ziehe ein Land per Drag-and-Drop oder gib den Rang direkt numerisch ein. Entwurf darf unvollst\u00E4ndig sein." })), !predictionSubmitted && event.status === "open" && (_jsxs("div", { className: `actions${tutorialHighlightClass("prediction-actions")}`, children: [_jsx("button", { className: "btn", onClick: () => void savePrediction(), children: "Entwurf speichern" }), _jsx("button", { className: "btn btn-primary", onClick: () => void submitPrediction(), children: "Einreichen" })] })), predictionSubmitted && _jsx("p", { className: "hint", children: "Prediction ist eingereicht und gesperrt." })] })), tab === "results" && (_jsxs("div", { className: `card${tutorialHighlightClass("results-section")}`, children: [_jsx("h3", { children: "Ergebnisse" }), event.status !== "finished" && _jsx("p", { children: "Ergebnisse werden nach Event-Abschluss angezeigt." }), results && (_jsxs(_Fragment, { children: [_jsxs("div", { className: "results-section", children: [_jsx("h4", { children: "Platzierungen gegen offizielles Ranking" }), results.leaderboardB && results.leaderboardB.length > 0 ? (_jsxs(_Fragment, { children: [_jsxs("table", { className: "data-table results-table", children: [_jsx("thead", { children: _jsxs("tr", { children: [_jsx("th", { className: "results-table__rank", children: "Platz" }), _jsx("th", { children: "Teilnehmer" }), _jsx("th", { className: "results-table__points", children: "Punkte" })] }) }), _jsx("tbody", { children: (expandedLeaderboardB ? results.leaderboardB : results.leaderboardB.slice(0, 5)).map((participant, idx) => (_jsxs("tr", { className: `results-table__row${participant.rank <= 3 ? ` results-table__row--top-${participant.rank}` : ""}${participant.participantId === Number(user.id) ? " results-table__row--me" : ""}`, children: [_jsx("td", { className: "results-table__rank-cell", children: participant.rank === 1
+                                        }) })] }), !predictionSubmitted && event.status === "open" && (_jsx("p", { className: "hint", children: "Tipp: Ziehe ein Land per Drag-and-Drop oder gib den Rang direkt numerisch ein. Entwurf darf unvollst\u00E4ndig sein." })), !predictionSubmitted && event.status === "open" && (_jsxs("div", { className: `actions${tutorialHighlightClass("prediction-actions")}`, children: [_jsx("button", { className: "btn", onClick: () => void savePrediction(), children: "Entwurf speichern" }), _jsx("button", { className: "btn btn-primary", onClick: () => setSubmitConfirmation("prediction"), children: "Einreichen" })] })), predictionSubmitted && _jsx("p", { className: "hint", children: "Prediction ist eingereicht und gesperrt." })] })), tab === "results" && (_jsxs("div", { className: `card${tutorialHighlightClass("results-section")}`, children: [_jsx("h3", { children: "Ergebnisse" }), event.status !== "finished" && _jsx("p", { children: "Ergebnisse werden nach Event-Abschluss angezeigt." }), results && (_jsxs(_Fragment, { children: [_jsxs("div", { className: "results-section", children: [_jsx("h4", { children: "Platzierungen gegen offizielles Ranking" }), results.leaderboardB && results.leaderboardB.length > 0 ? (_jsxs(_Fragment, { children: [_jsxs("table", { className: "data-table results-table", children: [_jsx("thead", { children: _jsxs("tr", { children: [_jsx("th", { className: "results-table__rank", children: "Platz" }), _jsx("th", { children: "Teilnehmer" }), _jsx("th", { className: "results-table__points", children: "Punkte" })] }) }), _jsx("tbody", { children: (expandedLeaderboardB ? results.leaderboardB : results.leaderboardB.slice(0, 5)).map((participant, idx) => (_jsxs("tr", { className: `results-table__row${participant.rank <= 3 ? ` results-table__row--top-${participant.rank}` : ""}${participant.participantId === Number(user.id) ? " results-table__row--me" : ""}`, children: [_jsx("td", { className: "results-table__rank-cell", children: participant.rank === 1
                                                                                 ? "🥇"
                                                                                 : participant.rank === 2
                                                                                     ? "🥈"
@@ -384,5 +412,7 @@ export function ParticipantPage({ user, onLogout }) {
                                                                                     ? "🥈"
                                                                                     : participant.rank === 3
                                                                                         ? "🥉"
-                                                                                        : participant.rank }), _jsx("td", { children: participant.displayName }), _jsx("td", { className: "results-table__points-cell", children: participant.points })] }, participant.participantId))) })] }), results.leaderboardA.length > 5 && !expandedLeaderboardA && (_jsxs("button", { className: "btn btn-plain", onClick: () => setExpandedLeaderboardA(true), children: [results.leaderboardA.length - 5, " weitere Teilnehmer anzeigen"] })), expandedLeaderboardA && results.leaderboardA.length > 5 && (_jsx("button", { className: "btn btn-plain", onClick: () => setExpandedLeaderboardA(false), children: "Einklappen" }))] })) : (_jsx("p", { className: "hint", children: "Keine Ergebnisse verf\u00FCgbar." }))] }), _jsxs("div", { className: "results-section", children: [_jsx("h4", { children: "Internes Ranking (aus Teilnehmer-Bewertungen)" }), results.ratingRanking && results.ratingRanking.length > 0 ? (_jsxs("table", { className: "data-table results-table", children: [_jsx("thead", { children: _jsxs("tr", { children: [_jsx("th", { className: "results-table__rank", children: "Rang" }), _jsx("th", { children: "Land" }), _jsx("th", { className: "results-table__points", children: "Gesamt-Punkte" })] }) }), _jsx("tbody", { children: results.ratingRanking.map((entry, idx) => (_jsxs("tr", { className: idx % 2 === 0 ? "results-table__row--even" : "", children: [_jsx("td", { className: "results-table__rank-cell", children: entry.rank }), _jsx("td", { children: getCountryNameDe(entry.countryCode) }), _jsx("td", { className: "results-table__points-cell", children: entry.total })] }, entry.entryId))) })] })) : (_jsx("p", { className: "hint", children: "Keine Bewertungsrangliste verf\u00FCgbar." }))] })] }))] })), message && _jsx("div", { className: `toast ${toastFading ? 'toast--fade-out' : ''}`, children: message }), tutorialOpen && (_jsxs("div", { className: "tutorial-overlay", role: "dialog", "aria-modal": "true", "aria-label": "Einweisungstour", children: [_jsxs("div", { className: "tutorial-overlay__controls", children: [_jsx("button", { className: "tutorial-overlay__nav", onClick: previousTutorialStep, disabled: tutorialIndex === 0, children: "\u2190" }), _jsxs("div", { className: "tutorial-overlay__progress", children: [tutorialIndex + 1, " / ", tutorialSteps.length] }), _jsx("button", { className: "tutorial-overlay__nav", onClick: nextTutorialStep, disabled: tutorialIndex === tutorialSteps.length - 1, children: "\u2192" }), _jsx("button", { className: "tutorial-overlay__close", onClick: stopTutorial, "aria-label": "Tutorial schlie\u00DFen", children: "x" })] }), _jsxs("div", { className: "tutorial-overlay__bubble", children: [_jsx("h4", { children: tutorialStep.title }), _jsx("p", { children: tutorialStep.body })] })] }))] }))] }));
+                                                                                        : participant.rank }), _jsx("td", { children: participant.displayName }), _jsx("td", { className: "results-table__points-cell", children: participant.points })] }, participant.participantId))) })] }), results.leaderboardA.length > 5 && !expandedLeaderboardA && (_jsxs("button", { className: "btn btn-plain", onClick: () => setExpandedLeaderboardA(true), children: [results.leaderboardA.length - 5, " weitere Teilnehmer anzeigen"] })), expandedLeaderboardA && results.leaderboardA.length > 5 && (_jsx("button", { className: "btn btn-plain", onClick: () => setExpandedLeaderboardA(false), children: "Einklappen" }))] })) : (_jsx("p", { className: "hint", children: "Keine Ergebnisse verf\u00FCgbar." }))] }), _jsxs("div", { className: "results-section", children: [_jsx("h4", { children: "Internes Ranking (aus Teilnehmer-Bewertungen)" }), results.ratingRanking && results.ratingRanking.length > 0 ? (_jsxs("table", { className: "data-table results-table", children: [_jsx("thead", { children: _jsxs("tr", { children: [_jsx("th", { className: "results-table__rank", children: "Rang" }), _jsx("th", { children: "Land" }), _jsx("th", { className: "results-table__points", children: "Gesamt-Punkte" })] }) }), _jsx("tbody", { children: results.ratingRanking.map((entry, idx) => (_jsxs("tr", { className: idx % 2 === 0 ? "results-table__row--even" : "", children: [_jsx("td", { className: "results-table__rank-cell", children: entry.rank }), _jsx("td", { children: getCountryNameDe(entry.countryCode) }), _jsx("td", { className: "results-table__points-cell", children: entry.total })] }, entry.entryId))) })] })) : (_jsx("p", { className: "hint", children: "Keine Bewertungsrangliste verf\u00FCgbar." }))] })] }))] })), submitConfirmation && (_jsxs("div", { className: "submit-confirmation", role: "dialog", "aria-modal": "true", "aria-labelledby": "submit-confirmation-title", children: [_jsx("div", { className: "submit-confirmation__backdrop", onClick: () => setSubmitConfirmation(null) }), _jsxs("div", { className: "submit-confirmation__card card", children: [_jsx("h3", { id: "submit-confirmation-title", children: "Endg\u00FCltig einreichen?" }), _jsx("p", { children: submitConfirmation === "rating"
+                                            ? "Sie reichen Ihre Bewertung endgültig ein. Danach können Sie daran nichts mehr ändern. Wollen Sie jetzt einreichen?"
+                                            : "Sie reichen Ihren Gewinntipp endgültig ein. Danach können Sie daran nichts mehr ändern. Wollen Sie jetzt einreichen?" }), _jsxs("div", { className: "submit-confirmation__actions", children: [_jsx("button", { className: "btn", onClick: () => setSubmitConfirmation(null), children: "Nein" }), _jsx("button", { className: "btn btn-primary", onClick: () => void (submitConfirmation === "rating" ? submitRating() : submitPrediction()), children: "Ja" })] })] })] })), message && _jsx("div", { className: `toast ${toastFading ? 'toast--fade-out' : ''}`, children: message }), tutorialOpen && (_jsxs("div", { className: "tutorial-overlay", role: "dialog", "aria-modal": "true", "aria-label": "Einweisungstour", children: [_jsxs("div", { className: "tutorial-overlay__controls", children: [_jsx("button", { className: "tutorial-overlay__nav", onClick: previousTutorialStep, disabled: tutorialIndex === 0, children: "\u2190" }), _jsxs("div", { className: "tutorial-overlay__progress", children: [tutorialIndex + 1, " / ", tutorialSteps.length] }), _jsx("button", { className: "tutorial-overlay__nav", onClick: nextTutorialStep, disabled: tutorialIndex === tutorialSteps.length - 1, children: "\u2192" }), _jsx("button", { className: "tutorial-overlay__close", onClick: stopTutorial, "aria-label": "Tutorial schlie\u00DFen", children: "x" })] }), _jsxs("div", { className: "tutorial-overlay__bubble", children: [_jsx("h4", { children: tutorialStep.title }), _jsx("p", { children: tutorialStep.body })] })] }))] }))] }));
 }

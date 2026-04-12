@@ -57,6 +57,7 @@ fun PredictionScreen(
 ) {
     val enabled = !isSubmitted && eventOpen
     val focusManager = LocalFocusManager.current
+    var showSubmitConfirmation by remember { mutableStateOf(false) }
     
     val lazyListState = rememberLazyListState()
     val reorderableState = rememberReorderableLazyListState(
@@ -245,7 +246,7 @@ fun PredictionScreen(
                         Text("Entwurf speichern")
                     }
                     Button(
-                        onClick = onSubmit,
+                        onClick = { showSubmitConfirmation = true },
                         modifier = Modifier.weight(1f),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = Blue900,
@@ -264,5 +265,31 @@ fun PredictionScreen(
                 )
             }
         }
+    }
+
+    if (showSubmitConfirmation) {
+        AlertDialog(
+            onDismissRequest = { showSubmitConfirmation = false },
+            text = {
+                Text(
+                    "Sie reichen Ihren Gewinntipp endgültig ein. Danach können Sie daran nichts mehr ändern. Wollen Sie jetzt einreichen?"
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showSubmitConfirmation = false
+                        onSubmit()
+                    }
+                ) {
+                    Text("Ja")
+                }
+            },
+            dismissButton = {
+                OutlinedButton(onClick = { showSubmitConfirmation = false }) {
+                    Text("Nein")
+                }
+            }
+        )
     }
 }

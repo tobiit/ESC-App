@@ -41,6 +41,7 @@ export function ParticipantPage({ user, onLogout }: { user: User; onLogout: () =
   const [expandedLeaderboardB, setExpandedLeaderboardB] = useState(false);
   const [tutorialOpen, setTutorialOpen] = useState(false);
   const [tutorialIndex, setTutorialIndex] = useState(0);
+  const [submitConfirmation, setSubmitConfirmation] = useState<null | "rating" | "prediction">(null);
   const navigate = useNavigate();
 
   const tutorialSteps: TutorialStep[] = [
@@ -170,22 +171,10 @@ export function ParticipantPage({ user, onLogout }: { user: User; onLogout: () =
     try { await api.logout(); } finally { clearTokens(); onLogout(); navigate("/"); }
   };
 
-  const saveRating = async () => {
-    if (!event) return;
-    const items = Object.entries(ratingMap).map(([entryId, points]) => ({ entryId: Number(entryId), points }));
-    await api.saveMyRating(event.id, items);
-    setMessage(items.length < 10 ? "Rating-Entwurf gespeichert" : "Rating gespeichert");
-  };
+  const buildRatingItems = () =>
+    Object.entries(ratingMap).map(([entryId, points]) => ({ entryId: Number(entryId), points }));
 
-  const submitRating = async () => {
-    if (!event) return;
-    await api.submitMyRating(event.id);
-    setRatingSubmitted(true);
-    setMessage("Rating eingereicht");
-  };
-
-  const savePrediction = async () => {
-    if (!event) return;
+  const buildPredictionItems = () => {
     const items: Array<{ entryId: number; rank: number }> = [];
     const usedRanks = new Set<number>();
     for (const entryId of prediction) {
@@ -193,22 +182,61 @@ export function ParticipantPage({ user, onLogout }: { user: User; onLogout: () =
       if (Number.isNaN(rank)) continue;
       if (rank < 1 || rank > entries.length) continue;
       if (usedRanks.has(rank)) {
-        setMessage(`Rang ${rank} ist doppelt vergeben. Bitte korrigieren und erneut speichern.`);
-        return;
+        throw new Error(`Rang ${rank} ist doppelt vergeben. Bitte korrigieren und erneut speichern.`);
       }
       usedRanks.add(rank);
       items.push({ entryId, rank });
     }
     items.sort((a, b) => a.rank - b.rank);
+    return items;
+  };
+
+  const saveRating = async () => {
+    if (!event) return;
+    const items = buildRatingItems();
+    await api.saveMyRating(event.id, items);
+    setMessage(items.length < 10 ? "Rating-Entwurf gespeichert" : "Rating gespeichert");
+  };
+
+  const submitRating = async () => {
+    if (!event) return;
+    try {
+      const items = buildRatingItems();
+      await api.saveMyRating(event.id, items);
+      await api.submitMyRating(event.id);
+      setRatingSubmitted(true);
+      setSubmitConfirmation(null);
+      setMessage("Rating eingereicht");
+    } catch (error) {
+      setMessage((error as Error).message);
+    }
+  };
+
+  const savePrediction = async () => {
+    if (!event) return;
+    let items: Array<{ entryId: number; rank: number }>;
+    try {
+      items = buildPredictionItems();
+    } catch (error) {
+      setMessage((error as Error).message);
+      return;
+    }
     await api.saveMyPrediction(event.id, items);
     setMessage(items.length < entries.length ? "Prediction-Entwurf gespeichert" : "Prediction gespeichert");
   };
 
   const submitPrediction = async () => {
     if (!event) return;
-    await api.submitMyPrediction(event.id);
-    setPredictionSubmitted(true);
-    setMessage("Prediction eingereicht");
+    try {
+      const items = buildPredictionItems();
+      await api.saveMyPrediction(event.id, items);
+      await api.submitMyPrediction(event.id);
+      setPredictionSubmitted(true);
+      setSubmitConfirmation(null);
+      setMessage("Prediction eingereicht");
+    } catch (error) {
+      setMessage((error as Error).message);
+    }
   };
 
   const buildSequentialRankInputs = (orderedEntryIds: number[]) => {
@@ -423,7 +451,7 @@ export function ParticipantPage({ user, onLogout }: { user: User; onLogout: () =
               {!ratingSubmitted && event.status === "open" && (
                 <div className={`actions${tutorialHighlightClass("rating-actions")}`}>
                   <button className="btn" onClick={() => void saveRating()}>Entwurf speichern</button>
-                  <button className="btn btn-primary" onClick={() => void submitRating()}>Einreichen</button>
+                  <button className="btn btn-primary" onClick={() => setSubmitConfirmation("rating")}>Einreichen</button>
                 </div>
               )}
               {!ratingSubmitted && event.status === "open" && (
@@ -533,7 +561,7 @@ export function ParticipantPage({ user, onLogout }: { user: User; onLogout: () =
               {!predictionSubmitted && event.status === "open" && (
                 <div className={`actions${tutorialHighlightClass("prediction-actions")}`}>
                   <button className="btn" onClick={() => void savePrediction()}>Entwurf speichern</button>
-                  <button className="btn btn-primary" onClick={() => void submitPrediction()}>Einreichen</button>
+                  <button className="btn btn-primary" onClick={() => setSubmitConfirmation("prediction")}>Einreichen</button>
                 </div>
               )}
               {predictionSubmitted && <p className="hint">Prediction ist eingereicht und gesperrt.</p>}
@@ -682,6 +710,29 @@ export function ParticipantPage({ user, onLogout }: { user: User; onLogout: () =
                   </div>
                 </>
               )}
+            </div>
+          )}
+
+          {submitConfirmation && (
+            <div className="submit-confirmation" role="dialog" aria-modal="true" aria-labelledby="submit-confirmation-title">
+              <div className="submit-confirmation__backdrop" onClick={() => setSubmitConfirmation(null)} />
+              <div className="submit-confirmation__card card">
+                <h3 id="submit-confirmation-title">Endgültig einreichen?</h3>
+                <p>
+                  {submitConfirmation === "rating"
+                    ? "Sie reichen Ihre Bewertung endgültig ein. Danach können Sie daran nichts mehr ändern. Wollen Sie jetzt einreichen?"
+                    : "Sie reichen Ihren Gewinntipp endgültig ein. Danach können Sie daran nichts mehr ändern. Wollen Sie jetzt einreichen?"}
+                </p>
+                <div className="submit-confirmation__actions">
+                  <button className="btn" onClick={() => setSubmitConfirmation(null)}>Nein</button>
+                  <button
+                    className="btn btn-primary"
+                    onClick={() => void (submitConfirmation === "rating" ? submitRating() : submitPrediction())}
+                  >
+                    Ja
+                  </button>
+                </div>
+              </div>
             </div>
           )}
 
