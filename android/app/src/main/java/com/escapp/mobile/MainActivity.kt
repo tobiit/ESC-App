@@ -57,6 +57,7 @@ private enum class TutorialTarget {
     TAB_RESULTS,
     RATING_ACTIONS,
     PREDICTION_LIST,
+    PREDICTION_SORT_MODE,
     PREDICTION_ACTIONS,
     RESULTS_OVERVIEW
 }
@@ -196,6 +197,12 @@ private fun EscApp(vm: AppViewModel) {
                 text = "Sortieren Sie per Drag-and-Drop oder über die Pfeile. So legen Sie Ihre prognostizierte Endreihenfolge fest.",
                 tabIndex = 1,
                 target = TutorialTarget.PREDICTION_LIST
+            ),
+            TutorialStep(
+                title = "Startreihenfolge fixieren",
+                text = "Mit dieser Funktion geben Sie Rang-Nummern direkt ein – ideal, wenn Sie einen Tipp von Papier abtippen. Tippen Sie die Ränge ein und klicken dann 'Tabelle nach Rangeingabe neu sortieren', um die endgültige Reihenfolge zu berechnen.",
+                tabIndex = 1,
+                target = TutorialTarget.PREDICTION_SORT_MODE
             ),
             TutorialStep(
                 title = "Tipp speichern",
@@ -436,6 +443,7 @@ private fun EscApp(vm: AppViewModel) {
                             onMove = vm::movePrediction,
                             onMoveTo = vm::movePredictionToPosition,
                             onMoveToRank = vm::movePredictionToRank,
+                            onApplySortOrder = vm::applySortedPrediction,
                             onSave = vm::savePrediction,
                             onSubmit = vm::submitPrediction,
                             highlightList = tutorialOpen && tutorialStep.target == TutorialTarget.PREDICTION_LIST,

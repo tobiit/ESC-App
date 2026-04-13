@@ -278,6 +278,14 @@ class AppViewModel(
         }
     }
 
+    fun applySortedPrediction(sortedOrder: List<Long>) {
+        if (ui.predictionSubmitted) return
+        ui = ui.copy(predictionOrder = sortedOrder)
+        ui.event?.let { event ->
+            viewModelScope.launch { draftStore.writePredictionDraft(event.id, sortedOrder) }
+        }
+    }
+
     fun savePrediction() {
         val event = ui.event ?: return
         val items = ui.predictionOrder.mapIndexed { i, id -> PredictionItemBody(id, i + 1) }

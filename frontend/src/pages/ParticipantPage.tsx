@@ -74,9 +74,15 @@ export function ParticipantPage({ user, onLogout }: { user: User; onLogout: () =
     },
     {
       title: "Tippliste sortieren",
-      body: "Ordnen Sie Länder per Drag-and-Drop oder Pfeiltasten. Mit 'Startreihenfolge fixieren' geben Sie Ränge ein und sortieren danach per Button.",
+      body: "Ordnen Sie Länder per Drag-and-Drop oder Pfeiltasten. Sie können auch direkt Ihre Lieblingssongs neu anordnen oder verschieben.",
       tab: "prediction",
       target: "prediction-table"
+    },
+    {
+      title: "Startreihenfolge fixieren",
+      body: "Mit dieser Funktion geben Sie die Rangnummern direkt ein – ideal, wenn Sie einen Tipp von Papier abtippen. Tippen Sie alle Rang-Nummern ein und klicken dann 'Tabelle nach Rangeingabe neu sortieren', um die Reihenfolge automatisch zu berechnen.",
+      tab: "prediction",
+      target: "prediction-sort-mode"
     },
     {
       title: "Tipp speichern und einreichen",
