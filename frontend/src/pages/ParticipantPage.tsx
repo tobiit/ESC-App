@@ -17,6 +17,7 @@ type TutorialStep = {
     | "rating-table"
     | "rating-actions"
     | "prediction-table"
+    | "prediction-sort-mode"
     | "prediction-actions"
     | "results-section";
 };
