@@ -33,8 +33,8 @@ android {
     applicationId = "com.escapp.mobile"
     minSdk = 26
     targetSdk = 35
-    versionCode = 3
-    versionName = "3.0.0"
+    versionCode = 4
+    versionName = "4.1.0"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     buildConfigField("String", "API_BASE_URL", "\"https://api.basisadresse.de/escappapi/\"")
