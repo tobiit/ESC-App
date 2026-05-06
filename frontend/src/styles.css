@@ -98,7 +98,32 @@ textarea {
 .public-live-grid {
   display: grid;
   gap: 16px;
-  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+}
+
+.public-live-page .layout {
+  max-width: min(96vw, 1760px);
+}
+
+.public-live-grid__main-column {
+  display: grid;
+  gap: 16px;
+}
+
+.public-live-grid__side-column {
+  align-self: start;
+  position: sticky;
+  top: 78px;
+}
+
+.public-live-ranking-columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.public-live-ranking-columns .data-table {
+  margin: 8px 0 0;
 }
 
 .public-live-hero h1 {
@@ -150,8 +175,100 @@ textarea {
   background: #ffe8d1;
 }
 
+.public-live-table__row--active-participant td {
+  background: rgba(255, 202, 0, 0.22) !important;
+  animation: public-live-active-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes public-live-active-pulse {
+  0% {
+    box-shadow: inset 0 0 0 0 rgba(255, 202, 0, 0.5);
+  }
+  50% {
+    box-shadow: inset 0 0 0 999px rgba(255, 202, 0, 0.08);
+  }
+  100% {
+    box-shadow: inset 0 0 0 0 rgba(255, 202, 0, 0.5);
+  }
+}
+
+.public-live-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  z-index: 1400;
+  background: rgba(8, 18, 38, 0.22);
+}
+
+.public-live-overlay__bubble {
+  background: var(--core-color-darkblue-900, #1c3a6c);
+  color: var(--core-color-white, #ffffff);
+  border-radius: 20px;
+  border: 4px solid rgba(255, 255, 255, 0.8);
+  padding: 1.4rem 1.8rem;
+  box-shadow: 0 24px 42px rgba(0, 0, 0, 0.4);
+  font-weight: 700;
+  font-size: clamp(2.1rem, 4.2vw, 2.8rem);
+  line-height: 1.25;
+  text-align: center;
+  max-width: min(95vw, 1200px);
+  text-wrap: balance;
+  animation: public-live-pop 300ms ease-out;
+}
+
+.public-live-overlay__bubble--winner {
+  background: var(--core-color-blue-900, #003781);
+  border-color: #ffca00;
+  font-size: clamp(2.35rem, 4.8vw, 3.3rem);
+  box-shadow:
+    0 24px 42px rgba(0, 0, 0, 0.45),
+    0 0 0 8px rgba(255, 202, 0, 0.22);
+  position: relative;
+  padding-top: 2.35rem;
+}
+
+.public-live-overlay__close {
+  position: absolute;
+  top: 0.55rem;
+  right: 0.75rem;
+  width: 2.05rem;
+  height: 2.05rem;
+  border-radius: 999px;
+  border: 2px solid rgba(255, 255, 255, 0.82);
+  background: rgba(0, 0, 0, 0.28);
+  color: #fff;
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+@keyframes public-live-pop {
+  0% {
+    transform: scale(0.86);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
 @media (max-width: 900px) {
   .public-live-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .public-live-grid__side-column {
+    position: static;
+  }
+
+  .public-live-ranking-columns {
     grid-template-columns: 1fr;
   }
 }

@@ -12,6 +12,12 @@ export function AdminPage({ user, onLogout }) {
     const [submissionStatusByParticipant, setSubmissionStatusByParticipant] = useState({});
     const [activeEventForStatus, setActiveEventForStatus] = useState(null);
     const [showOnlyOpenParticipants, setShowOnlyOpenParticipants] = useState(false);
+    const [liveControl, setLiveControl] = useState(null);
+    const [liveControlLoading, setLiveControlLoading] = useState(false);
+    const [liveSettingsSaving, setLiveSettingsSaving] = useState(false);
+    const [participantPauseSecondsInput, setParticipantPauseSecondsInput] = useState("30");
+    const [pointPauseSecondsInput, setPointPauseSecondsInput] = useState("5");
+    const [tipEndCountdownSecondsInput, setTipEndCountdownSecondsInput] = useState("20");
     const [anthropicApiKey, setAnthropicApiKey] = useState("");
     const [anthropicModel, setAnthropicModel] = useState("");
     const [anthropicModels, setAnthropicModels] = useState([]);
@@ -92,12 +98,19 @@ export function AdminPage({ user, onLogout }) {
             if (!activeEvent?.id) {
                 setSubmissionStatusByParticipant({});
                 setActiveEventForStatus(null);
+                setLiveControl(null);
                 return;
             }
-            const [ratingsData, predictionsData] = await Promise.all([
+            setLiveControlLoading(true);
+            const [ratingsData, predictionsData, liveControlData] = await Promise.all([
                 api.adminRatings(activeEvent.id),
-                api.adminPredictions(activeEvent.id)
+                api.adminPredictions(activeEvent.id),
+                api.adminLiveControl(activeEvent.id)
             ]);
+            setLiveControl(liveControlData);
+            setParticipantPauseSecondsInput(String(liveControlData.liveState.revealParticipantPauseSeconds ?? 30));
+            setPointPauseSecondsInput(String(liveControlData.liveState.revealPointPauseSeconds ?? 5));
+            setTipEndCountdownSecondsInput(String(liveControlData.liveState.tipEndCountdownSeconds ?? 20));
             const nextStatusMap = {};
             for (const participant of normalizedParticipants) {
                 if (participant?.id) {
@@ -126,8 +139,10 @@ export function AdminPage({ user, onLogout }) {
             }
             setSubmissionStatusByParticipant(nextStatusMap);
             setActiveEventForStatus({ id: activeEvent.id, name: activeEvent.name || `Event ${activeEvent.id}` });
+            setLiveControlLoading(false);
         }
         catch (err) {
+            setLiveControlLoading(false);
             setMessage(`Fehler beim Laden: ${err.message}`);
         }
     };
@@ -334,6 +349,71 @@ export function AdminPage({ user, onLogout }) {
         setMessage("Event wiederhergestellt");
         await load();
     };
+    const saveLiveSettings = async () => {
+        if (!activeEventForStatus?.id)
+            return;
+        const revealParticipantPauseSeconds = Number(participantPauseSecondsInput);
+        const revealPointPauseSeconds = Number(pointPauseSecondsInput);
+        const tipEndCountdownSeconds = Number(tipEndCountdownSecondsInput);
+        if (!Number.isFinite(revealParticipantPauseSeconds) ||
+            !Number.isFinite(revealPointPauseSeconds) ||
+            !Number.isFinite(tipEndCountdownSeconds)) {
+            setMessage("Bitte gültige Sekundenwerte eintragen.");
+            return;
+        }
+        setLiveSettingsSaving(true);
+        try {
+            await api.adminUpdateLiveSettings(activeEventForStatus.id, {
+                revealParticipantPauseSeconds: Math.max(0, Math.floor(revealParticipantPauseSeconds)),
+                revealPointPauseSeconds: Math.max(0, Math.floor(revealPointPauseSeconds)),
+                tipEndCountdownSeconds: Math.max(0, Math.floor(tipEndCountdownSeconds))
+            });
+            setMessage("Live-Einstellungen gespeichert");
+            await load();
+        }
+        catch (err) {
+            setMessage(`Fehler beim Speichern der Live-Einstellungen: ${err.message}`);
+        }
+        finally {
+            setLiveSettingsSaving(false);
+        }
+    };
+    const triggerTipEnd = async () => {
+        if (!activeEventForStatus?.id)
+            return;
+        try {
+            await api.adminStartTipEnd(activeEventForStatus.id);
+            setMessage("Tippende-Countdown gestartet");
+            await load();
+        }
+        catch (err) {
+            setMessage(`Tippende konnte nicht gestartet werden: ${err.message}`);
+        }
+    };
+    const cancelManualTipEnd = async () => {
+        if (!activeEventForStatus?.id)
+            return;
+        try {
+            await api.adminCancelTipEnd(activeEventForStatus.id);
+            setMessage("Manueller Tippende-Countdown zurückgenommen");
+            await load();
+        }
+        catch (err) {
+            setMessage(`Tippende-Rücknahme fehlgeschlagen: ${err.message}`);
+        }
+    };
+    const triggerReveal = async () => {
+        if (!activeEventForStatus?.id)
+            return;
+        try {
+            await api.adminStartReveal(activeEventForStatus.id);
+            setMessage("Reveal gestartet");
+            await load();
+        }
+        catch (err) {
+            setMessage(`Reveal konnte nicht gestartet werden: ${err.message}`);
+        }
+    };
     const isParticipantOpenForActiveEvent = (participantId) => {
         const status = submissionStatusByParticipant[participantId] || { ratingSubmitted: false, predictionSubmitted: false };
         return !status.ratingSubmitted || !status.predictionSubmitted;
@@ -352,7 +432,10 @@ export function AdminPage({ user, onLogout }) {
             return false;
         return isParticipantOpenForActiveEvent(Number(participant.id));
     }).length;
-    return (_jsxs("div", { className: "shell shell--admin", children: [_jsxs("div", { className: "topbar topbar--admin", children: [_jsx("strong", { children: "ESCAPP Verwaltung" }), _jsx("span", { children: user.displayName }), _jsx("button", { className: "btn btn-plain btn-plain--on-dark", onClick: () => void handleLogout(), children: "Logout" })] }), _jsxs("div", { className: "layout", children: [pendingParticipants.length > 0 && (_jsxs("div", { className: "card", style: { borderLeft: "4px solid #ff6b35" }, children: [_jsxs("h3", { children: ["Ausstehende Freischaltungen (", pendingParticipants.length, ")"] }), _jsx("p", { style: { marginBottom: "1rem", color: "#666" }, children: "Neue Teilnehmer m\u00FCssen freigeschaltet werden, bevor sie sich anmelden k\u00F6nnen." }), _jsxs("table", { className: "data-table", children: [_jsx("thead", { children: _jsxs("tr", { children: [_jsx("th", { children: "Benutzername" }), _jsx("th", { children: "Anzeigename" }), _jsx("th", { children: "Vollst\u00E4ndiger Name" }), _jsx("th", { children: "Registriert am" }), _jsx("th", { children: "Aktionen" })] }) }), _jsx("tbody", { children: pendingParticipants.map((participant) => (_jsxs("tr", { children: [_jsx("td", { children: participant.username }), _jsx("td", { children: participant.displayName }), _jsx("td", { children: participant.fullName || "—" }), _jsx("td", { children: new Date(participant.createdAt).toLocaleString("de-DE") }), _jsx("td", { children: _jsxs("div", { style: { display: "flex", gap: "8px" }, children: [_jsx("button", { className: "btn btn-success btn-sm", onClick: () => void approveParticipant(participant.id), children: "Freischalten" }), _jsx("button", { className: "btn btn-danger btn-sm", onClick: () => void rejectParticipant(participant.id), children: "Ablehnen" })] }) })] }, participant.id))) })] })] })), _jsxs("div", { className: "card", children: [_jsx("h3", { children: "Teilnehmer Verwaltung" }), _jsxs("p", { style: { marginTop: "-0.4rem", marginBottom: "0.8rem", color: "#666", fontSize: "0.9rem" }, children: ["Status bezieht sich auf aktives Event: ", activeEventForStatus ? `${activeEventForStatus.name} (#${activeEventForStatus.id})` : "kein aktives Event"] }), _jsxs("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: "1rem", marginBottom: "0.8rem", flexWrap: "wrap" }, children: [_jsxs("label", { style: { display: "flex", alignItems: "center", gap: "0.45rem", color: "#333", fontSize: "0.92rem" }, children: [_jsx("input", { type: "checkbox", checked: showOnlyOpenParticipants, onChange: (e) => setShowOnlyOpenParticipants(e.target.checked) }), "Nur offene Teilnehmer anzeigen"] }), activeEventForStatus && (_jsxs("span", { style: { color: "#666", fontSize: "0.9rem" }, children: ["Offen: ", _jsx("strong", { children: openParticipantsCount }), " von ", _jsx("strong", { children: participantRows.filter((p) => p?.id).length })] }))] }), _jsx(DataTable, { columns: [
+    const liveCountdownHint = liveControl?.liveState.tipEndState === "countdown"
+        ? `${liveControl.countdownRemainingSeconds}s`
+        : "—";
+    return (_jsxs("div", { className: "shell shell--admin", children: [_jsxs("div", { className: "topbar topbar--admin", children: [_jsx("strong", { children: "ESCAPP Verwaltung" }), _jsx("span", { children: user.displayName }), _jsx("button", { className: "btn btn-plain btn-plain--on-dark", onClick: () => void handleLogout(), children: "Logout" })] }), _jsxs("div", { className: "layout", children: [pendingParticipants.length > 0 && (_jsxs("div", { className: "card", style: { borderLeft: "4px solid #ff6b35" }, children: [_jsxs("h3", { children: ["Ausstehende Freischaltungen (", pendingParticipants.length, ")"] }), _jsx("p", { style: { marginBottom: "1rem", color: "#666" }, children: "Neue Teilnehmer m\u00FCssen freigeschaltet werden, bevor sie sich anmelden k\u00F6nnen." }), _jsxs("table", { className: "data-table", children: [_jsx("thead", { children: _jsxs("tr", { children: [_jsx("th", { children: "Benutzername" }), _jsx("th", { children: "Anzeigename" }), _jsx("th", { children: "Vollst\u00E4ndiger Name" }), _jsx("th", { children: "Registriert am" }), _jsx("th", { children: "Aktionen" })] }) }), _jsx("tbody", { children: pendingParticipants.map((participant) => (_jsxs("tr", { children: [_jsx("td", { children: participant.username }), _jsx("td", { children: participant.displayName }), _jsx("td", { children: participant.fullName || "—" }), _jsx("td", { children: new Date(participant.createdAt).toLocaleString("de-DE") }), _jsx("td", { children: _jsxs("div", { style: { display: "flex", gap: "8px" }, children: [_jsx("button", { className: "btn btn-success btn-sm", onClick: () => void approveParticipant(participant.id), children: "Freischalten" }), _jsx("button", { className: "btn btn-danger btn-sm", onClick: () => void rejectParticipant(participant.id), children: "Ablehnen" })] }) })] }, participant.id))) })] })] })), _jsxs("div", { className: "card", children: [_jsx("h3", { children: "Teilnehmer Verwaltung" }), _jsxs("p", { style: { marginTop: "-0.4rem", marginBottom: "0.8rem", color: "#666", fontSize: "0.9rem" }, children: ["Status bezieht sich auf aktives Event: ", activeEventForStatus ? `${activeEventForStatus.name} (#${activeEventForStatus.id})` : "kein aktives Event"] }), activeEventForStatus && (_jsxs("div", { style: { display: "grid", gap: "0.75rem", marginBottom: "0.9rem", border: "1px solid #dce3ea", borderRadius: "10px", padding: "0.8rem" }, children: [_jsxs("div", { style: { display: "flex", flexWrap: "wrap", gap: "0.5rem", alignItems: "center" }, children: [_jsx("button", { className: "btn", onClick: () => void triggerTipEnd(), disabled: !liveControl?.canStartTipEnd || liveControlLoading, children: "Tippende" }), _jsx("button", { className: "btn", onClick: () => void cancelManualTipEnd(), disabled: !liveControl?.canCancelTipEnd || liveControlLoading, children: "Tippende zur\u00FCcknehmen" }), _jsx("button", { className: "btn btn-primary", onClick: () => void triggerReveal(), disabled: !liveControl?.canStartReveal || liveControlLoading, children: "Reveal starten" }), _jsxs("span", { style: { color: "#666", fontSize: "0.88rem" }, children: ["Tippende: ", _jsx("strong", { children: liveControl?.liveState.tipEndState || "—" }), liveControl?.liveState.tipEndState === "countdown" && ` · Rest: ${liveCountdownHint}`] })] }), _jsxs("div", { style: { display: "flex", flexWrap: "wrap", gap: "0.75rem", alignItems: "flex-end" }, children: [_jsxs("label", { className: "form-field", style: { margin: 0 }, children: [_jsx("span", { className: "form-label", children: "Pause zwischen Teilnehmern (Sek.)" }), _jsx("input", { className: "form-input", type: "number", min: 0, value: participantPauseSecondsInput, onChange: (e) => setParticipantPauseSecondsInput(e.target.value), style: { width: "11rem" } })] }), _jsxs("label", { className: "form-field", style: { margin: 0 }, children: [_jsx("span", { className: "form-label", children: "Pause zwischen Punktwerten (Sek.)" }), _jsx("input", { className: "form-input", type: "number", min: 0, value: pointPauseSecondsInput, onChange: (e) => setPointPauseSecondsInput(e.target.value), style: { width: "11rem" } })] }), _jsxs("label", { className: "form-field", style: { margin: 0 }, children: [_jsx("span", { className: "form-label", children: "Tippende-Countdown (Sek.)" }), _jsx("input", { className: "form-input", type: "number", min: 0, value: tipEndCountdownSecondsInput, onChange: (e) => setTipEndCountdownSecondsInput(e.target.value), style: { width: "11rem" } })] }), _jsx("button", { className: "btn", onClick: () => void saveLiveSettings(), disabled: liveSettingsSaving || liveControlLoading, children: liveSettingsSaving ? "Speichert…" : "Live-Einstellungen speichern" })] })] })), _jsxs("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: "1rem", marginBottom: "0.8rem", flexWrap: "wrap" }, children: [_jsxs("label", { style: { display: "flex", alignItems: "center", gap: "0.45rem", color: "#333", fontSize: "0.92rem" }, children: [_jsx("input", { type: "checkbox", checked: showOnlyOpenParticipants, onChange: (e) => setShowOnlyOpenParticipants(e.target.checked) }), "Nur offene Teilnehmer anzeigen"] }), activeEventForStatus && (_jsxs("span", { style: { color: "#666", fontSize: "0.9rem" }, children: ["Offen: ", _jsx("strong", { children: openParticipantsCount }), " von ", _jsx("strong", { children: participantRows.filter((p) => p?.id).length })] }))] }), _jsx(DataTable, { columns: [
                                     { key: "username", label: "Benutzername", editable: true },
                                     { key: "displayName", label: "Anzeigename", editable: true },
                                     {

@@ -125,5 +125,10 @@ export const api = {
     adminRestoreEvent: (eventId) => request(`/admin/events/${eventId}/restore`, { method: "POST" }),
     // ESC API Import
     adminEscImportPreview: (year) => request(`/admin/esc-import/preview/${year}`),
-    adminEscImport: (year, setActive) => request("/admin/esc-import", { method: "POST", body: JSON.stringify({ year, setActive }) })
+    adminEscImport: (year, setActive) => request("/admin/esc-import", { method: "POST", body: JSON.stringify({ year, setActive }) }),
+    adminLiveControl: (eventId) => request(`/admin/events/${eventId}/live-control`),
+    adminUpdateLiveSettings: (eventId, payload) => request(`/admin/events/${eventId}/live-control/settings`, { method: "PUT", body: JSON.stringify(payload) }),
+    adminStartTipEnd: (eventId) => request(`/admin/events/${eventId}/live-control/tip-end/start`, { method: "POST" }),
+    adminCancelTipEnd: (eventId) => request(`/admin/events/${eventId}/live-control/tip-end/cancel`, { method: "POST" }),
+    adminStartReveal: (eventId) => request(`/admin/events/${eventId}/live-control/reveal/start`, { method: "POST" })
 };

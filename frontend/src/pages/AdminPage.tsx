@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api, clearTokens } from "../api";
+import type { AdminLiveControlPayload } from "../api";
 import { AdminEventManager } from "../components/AdminEventManager";
 import { DataTable } from "../components/DataTable";
 import { EscImport } from "../components/EscImport";
@@ -16,6 +17,12 @@ export function AdminPage({ user, onLogout }: { user: User; onLogout: () => void
   const [submissionStatusByParticipant, setSubmissionStatusByParticipant] = useState<Record<number, SubmissionStatus>>({});
   const [activeEventForStatus, setActiveEventForStatus] = useState<{ id: number; name: string } | null>(null);
   const [showOnlyOpenParticipants, setShowOnlyOpenParticipants] = useState(false);
+  const [liveControl, setLiveControl] = useState<AdminLiveControlPayload | null>(null);
+  const [liveControlLoading, setLiveControlLoading] = useState(false);
+  const [liveSettingsSaving, setLiveSettingsSaving] = useState(false);
+  const [participantPauseSecondsInput, setParticipantPauseSecondsInput] = useState("30");
+  const [pointPauseSecondsInput, setPointPauseSecondsInput] = useState("5");
+  const [tipEndCountdownSecondsInput, setTipEndCountdownSecondsInput] = useState("20");
   const [anthropicApiKey, setAnthropicApiKey] = useState("");
   const [anthropicModel, setAnthropicModel] = useState("");
   const [anthropicModels, setAnthropicModels] = useState<AnthropicModelOption[]>([]);
@@ -106,13 +113,21 @@ export function AdminPage({ user, onLogout }: { user: User; onLogout: () => void
       if (!activeEvent?.id) {
         setSubmissionStatusByParticipant({});
         setActiveEventForStatus(null);
+        setLiveControl(null);
         return;
       }
 
-      const [ratingsData, predictionsData] = await Promise.all([
+      setLiveControlLoading(true);
+      const [ratingsData, predictionsData, liveControlData] = await Promise.all([
         api.adminRatings(activeEvent.id),
-        api.adminPredictions(activeEvent.id)
+        api.adminPredictions(activeEvent.id),
+        api.adminLiveControl(activeEvent.id)
       ]);
+
+      setLiveControl(liveControlData);
+      setParticipantPauseSecondsInput(String(liveControlData.liveState.revealParticipantPauseSeconds ?? 30));
+      setPointPauseSecondsInput(String(liveControlData.liveState.revealPointPauseSeconds ?? 5));
+      setTipEndCountdownSecondsInput(String(liveControlData.liveState.tipEndCountdownSeconds ?? 20));
 
       const nextStatusMap: Record<number, SubmissionStatus> = {};
       for (const participant of normalizedParticipants) {
@@ -143,7 +158,9 @@ export function AdminPage({ user, onLogout }: { user: User; onLogout: () => void
 
       setSubmissionStatusByParticipant(nextStatusMap);
       setActiveEventForStatus({ id: activeEvent.id, name: activeEvent.name || `Event ${activeEvent.id}` });
+      setLiveControlLoading(false);
     } catch (err) {
+      setLiveControlLoading(false);
       setMessage(`Fehler beim Laden: ${(err as Error).message}`);
     }
   };
@@ -355,6 +372,71 @@ export function AdminPage({ user, onLogout }: { user: User; onLogout: () => void
     await load();
   };
 
+  const saveLiveSettings = async () => {
+    if (!activeEventForStatus?.id) return;
+
+    const revealParticipantPauseSeconds = Number(participantPauseSecondsInput);
+    const revealPointPauseSeconds = Number(pointPauseSecondsInput);
+    const tipEndCountdownSeconds = Number(tipEndCountdownSecondsInput);
+
+    if (
+      !Number.isFinite(revealParticipantPauseSeconds) ||
+      !Number.isFinite(revealPointPauseSeconds) ||
+      !Number.isFinite(tipEndCountdownSeconds)
+    ) {
+      setMessage("Bitte gültige Sekundenwerte eintragen.");
+      return;
+    }
+
+    setLiveSettingsSaving(true);
+    try {
+      await api.adminUpdateLiveSettings(activeEventForStatus.id, {
+        revealParticipantPauseSeconds: Math.max(0, Math.floor(revealParticipantPauseSeconds)),
+        revealPointPauseSeconds: Math.max(0, Math.floor(revealPointPauseSeconds)),
+        tipEndCountdownSeconds: Math.max(0, Math.floor(tipEndCountdownSeconds))
+      });
+      setMessage("Live-Einstellungen gespeichert");
+      await load();
+    } catch (err) {
+      setMessage(`Fehler beim Speichern der Live-Einstellungen: ${(err as Error).message}`);
+    } finally {
+      setLiveSettingsSaving(false);
+    }
+  };
+
+  const triggerTipEnd = async () => {
+    if (!activeEventForStatus?.id) return;
+    try {
+      await api.adminStartTipEnd(activeEventForStatus.id);
+      setMessage("Tippende-Countdown gestartet");
+      await load();
+    } catch (err) {
+      setMessage(`Tippende konnte nicht gestartet werden: ${(err as Error).message}`);
+    }
+  };
+
+  const cancelManualTipEnd = async () => {
+    if (!activeEventForStatus?.id) return;
+    try {
+      await api.adminCancelTipEnd(activeEventForStatus.id);
+      setMessage("Manueller Tippende-Countdown zurückgenommen");
+      await load();
+    } catch (err) {
+      setMessage(`Tippende-Rücknahme fehlgeschlagen: ${(err as Error).message}`);
+    }
+  };
+
+  const triggerReveal = async () => {
+    if (!activeEventForStatus?.id) return;
+    try {
+      await api.adminStartReveal(activeEventForStatus.id);
+      setMessage("Reveal gestartet");
+      await load();
+    } catch (err) {
+      setMessage(`Reveal konnte nicht gestartet werden: ${(err as Error).message}`);
+    }
+  };
+
   const isParticipantOpenForActiveEvent = (participantId: number) => {
     const status = submissionStatusByParticipant[participantId] || { ratingSubmitted: false, predictionSubmitted: false };
     return !status.ratingSubmitted || !status.predictionSubmitted;
@@ -372,6 +454,11 @@ export function AdminPage({ user, onLogout }: { user: User; onLogout: () => void
     if (!participant?.id || !activeEventForStatus) return false;
     return isParticipantOpenForActiveEvent(Number(participant.id));
   }).length;
+
+  const liveCountdownHint =
+    liveControl?.liveState.tipEndState === "countdown"
+      ? `${liveControl.countdownRemainingSeconds}s`
+      : "—";
 
   return (
     <div className="shell shell--admin">
@@ -435,6 +522,76 @@ export function AdminPage({ user, onLogout }: { user: User; onLogout: () => void
           <p style={{ marginTop: "-0.4rem", marginBottom: "0.8rem", color: "#666", fontSize: "0.9rem" }}>
             Status bezieht sich auf aktives Event: {activeEventForStatus ? `${activeEventForStatus.name} (#${activeEventForStatus.id})` : "kein aktives Event"}
           </p>
+          {activeEventForStatus && (
+            <div style={{ display: "grid", gap: "0.75rem", marginBottom: "0.9rem", border: "1px solid #dce3ea", borderRadius: "10px", padding: "0.8rem" }}>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", alignItems: "center" }}>
+                <button
+                  className="btn"
+                  onClick={() => void triggerTipEnd()}
+                  disabled={!liveControl?.canStartTipEnd || liveControlLoading}
+                >
+                  Tippende
+                </button>
+                <button
+                  className="btn"
+                  onClick={() => void cancelManualTipEnd()}
+                  disabled={!liveControl?.canCancelTipEnd || liveControlLoading}
+                >
+                  Tippende zurücknehmen
+                </button>
+                <button
+                  className="btn btn-primary"
+                  onClick={() => void triggerReveal()}
+                  disabled={!liveControl?.canStartReveal || liveControlLoading}
+                >
+                  Reveal starten
+                </button>
+                <span style={{ color: "#666", fontSize: "0.88rem" }}>
+                  Tippende: <strong>{liveControl?.liveState.tipEndState || "—"}</strong>
+                  {liveControl?.liveState.tipEndState === "countdown" && ` · Rest: ${liveCountdownHint}`}
+                </span>
+              </div>
+
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "0.75rem", alignItems: "flex-end" }}>
+                <label className="form-field" style={{ margin: 0 }}>
+                  <span className="form-label">Pause zwischen Teilnehmern (Sek.)</span>
+                  <input
+                    className="form-input"
+                    type="number"
+                    min={0}
+                    value={participantPauseSecondsInput}
+                    onChange={(e) => setParticipantPauseSecondsInput(e.target.value)}
+                    style={{ width: "11rem" }}
+                  />
+                </label>
+                <label className="form-field" style={{ margin: 0 }}>
+                  <span className="form-label">Pause zwischen Punktwerten (Sek.)</span>
+                  <input
+                    className="form-input"
+                    type="number"
+                    min={0}
+                    value={pointPauseSecondsInput}
+                    onChange={(e) => setPointPauseSecondsInput(e.target.value)}
+                    style={{ width: "11rem" }}
+                  />
+                </label>
+                <label className="form-field" style={{ margin: 0 }}>
+                  <span className="form-label">Tippende-Countdown (Sek.)</span>
+                  <input
+                    className="form-input"
+                    type="number"
+                    min={0}
+                    value={tipEndCountdownSecondsInput}
+                    onChange={(e) => setTipEndCountdownSecondsInput(e.target.value)}
+                    style={{ width: "11rem" }}
+                  />
+                </label>
+                <button className="btn" onClick={() => void saveLiveSettings()} disabled={liveSettingsSaving || liveControlLoading}>
+                  {liveSettingsSaving ? "Speichert…" : "Live-Einstellungen speichern"}
+                </button>
+              </div>
+            </div>
+          )}
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "1rem", marginBottom: "0.8rem", flexWrap: "wrap" }}>
             <label style={{ display: "flex", alignItems: "center", gap: "0.45rem", color: "#333", fontSize: "0.92rem" }}>
               <input

@@ -10,6 +10,7 @@ import {
   validateRatingDraftItems,
   validateRatingItems
 } from "../services/validation.js";
+import { getEventLiveState, maybeAutoStartTipEndCountdown, syncCountdownState } from "../services/liveReveal.js";
 
 export const participantRouter = express.Router();
 
@@ -59,6 +60,16 @@ const getOrCreatePrediction = async (conn, eventId, participantId) => {
   return created[0];
 };
 
+const ensureTipWindowOpen = async (eventId) => {
+  await syncCountdownState(pool, eventId);
+  const liveState = await getEventLiveState(pool, eventId);
+  if (liveState?.tipEndState === "reached") {
+    const error = new Error("Tippende wurde erreicht. Änderungen sind gesperrt.");
+    error.status = 409;
+    throw error;
+  }
+};
+
 participantRouter.get("/events/:id/ratings/me", async (req, res, next) => {
   try {
     const rows = await pool.query(
@@ -78,6 +89,7 @@ participantRouter.get("/events/:id/ratings/me", async (req, res, next) => {
 
 participantRouter.put("/events/:id/ratings/me", async (req, res, next) => {
   try {
+    await ensureTipWindowOpen(req.params.id);
     const event = await ensureEventExists(req.params.id);
     if (!event) return res.status(404).json({ message: "Event nicht gefunden" });
     if (event.status !== "open") return res.status(409).json({ message: "Event ist nicht offen" });
@@ -126,6 +138,7 @@ participantRouter.put("/events/:id/ratings/me", async (req, res, next) => {
 
 participantRouter.post("/events/:id/ratings/me/submit", async (req, res, next) => {
   try {
+    await ensureTipWindowOpen(req.params.id);
     const event = await ensureEventExists(req.params.id);
     if (!event) return res.status(404).json({ message: "Event nicht gefunden" });
     if (!["open", "locked"].includes(event.status)) {
@@ -156,6 +169,9 @@ participantRouter.post("/events/:id/ratings/me/submit", async (req, res, next) =
       return { idempotent: false };
     });
 
+    await maybeAutoStartTipEndCountdown(pool, req.params.id);
+    await syncCountdownState(pool, req.params.id);
+
     res.json({ ok: true, idempotent: response.idempotent });
   } catch (error) {
     next(error);
@@ -181,6 +197,7 @@ participantRouter.get("/events/:id/predictions/me", async (req, res, next) => {
 
 participantRouter.put("/events/:id/predictions/me", async (req, res, next) => {
   try {
+    await ensureTipWindowOpen(req.params.id);
     const event = await ensureEventExists(req.params.id);
     if (!event) return res.status(404).json({ message: "Event nicht gefunden" });
     if (event.status !== "open") return res.status(409).json({ message: "Event ist nicht offen" });
@@ -231,6 +248,7 @@ participantRouter.put("/events/:id/predictions/me", async (req, res, next) => {
 
 participantRouter.post("/events/:id/predictions/me/submit", async (req, res, next) => {
   try {
+    await ensureTipWindowOpen(req.params.id);
     const event = await ensureEventExists(req.params.id);
     if (!event) return res.status(404).json({ message: "Event nicht gefunden" });
     if (!["open", "locked"].includes(event.status)) {
@@ -261,6 +279,9 @@ participantRouter.post("/events/:id/predictions/me/submit", async (req, res, nex
       });
       return { idempotent: false };
     });
+
+    await maybeAutoStartTipEndCountdown(pool, req.params.id);
+    await syncCountdownState(pool, req.params.id);
 
     res.json({ ok: true, idempotent: response.idempotent });
   } catch (error) {

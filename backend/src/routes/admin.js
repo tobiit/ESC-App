@@ -6,6 +6,17 @@ import { requireAuth, requireRole } from "../middleware/auth.js";
 import { writeAuditLog } from "../middleware/audit.js";
 import { validateOfficialResultItems, validatePredictionItems, validateRatingItems } from "../services/validation.js";
 import { getCountryNameDe, isValidCountryCode } from "../services/countries.js";
+import {
+  cancelTipEndCountdown,
+  getCountdownRemainingSeconds,
+  getEventLiveState,
+  getSubmissionOverview,
+  maybeAutoStartTipEndCountdown,
+  startReveal,
+  startTipEndCountdown,
+  syncCountdownState,
+  updateLiveSettings
+} from "../services/liveReveal.js";
 
 /** Countries von der Eurovision-API laden (ESC API gibt Codes bereits zurück) */
 async function fetchEscCountries() {
@@ -818,6 +829,179 @@ adminRouter.put("/entries/:entryId", async (req, res, next) => {
 adminRouter.delete("/entries/:entryId", async (req, res, next) => {
   try {
     await pool.query("DELETE FROM entries WHERE id = ?", [req.params.entryId]);
+    res.json({ ok: true });
+  } catch (error) {
+    next(error);
+  }
+});
+
+adminRouter.get("/events/:id/live-control", async (req, res, next) => {
+  try {
+    const eventId = Number(req.params.id);
+    if (!Number.isFinite(eventId)) {
+      return res.status(400).json({ message: "Ungültige Event-ID" });
+    }
+
+    const event = await pool.query(
+      "SELECT id, name, status, is_active AS isActive, deleted_at AS deletedAt FROM events WHERE id = ? LIMIT 1",
+      [eventId]
+    );
+    if (!event[0]) return res.status(404).json({ message: "Event nicht gefunden" });
+
+    await syncCountdownState(pool, eventId);
+    await maybeAutoStartTipEndCountdown(pool, eventId);
+    await syncCountdownState(pool, eventId);
+
+    const [liveState, submission] = await Promise.all([
+      getEventLiveState(pool, eventId),
+      getSubmissionOverview(pool, eventId)
+    ]);
+
+    const countdownRemainingSeconds = getCountdownRemainingSeconds(liveState);
+    const canStartTipEnd = liveState.tipEndState === "open";
+    const canCancelTipEnd = liveState.tipEndState === "countdown" && liveState.tipEndSource === "admin";
+    const canStartReveal =
+      liveState.revealState === "idle" &&
+      (liveState.tipEndState === "reached" || submission.allSubmitted);
+
+    res.json({
+      event: {
+        id: Number(event[0].id),
+        name: event[0].name,
+        status: event[0].status,
+        isActive: Boolean(event[0].isActive),
+        deletedAt: event[0].deletedAt || null
+      },
+      liveState,
+      submission,
+      countdownRemainingSeconds,
+      canStartTipEnd,
+      canCancelTipEnd,
+      canStartReveal
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+adminRouter.put("/events/:id/live-control/settings", async (req, res, next) => {
+  try {
+    const eventId = Number(req.params.id);
+    if (!Number.isFinite(eventId)) {
+      return res.status(400).json({ message: "Ungültige Event-ID" });
+    }
+
+    const schema = z.object({
+      revealParticipantPauseSeconds: z.number().int().min(0).max(3600),
+      revealPointPauseSeconds: z.number().int().min(0).max(3600),
+      tipEndCountdownSeconds: z.number().int().min(0).max(3600)
+    });
+
+    const parsed = schema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ message: "Ungültige Nutzdaten" });
+
+    await updateLiveSettings(pool, eventId, parsed.data);
+    await writeAuditLog({
+      actorUserId: req.user.id,
+      actionType: "LIVE_SETTINGS_UPDATE",
+      entityType: "event",
+      entityId: String(eventId),
+      before: null,
+      after: parsed.data
+    });
+
+    res.json({ ok: true });
+  } catch (error) {
+    next(error);
+  }
+});
+
+adminRouter.post("/events/:id/live-control/tip-end/start", async (req, res, next) => {
+  try {
+    const eventId = Number(req.params.id);
+    if (!Number.isFinite(eventId)) {
+      return res.status(400).json({ message: "Ungültige Event-ID" });
+    }
+
+    await syncCountdownState(pool, eventId);
+    const started = await startTipEndCountdown(pool, eventId, "admin");
+    if (!started) {
+      const liveState = await getEventLiveState(pool, eventId);
+      return res.status(409).json({ message: `Tippende kann nicht gestartet werden (Status: ${liveState.tipEndState})` });
+    }
+
+    await writeAuditLog({
+      actorUserId: req.user.id,
+      actionType: "TIP_END_COUNTDOWN_START",
+      entityType: "event",
+      entityId: String(eventId)
+    });
+
+    res.json({ ok: true });
+  } catch (error) {
+    next(error);
+  }
+});
+
+adminRouter.post("/events/:id/live-control/tip-end/cancel", async (req, res, next) => {
+  try {
+    const eventId = Number(req.params.id);
+    if (!Number.isFinite(eventId)) {
+      return res.status(400).json({ message: "Ungültige Event-ID" });
+    }
+
+    await syncCountdownState(pool, eventId);
+    const canceled = await cancelTipEndCountdown(pool, eventId);
+    if (!canceled) {
+      return res.status(409).json({ message: "Tippende-Rücknahme ist nur bei manuell gestartetem Countdown möglich" });
+    }
+
+    await writeAuditLog({
+      actorUserId: req.user.id,
+      actionType: "TIP_END_COUNTDOWN_CANCEL",
+      entityType: "event",
+      entityId: String(eventId)
+    });
+
+    res.json({ ok: true });
+  } catch (error) {
+    next(error);
+  }
+});
+
+adminRouter.post("/events/:id/live-control/reveal/start", async (req, res, next) => {
+  try {
+    const eventId = Number(req.params.id);
+    if (!Number.isFinite(eventId)) {
+      return res.status(400).json({ message: "Ungültige Event-ID" });
+    }
+
+    await syncCountdownState(pool, eventId);
+    const [liveState, submission] = await Promise.all([
+      getEventLiveState(pool, eventId),
+      getSubmissionOverview(pool, eventId)
+    ]);
+
+    if (liveState.revealState !== "idle") {
+      return res.status(409).json({ message: "Reveal wurde bereits gestartet oder abgeschlossen" });
+    }
+
+    if (!(liveState.tipEndState === "reached" || submission.allSubmitted)) {
+      return res.status(409).json({ message: "Reveal kann erst nach Tippende oder vollständiger Einreichung gestartet werden" });
+    }
+
+    const started = await startReveal(pool, eventId);
+    if (!started) {
+      return res.status(409).json({ message: "Reveal konnte nicht gestartet werden" });
+    }
+
+    await writeAuditLog({
+      actorUserId: req.user.id,
+      actionType: "REVEAL_START",
+      entityType: "event",
+      entityId: String(eventId)
+    });
+
     res.json({ ok: true });
   } catch (error) {
     next(error);

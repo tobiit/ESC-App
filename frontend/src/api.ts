@@ -37,9 +37,55 @@ export type PublicLiveRankingPayload = {
 
 export type PublicLiveDashboardPayload = {
   event: { id: number; name: string; year?: number; status: string; isActive: boolean };
+  phase: "collecting" | "tip_end_countdown" | "post_tip_end_pre_reveal" | "revealing" | "finished";
+  submission: { totalParticipants: number; fullySubmitted: number; allSubmitted: boolean };
+  liveState: {
+    eventId: number;
+    tipEndState: "open" | "countdown" | "reached";
+    tipEndSource: "admin" | "auto_all_submitted" | null;
+    tipEndCountdownStartedAt: string | null;
+    tipEndCountdownSeconds: number;
+    tipEndReachedAt: string | null;
+    revealState: "idle" | "running" | "finished";
+    revealStartedAt: string | null;
+    revealFinishedAt: string | null;
+    revealPointPauseSeconds: number;
+    revealParticipantPauseSeconds: number;
+    winnerEntryId: number | null;
+    winnerReason: "points" | "most_12s" | "random_tiebreak" | null;
+    winnerTiebreakSeed: string | null;
+    winnerResolvedAt: string | null;
+    updatedAt: string | null;
+  };
+  countdownRemainingSeconds: number;
   participants: PublicLiveParticipantPayload[];
   localRanking: PublicLiveRankingPayload[];
+  reveal: {
+    state: "idle" | "running" | "finished";
+    activeParticipantId: number | null;
+    activeParticipantName: string | null;
+    currentStepIndex: number;
+    totalSteps: number;
+    currentAnnouncement: string | null;
+    winner: {
+      entryId: number;
+      artistName: string;
+      songTitle: string;
+      countryCode: string;
+      reason: "points" | "most_12s" | "random_tiebreak" | null;
+    } | null;
+  };
   updatedAt: string;
+};
+
+export type AdminLiveControlPayload = {
+  event: { id: number; name: string; status: string; isActive: boolean; deletedAt?: string | null };
+  liveState: PublicLiveDashboardPayload["liveState"];
+  submission: PublicLiveDashboardPayload["submission"];
+  countdownRemainingSeconds: number;
+  canStartTipEnd: boolean;
+  canCancelTipEnd: boolean;
+  canStartReveal: boolean;
 };
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
@@ -198,4 +244,17 @@ export const api = {
     request(`/admin/esc-import/preview/${year}`),
   adminEscImport: (year: number, setActive?: boolean) =>
     request("/admin/esc-import", { method: "POST", body: JSON.stringify({ year, setActive }) })
+  ,
+  adminLiveControl: (eventId: number) =>
+    request(`/admin/events/${eventId}/live-control`) as Promise<AdminLiveControlPayload>,
+  adminUpdateLiveSettings: (
+    eventId: number,
+    payload: { revealParticipantPauseSeconds: number; revealPointPauseSeconds: number; tipEndCountdownSeconds: number }
+  ) => request(`/admin/events/${eventId}/live-control/settings`, { method: "PUT", body: JSON.stringify(payload) }),
+  adminStartTipEnd: (eventId: number) =>
+    request(`/admin/events/${eventId}/live-control/tip-end/start`, { method: "POST" }),
+  adminCancelTipEnd: (eventId: number) =>
+    request(`/admin/events/${eventId}/live-control/tip-end/cancel`, { method: "POST" }),
+  adminStartReveal: (eventId: number) =>
+    request(`/admin/events/${eventId}/live-control/reveal/start`, { method: "POST" })
 };

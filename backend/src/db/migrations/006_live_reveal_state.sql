@@ -1,0 +1,21 @@
+CREATE TABLE IF NOT EXISTS event_live_state (
+  event_id BIGINT PRIMARY KEY,
+  tip_end_state ENUM('open','countdown','reached') NOT NULL DEFAULT 'open',
+  tip_end_source ENUM('admin','auto_all_submitted') NULL,
+  tip_end_countdown_started_at DATETIME NULL,
+  tip_end_countdown_seconds INT NOT NULL DEFAULT 20,
+  tip_end_reached_at DATETIME NULL,
+  reveal_state ENUM('idle','running','finished') NOT NULL DEFAULT 'idle',
+  reveal_started_at DATETIME NULL,
+  reveal_finished_at DATETIME NULL,
+  reveal_point_pause_seconds INT NOT NULL DEFAULT 5,
+  reveal_participant_pause_seconds INT NOT NULL DEFAULT 30,
+  winner_entry_id BIGINT NULL,
+  winner_reason ENUM('points','most_12s','random_tiebreak') NULL,
+  winner_tiebreak_seed VARCHAR(120) NULL,
+  winner_resolved_at DATETIME NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_event_live_state_event FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE,
+  CONSTRAINT fk_event_live_state_winner_entry FOREIGN KEY (winner_entry_id) REFERENCES entries(id) ON DELETE SET NULL
+)
