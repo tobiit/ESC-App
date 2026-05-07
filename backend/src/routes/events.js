@@ -143,6 +143,22 @@ eventsRouter.get("/public/live", async (_req, res, next) => {
               : "post_tip_end_pre_reveal";
 
     const activeStep = revealRuntime.activeStep;
+    let currentAnnouncementRemainingMs = 0;
+
+    if (activeStep && liveState.revealState === "running" && liveState.revealStartedAt) {
+      const revealStartedAtMs = new Date(liveState.revealStartedAt).getTime();
+      if (Number.isFinite(revealStartedAtMs)) {
+        const nextStep = revealRuntime.timeline[activeStep.stepIndex + 1] || null;
+        if (nextStep) {
+          const stepStartAtMs = revealStartedAtMs + Number(activeStep.startAtSeconds || 0) * 1000;
+          const nextStepStartAtMs = revealStartedAtMs + Number(nextStep.startAtSeconds || 0) * 1000;
+          const stepDurationMs = Math.max(0, nextStepStartAtMs - stepStartAtMs);
+          const visibleWindowMs = Math.floor(stepDurationMs * 0.5);
+          currentAnnouncementRemainingMs = Math.max(0, stepStartAtMs + visibleWindowMs - Date.now());
+        }
+      }
+    }
+
     const winnerRow =
       liveState.winnerEntryId != null
         ? localRanking.find((row) => Number(row.entryId) === Number(liveState.winnerEntryId))
@@ -172,6 +188,7 @@ eventsRouter.get("/public/live", async (_req, res, next) => {
               getCountryNameDe(localRanking.find((row) => row.entryId === activeStep.entryId)?.countryCode || "")
             }`
           : null,
+        currentAnnouncementRemainingMs,
         winner: winnerRow
           ? {
               entryId: winnerRow.entryId,

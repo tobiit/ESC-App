@@ -22,10 +22,12 @@ export function PublicLivePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [winnerOverlayDismissed, setWinnerOverlayDismissed] = useState(false);
+  const [showRevealAnnouncement, setShowRevealAnnouncement] = useState(false);
   const [rankingContainerWidth, setRankingContainerWidth] = useState(0);
   const rankingRowRefs = useRef(new Map<number, HTMLTableRowElement>());
   const previousRowTopByEntry = useRef(new Map<number, number>());
   const rankingContainerRef = useRef<HTMLDivElement | null>(null);
+  const announcementKeyRef = useRef<string | null>(null);
 
   const phase = dashboard?.phase ?? "collecting";
   const shouldAutoRefresh = phase !== "finished";
@@ -127,6 +129,41 @@ export function PublicLivePage() {
   useEffect(() => {
     setWinnerOverlayDismissed(false);
   }, [winnerOverlayKey]);
+
+  useEffect(() => {
+    const announcement = dashboard?.reveal?.currentAnnouncement;
+    if (dashboard?.phase !== "revealing" || !announcement) {
+      setShowRevealAnnouncement(false);
+      announcementKeyRef.current = null;
+      return;
+    }
+
+    const nextKey = `${dashboard.reveal.currentStepIndex}:${announcement}`;
+    if (announcementKeyRef.current === nextKey) {
+      return;
+    }
+    announcementKeyRef.current = nextKey;
+
+    const remainingMs = Math.max(0, Number(dashboard.reveal.currentAnnouncementRemainingMs || 0));
+    if (remainingMs <= 0) {
+      setShowRevealAnnouncement(false);
+      return;
+    }
+
+    setShowRevealAnnouncement(true);
+    const timeoutId = window.setTimeout(() => {
+      setShowRevealAnnouncement(false);
+    }, remainingMs);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [
+    dashboard?.phase,
+    dashboard?.reveal?.currentAnnouncement,
+    dashboard?.reveal?.currentAnnouncementRemainingMs,
+    dashboard?.reveal?.currentStepIndex
+  ]);
 
   const statusLabel =
     phase === "tip_end_countdown"
@@ -317,7 +354,7 @@ export function PublicLivePage() {
           )}
         </div>
 
-        {dashboard?.phase === "revealing" && dashboard.reveal.currentAnnouncement && (
+        {dashboard?.phase === "revealing" && dashboard.reveal.currentAnnouncement && showRevealAnnouncement && (
           <div className="public-live-overlay" role="status" aria-live="polite">
             <div className="public-live-overlay__bubble">{dashboard.reveal.currentAnnouncement}</div>
           </div>

@@ -67,6 +67,7 @@ export type PublicLiveDashboardPayload = {
     currentStepIndex: number;
     totalSteps: number;
     currentAnnouncement: string | null;
+    currentAnnouncementRemainingMs: number;
     winner: {
       entryId: number;
       artistName: string;

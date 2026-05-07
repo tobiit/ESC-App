@@ -16,10 +16,12 @@ export function PublicLivePage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [winnerOverlayDismissed, setWinnerOverlayDismissed] = useState(false);
+    const [showRevealAnnouncement, setShowRevealAnnouncement] = useState(false);
     const [rankingContainerWidth, setRankingContainerWidth] = useState(0);
     const rankingRowRefs = useRef(new Map());
     const previousRowTopByEntry = useRef(new Map());
     const rankingContainerRef = useRef(null);
+    const announcementKeyRef = useRef(null);
     const phase = dashboard?.phase ?? "collecting";
     const shouldAutoRefresh = phase !== "finished";
     const refreshMs = phase === "revealing" || phase === "tip_end_countdown" ? 1000 : 5000;
@@ -107,6 +109,31 @@ export function PublicLivePage() {
     useEffect(() => {
         setWinnerOverlayDismissed(false);
     }, [winnerOverlayKey]);
+    useEffect(() => {
+        const announcement = dashboard?.reveal?.currentAnnouncement;
+        if (dashboard?.phase !== "revealing" || !announcement) {
+            setShowRevealAnnouncement(false);
+            announcementKeyRef.current = null;
+            return;
+        }
+        const nextKey = `${dashboard.reveal.currentStepIndex}:${announcement}`;
+        if (announcementKeyRef.current === nextKey) {
+            return;
+        }
+        announcementKeyRef.current = nextKey;
+        const remainingMs = Math.max(0, Number(dashboard.reveal.currentAnnouncementRemainingMs || 0));
+        if (remainingMs <= 0) {
+            setShowRevealAnnouncement(false);
+            return;
+        }
+        setShowRevealAnnouncement(true);
+        const timeoutId = window.setTimeout(() => {
+            setShowRevealAnnouncement(false);
+        }, remainingMs);
+        return () => {
+            window.clearTimeout(timeoutId);
+        };
+    }, [dashboard?.phase, dashboard?.reveal?.currentAnnouncement, dashboard?.reveal?.currentAnnouncementRemainingMs, dashboard?.reveal?.currentStepIndex]);
     const statusLabel = phase === "tip_end_countdown"
         ? `Tippende in ${dashboard?.countdownRemainingSeconds ?? 0}s`
         : phase === "post_tip_end_pre_reveal"
@@ -124,5 +151,5 @@ export function PublicLivePage() {
                                                 }, children: [_jsx("td", { children: _jsx("strong", { children: entry.rank }) }), _jsx("td", { className: "public-live-table__flag", title: getCountryNameDe(entry.countryCode), children: _jsx("span", { "aria-hidden": "true", children: getFlagEmoji(entry.countryCode) }) }), _jsx("td", { children: entry.artistName || "—" }), _jsx("td", { children: entry.songTitle || "—" }), _jsx("td", { children: getCountryNameDe(entry.countryCode) }), _jsx("td", { children: entry.votes }), _jsx("td", { children: entry.points })] }, entry.entryId))) })] }, `ranking-col-${columnIndex}`))) })), showRankingTable && !showTwoColumnRanking && (_jsxs("table", { className: "data-table public-live-table", children: [_jsx("thead", { children: _jsxs("tr", { children: [_jsx("th", { children: "Rang" }), _jsx("th", { children: "Flagge" }), _jsx("th", { children: "S\u00E4nger" }), _jsx("th", { children: "Lied" }), _jsx("th", { children: "Land" }), _jsx("th", { children: "Stimmen" }), _jsx("th", { children: "Punkte" })] }) }), _jsxs("tbody", { children: [rankingEntries.map((entry) => (_jsxs("tr", { ref: (row) => {
                                                     if (row)
                                                         rankingRowRefs.current.set(entry.entryId, row);
-                                                }, children: [_jsx("td", { children: _jsx("strong", { children: entry.rank }) }), _jsx("td", { className: "public-live-table__flag", title: getCountryNameDe(entry.countryCode), children: _jsx("span", { "aria-hidden": "true", children: getFlagEmoji(entry.countryCode) }) }), _jsx("td", { children: entry.artistName || "—" }), _jsx("td", { children: entry.songTitle || "—" }), _jsx("td", { children: getCountryNameDe(entry.countryCode) }), _jsx("td", { children: entry.votes }), _jsx("td", { children: entry.points })] }, entry.entryId))), !loading && rankingEntries.length === 0 && (_jsx("tr", { children: _jsx("td", { colSpan: 7, children: "Noch keine Bewertungen vorhanden." }) }))] })] }))] }), dashboard?.phase === "revealing" && dashboard.reveal.currentAnnouncement && (_jsx("div", { className: "public-live-overlay", role: "status", "aria-live": "polite", children: _jsx("div", { className: "public-live-overlay__bubble", children: dashboard.reveal.currentAnnouncement }) })), dashboard?.phase === "finished" && dashboard.reveal.winner && !winnerOverlayDismissed && (_jsx("div", { className: "public-live-overlay", role: "status", "aria-live": "polite", children: _jsxs("div", { className: "public-live-overlay__bubble public-live-overlay__bubble--winner", children: [_jsx("button", { type: "button", className: "public-live-overlay__close", onClick: () => setWinnerOverlayDismissed(true), "aria-label": "Gewinneranzeige schlie\u00DFen", children: "\u2715" }), "Gewinner der ESC-Party \u2013 ", dashboard.reveal.winner.artistName || "—", ", ", dashboard.reveal.winner.songTitle || "—", ", ", getCountryNameDe(dashboard.reveal.winner.countryCode)] }) }))] })] }));
+                                                }, children: [_jsx("td", { children: _jsx("strong", { children: entry.rank }) }), _jsx("td", { className: "public-live-table__flag", title: getCountryNameDe(entry.countryCode), children: _jsx("span", { "aria-hidden": "true", children: getFlagEmoji(entry.countryCode) }) }), _jsx("td", { children: entry.artistName || "—" }), _jsx("td", { children: entry.songTitle || "—" }), _jsx("td", { children: getCountryNameDe(entry.countryCode) }), _jsx("td", { children: entry.votes }), _jsx("td", { children: entry.points })] }, entry.entryId))), !loading && rankingEntries.length === 0 && (_jsx("tr", { children: _jsx("td", { colSpan: 7, children: "Noch keine Bewertungen vorhanden." }) }))] })] }))] }), dashboard?.phase === "revealing" && dashboard.reveal.currentAnnouncement && showRevealAnnouncement && (_jsx("div", { className: "public-live-overlay", role: "status", "aria-live": "polite", children: _jsx("div", { className: "public-live-overlay__bubble", children: dashboard.reveal.currentAnnouncement }) })), dashboard?.phase === "finished" && dashboard.reveal.winner && !winnerOverlayDismissed && (_jsx("div", { className: "public-live-overlay", role: "status", "aria-live": "polite", children: _jsxs("div", { className: "public-live-overlay__bubble public-live-overlay__bubble--winner", children: [_jsx("button", { type: "button", className: "public-live-overlay__close", onClick: () => setWinnerOverlayDismissed(true), "aria-label": "Gewinneranzeige schlie\u00DFen", children: "\u2715" }), "Gewinner der ESC-Party \u2013 ", dashboard.reveal.winner.artistName || "—", ", ", dashboard.reveal.winner.songTitle || "—", ", ", getCountryNameDe(dashboard.reveal.winner.countryCode)] }) }))] })] }));
 }
