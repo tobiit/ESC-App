@@ -20,9 +20,39 @@ import {
 
 /** Countries von der Eurovision-API laden (ESC API gibt Codes bereits zurück) */
 async function fetchEscCountries() {
-  const resp = await fetch("https://eurovisionapi.runasp.net/api/countries");
-  if (!resp.ok) return null;
-  return resp.json();
+  try {
+    const resp = await fetch("https://eurovisionapi.runasp.net/api/countries");
+    if (!resp.ok) return null;
+    return resp.json();
+  } catch {
+    // Länderliste ist optional für Anzeige/Name-Resolution.
+    // Bei Netzproblemen soll der Import trotzdem laufen.
+    return null;
+  }
+}
+
+async function fetchEscContest(year) {
+  const url = `https://eurovisionapi.runasp.net/api/senior/contests/${year}`;
+  const maxAttempts = 4;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      return await fetch(url);
+    } catch (error) {
+      const code = error?.cause?.code || "";
+      const isRetriable = code === "EAI_AGAIN" || code === "ENOTFOUND" || code === "ETIMEDOUT";
+      const isLastAttempt = attempt === maxAttempts;
+
+      if (!isRetriable || isLastAttempt) {
+        throw new Error("Eurovision API ist aktuell nicht erreichbar");
+      }
+
+      // Kurzer Backoff für instabile DNS-Auflösung in lokalen Container-Setups.
+      await new Promise((resolve) => setTimeout(resolve, attempt * 250));
+    }
+  }
+
+  throw new Error("Eurovision API ist aktuell nicht erreichbar");
 }
 
 /**
@@ -1304,7 +1334,7 @@ adminRouter.get("/esc-import/preview/:year", async (req, res, next) => {
     }
 
     const [contestResp, countriesData] = await Promise.all([
-      fetch(`https://eurovisionapi.runasp.net/api/senior/contests/${year}`),
+      fetchEscContest(year),
       fetchEscCountries()
     ]);
 
@@ -1366,7 +1396,7 @@ adminRouter.post("/esc-import", async (req, res, next) => {
     const { year, setActive } = parsed.data;
 
     const [contestResp, countriesData] = await Promise.all([
-      fetch(`https://eurovisionapi.runasp.net/api/senior/contests/${year}`),
+      fetchEscContest(year),
       fetchEscCountries()
     ]);
 

@@ -8,7 +8,20 @@ export function EscImport({ onImported }) {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
+    const validateYear = (value) => {
+        if (!Number.isInteger(value) || value < 1956 || value > 2100) {
+            return "Bitte ein gültiges Jahr zwischen 1956 und 2100 eingeben.";
+        }
+        return null;
+    };
     const loadPreview = async () => {
+        const yearError = validateYear(year);
+        if (yearError) {
+            setError(yearError);
+            setSuccess("");
+            setPreview(null);
+            return;
+        }
         setError("");
         setSuccess("");
         setPreview(null);
@@ -25,6 +38,12 @@ export function EscImport({ onImported }) {
         }
     };
     const doImport = async () => {
+        const yearError = validateYear(year);
+        if (yearError) {
+            setError(yearError);
+            setSuccess("");
+            return;
+        }
         setError("");
         setSuccess("");
         setLoading(true);

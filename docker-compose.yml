@@ -20,9 +20,13 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     container_name: escapp-backend
+    dns:
+      - 1.1.1.1
+      - 8.8.8.8
     environment:
       PORT: 4000
       NODE_ENV: development
+      NODE_TLS_REJECT_UNAUTHORIZED: "0"
       DB_HOST: mariadb
       DB_PORT: 33306
       DB_USER: escapp

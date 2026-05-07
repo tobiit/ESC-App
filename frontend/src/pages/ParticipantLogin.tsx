@@ -8,10 +8,14 @@ export function ParticipantLogin({ onLogin }: { onLogin: (user: User) => void })
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
+  const [deletePending, setDeletePending] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async () => {
     setError("");
+    setMessage("");
     try {
       const payload = await api.login(username, password, false);
       setTokens(payload);
@@ -20,6 +24,43 @@ export function ParticipantLogin({ onLogin }: { onLogin: (user: User) => void })
       navigate("/");
     } catch (err) {
       setError((err as Error).message);
+    }
+  };
+
+  const handleRequestDelete = async () => {
+    setError("");
+    setMessage("");
+
+    if (!username.trim() || !password) {
+      setError("Bitte Benutzername und Passwort eingeben.");
+      return;
+    }
+
+    setDeletePending(true);
+    try {
+      await api.verifyDeleteAccount(username.trim(), password);
+      setShowDeleteConfirm(true);
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setDeletePending(false);
+    }
+  };
+
+  const handleConfirmDelete = async () => {
+    setError("");
+    setMessage("");
+    setDeletePending(true);
+    try {
+      await api.deleteAccount(username.trim(), password);
+      setShowDeleteConfirm(false);
+      setUsername("");
+      setPassword("");
+      setMessage("Konto wurde gelöscht und anonymisiert.");
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setDeletePending(false);
     }
   };
 
@@ -54,7 +95,26 @@ export function ParticipantLogin({ onLogin }: { onLogin: (user: User) => void })
         <button className="btn btn-primary" onClick={() => void handleSubmit()}>
           Anmelden
         </button>
+        <button className="btn btn-secondary action" onClick={() => void handleRequestDelete()} disabled={deletePending}>
+          {deletePending ? "Prüfe…" : "Account löschen"}
+        </button>
+
+        {showDeleteConfirm && (
+          <div className="submit-confirmation" role="dialog" aria-modal="true" aria-labelledby="delete-account-confirmation-title">
+            <div className="submit-confirmation__backdrop" onClick={() => !deletePending && setShowDeleteConfirm(false)} />
+            <div className="submit-confirmation__card card">
+              <h3 id="delete-account-confirmation-title">Konto endgültig löschen?</h3>
+              <p>Benutzer und Login endgültig löschen? (Dies kann nicht rückgängig gemacht werden)</p>
+              <div className="submit-confirmation__actions">
+                <button className="btn btn-danger" onClick={() => void handleConfirmDelete()} disabled={deletePending}>Ja</button>
+                <button className="btn" onClick={() => setShowDeleteConfirm(false)} disabled={deletePending}>Nein</button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {error && <p className="form-message form-message--error">{error}</p>}
+        {message && <p className="form-message" style={{ color: "var(--esc-color-green-700, green)" }}>{message}</p>}
 
         <div className="login-register-cta">
           <p className="login-register-cta__label">Noch kein Konto?</p>

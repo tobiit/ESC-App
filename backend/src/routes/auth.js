@@ -5,7 +5,7 @@ import jwt from "jsonwebtoken";
 import rateLimit from "express-rate-limit";
 import { z } from "zod";
 import { config } from "../config.js";
-import { pool } from "../db/pool.js";
+import { pool, withTx } from "../db/pool.js";
 import { signAccessToken, signRefreshToken } from "../middleware/auth.js";
 
 export const authRouter = express.Router();
@@ -22,7 +22,46 @@ const registrationSchema = z.object({
   acceptedTerms: z.boolean().refine(val => val === true, { message: "Nutzungsbedingungen müssen akzeptiert werden" })
 });
 
+const deleteAccountSchema = z.object({ username: z.string().min(2), password: z.string().min(4) });
+
 const hashRefreshToken = (token) => crypto.createHash("sha256").update(token).digest("hex");
+
+const validateParticipantCredentialsForDeletion = async (username, password) => {
+  const rows = await pool.query(
+    "SELECT id, role, username, password_hash, is_active FROM users WHERE username = ? LIMIT 1",
+    [username]
+  );
+  const user = rows[0];
+  if (!user || user.role !== "participant") {
+    return { ok: false, status: 401, message: "Anmeldung fehlgeschlagen" };
+  }
+
+  if (!user.is_active) {
+    return { ok: false, status: 400, message: "Konto ist bereits gelöscht oder deaktiviert" };
+  }
+
+  const valid = await bcrypt.compare(password, user.password_hash);
+  if (!valid) {
+    return { ok: false, status: 401, message: "Anmeldung fehlgeschlagen" };
+  }
+
+  return { ok: true, user };
+};
+
+const generateDeletedUsername = () => crypto.randomBytes(6).toString("hex");
+
+const generateUniqueDeletedUsername = async (conn) => {
+  for (let attempt = 0; attempt < 10; attempt++) {
+    const candidate = generateDeletedUsername();
+    const existing = await conn.query("SELECT id FROM users WHERE username = ? LIMIT 1", [candidate]);
+    if (existing.length === 0) return candidate;
+  }
+
+  const fallback = `${Date.now().toString(36)}${crypto.randomBytes(4).toString("hex")}`
+    .replace(/[^a-zA-Z0-9]/g, "")
+    .slice(0, 12);
+  return fallback.padEnd(12, "0");
+};
 
 const issueTokens = async (user) => {
   const accessToken = signAccessToken(user);
@@ -168,6 +207,61 @@ authRouter.post("/logout", async (req, res, next) => {
     const tokenHash = hashRefreshToken(parsed.data.refreshToken);
     await pool.query("DELETE FROM refresh_tokens WHERE token_hash = ?", [tokenHash]);
     res.json({ ok: true });
+  } catch (error) {
+    next(error);
+  }
+});
+
+authRouter.post("/delete-account/verify", loginLimiter, async (req, res, next) => {
+  try {
+    const parsed = deleteAccountSchema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ message: "Ungültige Nutzdaten" });
+
+    const validation = await validateParticipantCredentialsForDeletion(parsed.data.username, parsed.data.password);
+    if (!validation.ok) {
+      return res.status(validation.status).json({ message: validation.message });
+    }
+
+    return res.json({ ok: true });
+  } catch (error) {
+    next(error);
+  }
+});
+
+authRouter.post("/delete-account", loginLimiter, async (req, res, next) => {
+  try {
+    const parsed = deleteAccountSchema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ message: "Ungültige Nutzdaten" });
+
+    const validation = await validateParticipantCredentialsForDeletion(parsed.data.username, parsed.data.password);
+    if (!validation.ok) {
+      return res.status(validation.status).json({ message: validation.message });
+    }
+
+    const userId = Number(validation.user.id);
+
+    await withTx(async (conn) => {
+      const anonymizedUsername = await generateUniqueDeletedUsername(conn);
+      const disabledPasswordHash = await bcrypt.hash(crypto.randomUUID(), 12);
+
+      await conn.query(
+        `UPDATE users
+            SET username = ?,
+                password_hash = ?,
+                display_name = 'Gelöscht',
+                full_name = 'Gelöschter User',
+                is_active = FALSE,
+                is_approved = FALSE,
+                failed_login_count = 0,
+                locked_until = NULL
+          WHERE id = ?`,
+        [anonymizedUsername, disabledPasswordHash, userId]
+      );
+
+      await conn.query("DELETE FROM refresh_tokens WHERE user_id = ?", [userId]);
+    });
+
+    return res.json({ ok: true });
   } catch (error) {
     next(error);
   }

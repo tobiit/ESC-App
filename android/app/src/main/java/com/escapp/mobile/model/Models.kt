@@ -44,6 +44,12 @@ data class LoginResponse(
 @Serializable
 data class LogoutRequest(val refreshToken: String)
 
+@Serializable
+data class DeleteAccountRequest(val username: String, val password: String)
+
+@Serializable
+data class OkResponse(val ok: Boolean)
+
 /* ── Event / Entries ── */
 
 @Serializable

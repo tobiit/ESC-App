@@ -314,6 +314,8 @@ private fun EscApp(vm: AppViewModel) {
                     "login" -> {
                         LoginScreen(
                             onLogin = vm::login,
+                            onVerifyDeleteAccount = vm::verifyDeleteAccount,
+                            onDeleteAccount = vm::deleteAccount,
                             onNavigateToRegister = {
                                 currentScreen = "register"
                                 registerSuccess = false

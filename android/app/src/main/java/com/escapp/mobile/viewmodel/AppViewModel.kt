@@ -101,6 +101,38 @@ class AppViewModel(
         }
     }
 
+    fun verifyDeleteAccount(username: String, password: String, onResult: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            ui = ui.copy(loading = true, error = null)
+            runCatching {
+                api.verifyDeleteAccount(DeleteAccountRequest(username, password))
+            }.onSuccess {
+                ui = ui.copy(loading = false, error = null)
+                onResult(true)
+            }.onFailure { err ->
+                ui = ui.copy(loading = false, error = parseError(err))
+                onResult(false)
+            }
+        }
+    }
+
+    fun deleteAccount(username: String, password: String, onResult: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            ui = ui.copy(loading = true, error = null)
+            runCatching {
+                api.deleteAccount(DeleteAccountRequest(username, password))
+            }.onSuccess {
+                tokenStore.clear()
+                draftStore.clear()
+                ui = UiState()
+                onResult(true)
+            }.onFailure { err ->
+                ui = ui.copy(loading = false, error = parseError(err))
+                onResult(false)
+            }
+        }
+    }
+
     /* ── Event data loading ── */
 
     fun loadEventData() {

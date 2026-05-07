@@ -20,12 +20,19 @@ import com.escapp.mobile.ui.theme.*
 @Composable
 fun LoginScreen(
     onLogin: (String, String) -> Unit,
+    onVerifyDeleteAccount: (String, String, (Boolean) -> Unit) -> Unit,
+    onDeleteAccount: (String, String, (Boolean) -> Unit) -> Unit,
     onNavigateToRegister: () -> Unit,
     isLoading: Boolean,
     error: String?
 ) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var localError by remember { mutableStateOf<String?>(null) }
+    var infoMessage by remember { mutableStateOf<String?>(null) }
+    var showDeleteConfirm by remember { mutableStateOf(false) }
+
+    val displayError = localError ?: error
 
     Box(
         modifier = Modifier
@@ -120,11 +127,45 @@ fun LoginScreen(
                     }
                 }
 
+                /* ── Delete account button (analog zu btn-secondary action) ── */
+                OutlinedButton(
+                    onClick = {
+                        localError = null
+                        infoMessage = null
+                        if (username.isBlank() || password.isBlank()) {
+                            localError = "Bitte Benutzername und Passwort eingeben."
+                        } else {
+                            onVerifyDeleteAccount(username, password) { verified ->
+                                if (verified) {
+                                    showDeleteConfirm = true
+                                }
+                            }
+                        }
+                    },
+                    enabled = !isLoading,
+                    modifier = Modifier.fillMaxWidth().height(48.dp),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = MaterialTheme.colorScheme.secondary
+                    ),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.secondary),
+                    shape = MaterialTheme.shapes.medium
+                ) {
+                    Text("Account löschen", style = MaterialTheme.typography.labelLarge)
+                }
+
                 /* ── Error message ── */
-                if (error != null) {
+                if (displayError != null) {
                     Text(
-                        text = error,
+                        text = displayError,
                         color = MaterialTheme.colorScheme.error,  // Red700
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+
+                if (infoMessage != null) {
+                    Text(
+                        text = infoMessage!!,
+                        color = MaterialTheme.colorScheme.secondary,
                         style = MaterialTheme.typography.bodySmall
                     )
                 }
@@ -153,6 +194,45 @@ fun LoginScreen(
                     Text(
                         "Als neuer Teilnehmer registrieren",
                         style = MaterialTheme.typography.labelLarge
+                    )
+                }
+
+                if (showDeleteConfirm) {
+                    AlertDialog(
+                        onDismissRequest = { if (!isLoading) showDeleteConfirm = false },
+                        title = {
+                            Text("Konto endgültig löschen?")
+                        },
+                        text = {
+                            Text("Benutzer und Login endgültig löschen? (Dies kann nicht rückgängig gemacht werden)")
+                        },
+                        confirmButton = {
+                            TextButton(
+                                onClick = {
+                                    localError = null
+                                    infoMessage = null
+                                    onDeleteAccount(username, password) { deleted ->
+                                        if (deleted) {
+                                            showDeleteConfirm = false
+                                            username = ""
+                                            password = ""
+                                            infoMessage = "Konto wurde gelöscht und anonymisiert."
+                                        }
+                                    }
+                                },
+                                enabled = !isLoading
+                            ) {
+                                Text("Ja", color = MaterialTheme.colorScheme.error)
+                            }
+                        },
+                        dismissButton = {
+                            TextButton(
+                                onClick = { showDeleteConfirm = false },
+                                enabled = !isLoading
+                            ) {
+                                Text("Nein")
+                            }
+                        }
                     )
                 }
             }

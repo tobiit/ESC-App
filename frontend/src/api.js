@@ -50,6 +50,14 @@ export const api = {
         method: "POST",
         body: JSON.stringify(payload)
     }),
+    verifyDeleteAccount: (username, password) => request("/auth/delete-account/verify", {
+        method: "POST",
+        body: JSON.stringify({ username, password })
+    }),
+    deleteAccount: (username, password) => request("/auth/delete-account", {
+        method: "POST",
+        body: JSON.stringify({ username, password })
+    }),
     logout: () => request("/auth/logout", {
         method: "POST",
         body: JSON.stringify({ refreshToken })

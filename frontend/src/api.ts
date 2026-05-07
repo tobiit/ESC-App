@@ -148,6 +148,16 @@ export const api = {
       method: "POST",
       body: JSON.stringify(payload)
     }) as Promise<{ message: string }>,
+  verifyDeleteAccount: (username: string, password: string) =>
+    request("/auth/delete-account/verify", {
+      method: "POST",
+      body: JSON.stringify({ username, password })
+    }) as Promise<{ ok: boolean }>,
+  deleteAccount: (username: string, password: string) =>
+    request("/auth/delete-account", {
+      method: "POST",
+      body: JSON.stringify({ username, password })
+    }) as Promise<{ ok: boolean }>,
   logout: () =>
     request("/auth/logout", {
       method: "POST",
