@@ -9,6 +9,7 @@ Diese Nutzungsbedingungen gelten für die Teilnahme am Eurovision Song Contest (
 ## 2. Registrierung und Nutzerkonto
 
 - Die Teilnahme am Tippspiel erfordert eine Registrierung mit Anzeigename, vollständigem Namen und selbstgewähltem Passwort.
+- Es ist kein Klarname erforderlich, Pseudonyme, Nicks etc. sind erlaubt.
 - Jeder Teilnehmer darf sich nur einmal registrieren.
 - Nach der Registrierung muss Ihr Konto durch einen Administrator freigeschaltet werden, bevor Sie sich anmelden können.
 - Sie sind verpflichtet, Ihre Zugangsdaten geheim zu halten und nicht an Dritte weiterzugeben.
@@ -24,7 +25,7 @@ Diese Nutzungsbedingungen gelten für die Teilnahme am Eurovision Song Contest (
 
 - Wir erheben und speichern nur die für die Durchführung des Tippspiels notwendigen Daten (Benutzername, Anzeigename, vollständiger Name, Passwort-Hash).
 - Ihre Daten werden nicht an Dritte weitergegeben.
-- Sie können jederzeit die Löschung Ihres Kontos beantragen.
+- Sie können jederzeit die Löschung Ihres Kontos auf der Startseite unter "Konto löschen" selbst durchführen oder bei dem Administrator des Spiels die Löschung verlangen.
 
 ## 5. Haftungsausschluss
 
@@ -44,3 +45,9 @@ Die Betreiber behalten sich das Recht vor, diese Nutzungsbedingungen jederzeit z
 ## 8. Kontakt
 
 Bei Fragen zu diesen Nutzungsbedingungen wenden Sie sich bitte an den Administrator.
+
+## 9. Datenschutz
+
+Wir nehmen den Datenschutz sehr ernst. Die Datenschutzerklärung für das Tippspiel können Sie unter https://esc.basisadresse.de/datenschutz ansehen.
+
+Dort finden Sie auch einen Überblick über Ihre mit dem Datenschutz verbundenen Rechte.

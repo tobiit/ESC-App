@@ -437,6 +437,42 @@ export function AdminPage({ user, onLogout }: { user: User; onLogout: () => void
     }
   };
 
+  const pauseReveal = async () => {
+    if (!activeEventForStatus?.id) return;
+    try {
+      await api.adminPauseReveal(activeEventForStatus.id);
+      setMessage("Reveal pausiert");
+      await load();
+    } catch (err) {
+      setMessage(`Reveal konnte nicht pausiert werden: ${(err as Error).message}`);
+    }
+  };
+
+  const resumeReveal = async () => {
+    if (!activeEventForStatus?.id) return;
+    try {
+      await api.adminResumeReveal(activeEventForStatus.id);
+      setMessage("Reveal fortgesetzt");
+      await load();
+    } catch (err) {
+      setMessage(`Reveal konnte nicht fortgesetzt werden: ${(err as Error).message}`);
+    }
+  };
+
+  const restartReveal = async () => {
+    if (!activeEventForStatus?.id) return;
+    if (!confirm("Reveal wirklich komplett neu starten? Die Anzeige beginnt wieder beim ersten Teilnehmer mit 1 Punkt.")) {
+      return;
+    }
+    try {
+      await api.adminRestartReveal(activeEventForStatus.id);
+      setMessage("Reveal neu gestartet (ab Teilnehmer 1, Punktwert 1)");
+      await load();
+    } catch (err) {
+      setMessage(`Reveal konnte nicht neu gestartet werden: ${(err as Error).message}`);
+    }
+  };
+
   const isParticipantOpenForActiveEvent = (participantId: number) => {
     const status = submissionStatusByParticipant[participantId] || { ratingSubmitted: false, predictionSubmitted: false };
     return !status.ratingSubmitted || !status.predictionSubmitted;
@@ -546,9 +582,32 @@ export function AdminPage({ user, onLogout }: { user: User; onLogout: () => void
                 >
                   Reveal starten
                 </button>
+                <button
+                  className="btn"
+                  onClick={() => void pauseReveal()}
+                  disabled={!liveControl?.canPauseReveal || liveControlLoading}
+                >
+                  Reveal pausieren
+                </button>
+                <button
+                  className="btn"
+                  onClick={() => void resumeReveal()}
+                  disabled={!liveControl?.canResumeReveal || liveControlLoading}
+                >
+                  Reveal fortsetzen
+                </button>
+                <button
+                  className="btn btn-danger"
+                  onClick={() => void restartReveal()}
+                  disabled={!liveControl?.canRestartReveal || liveControlLoading}
+                >
+                  Reveal neu starten
+                </button>
                 <span style={{ color: "#666", fontSize: "0.88rem" }}>
                   Tippende: <strong>{liveControl?.liveState.tipEndState || "—"}</strong>
                   {liveControl?.liveState.tipEndState === "countdown" && ` · Rest: ${liveCountdownHint}`}
+                  {` · Reveal: ${liveControl?.liveState.revealState || "—"}`}
+                  {liveControl?.liveState.revealPausedAt ? " (pausiert)" : ""}
                 </span>
               </div>
 

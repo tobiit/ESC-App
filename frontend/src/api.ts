@@ -49,6 +49,8 @@ export type PublicLiveDashboardPayload = {
     revealState: "idle" | "running" | "finished";
     revealStartedAt: string | null;
     revealFinishedAt: string | null;
+    revealPausedAt: string | null;
+    revealPausedElapsedSeconds: number;
     revealPointPauseSeconds: number;
     revealParticipantPauseSeconds: number;
     winnerEntryId: number | null;
@@ -87,6 +89,9 @@ export type AdminLiveControlPayload = {
   canStartTipEnd: boolean;
   canCancelTipEnd: boolean;
   canStartReveal: boolean;
+  canPauseReveal: boolean;
+  canResumeReveal: boolean;
+  canRestartReveal: boolean;
 };
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
@@ -267,5 +272,11 @@ export const api = {
   adminCancelTipEnd: (eventId: number) =>
     request(`/admin/events/${eventId}/live-control/tip-end/cancel`, { method: "POST" }),
   adminStartReveal: (eventId: number) =>
-    request(`/admin/events/${eventId}/live-control/reveal/start`, { method: "POST" })
+    request(`/admin/events/${eventId}/live-control/reveal/start`, { method: "POST" }),
+  adminPauseReveal: (eventId: number) =>
+    request(`/admin/events/${eventId}/live-control/reveal/pause`, { method: "POST" }),
+  adminResumeReveal: (eventId: number) =>
+    request(`/admin/events/${eventId}/live-control/reveal/resume`, { method: "POST" }),
+  adminRestartReveal: (eventId: number) =>
+    request(`/admin/events/${eventId}/live-control/reveal/restart`, { method: "POST" })
 };

@@ -19,6 +19,7 @@ function renderStatusBadge(value: boolean) {
 
 export function PublicLivePage() {
   const [dashboard, setDashboard] = useState<PublicLiveDashboardPayload | null>(null);
+  const [displayedRankingEntries, setDisplayedRankingEntries] = useState<PublicLiveDashboardPayload["localRanking"]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [winnerOverlayDismissed, setWinnerOverlayDismissed] = useState(false);
@@ -28,6 +29,8 @@ export function PublicLivePage() {
   const previousRowTopByEntry = useRef(new Map<number, number>());
   const rankingContainerRef = useRef<HTMLDivElement | null>(null);
   const announcementKeyRef = useRef<string | null>(null);
+  const rankingUpdateTimeoutRef = useRef<number | null>(null);
+  const latestRankingRef = useRef<PublicLiveDashboardPayload["localRanking"]>([]);
 
   const phase = dashboard?.phase ?? "collecting";
   const shouldAutoRefresh = phase !== "finished";
@@ -103,18 +106,18 @@ export function PublicLivePage() {
       rowElement.style.transform = `translateY(${delta}px)`;
 
       requestAnimationFrame(() => {
-        rowElement.style.transition = "transform 550ms ease";
+        rowElement.style.transition = "transform 650ms cubic-bezier(0.22, 1, 0.36, 1)";
         rowElement.style.transform = "translateY(0)";
       });
     }
 
     previousRowTopByEntry.current = nextPositions;
-  }, [dashboard?.localRanking, dashboard?.reveal?.currentStepIndex]);
+  }, [displayedRankingEntries, dashboard?.reveal?.currentStepIndex]);
 
   const showRankingTable =
     phase === "post_tip_end_pre_reveal" || phase === "revealing" || phase === "finished";
 
-  const rankingEntries = dashboard?.localRanking || [];
+  const rankingEntries = displayedRankingEntries;
   const showTwoColumnRanking = showRankingTable && rankingContainerWidth >= 1080 && rankingEntries.length >= 8;
   const rankingSplitIndex = Math.ceil(rankingEntries.length / 2);
   const rankingColumns =
@@ -130,6 +133,20 @@ export function PublicLivePage() {
     setWinnerOverlayDismissed(false);
   }, [winnerOverlayKey]);
 
+  // Keep latestRankingRef always current; for non-reveal phases update table immediately.
+  useEffect(() => {
+    latestRankingRef.current = dashboard?.localRanking || [];
+    if (dashboard?.phase !== "revealing") {
+      if (rankingUpdateTimeoutRef.current != null) {
+        window.clearTimeout(rankingUpdateTimeoutRef.current);
+        rankingUpdateTimeoutRef.current = null;
+      }
+      setDisplayedRankingEntries(latestRankingRef.current);
+    }
+    // During revealing: table updates are driven by the announcement effect below.
+  }, [dashboard?.localRanking, dashboard?.phase]);
+
+  // Single cascaded effect: show popover (50%) → hide → wait 1s → update table.
   useEffect(() => {
     const announcement = dashboard?.reveal?.currentAnnouncement;
     if (dashboard?.phase !== "revealing" || !announcement) {
@@ -144,26 +161,49 @@ export function PublicLivePage() {
     }
     announcementKeyRef.current = nextKey;
 
+    // Cancel any ranking update still pending from a previous step.
+    if (rankingUpdateTimeoutRef.current != null) {
+      window.clearTimeout(rankingUpdateTimeoutRef.current);
+      rankingUpdateTimeoutRef.current = null;
+    }
+
     const remainingMs = Math.max(0, Number(dashboard.reveal.currentAnnouncementRemainingMs || 0));
     if (remainingMs <= 0) {
       setShowRevealAnnouncement(false);
       return;
     }
 
+    const visibleMs = Math.max(250, Math.floor(remainingMs * 0.5));
     setShowRevealAnnouncement(true);
-    const timeoutId = window.setTimeout(() => {
+
+    const popoverTimer = window.setTimeout(() => {
+      // Step 3: hide popover
       setShowRevealAnnouncement(false);
-    }, remainingMs);
+      // Step 4+5: wait 1s, then update table
+      rankingUpdateTimeoutRef.current = window.setTimeout(() => {
+        setDisplayedRankingEntries(latestRankingRef.current);
+        rankingUpdateTimeoutRef.current = null;
+      }, 1000);
+    }, visibleMs);
 
     return () => {
-      window.clearTimeout(timeoutId);
+      window.clearTimeout(popoverTimer);
+      // Note: rankingUpdateTimeoutRef is NOT cleared here — it must survive
+      // cleanup so the delayed table update fires even if deps re-run.
     };
   }, [
     dashboard?.phase,
     dashboard?.reveal?.currentAnnouncement,
-    dashboard?.reveal?.currentAnnouncementRemainingMs,
     dashboard?.reveal?.currentStepIndex
   ]);
+
+  useEffect(() => {
+    return () => {
+      if (rankingUpdateTimeoutRef.current != null) {
+        window.clearTimeout(rankingUpdateTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const statusLabel =
     phase === "tip_end_countdown"
@@ -171,7 +211,9 @@ export function PublicLivePage() {
       : phase === "post_tip_end_pre_reveal"
         ? "Tippende erreicht"
         : phase === "revealing"
-          ? "Reveal läuft"
+          ? dashboard?.liveState?.revealPausedAt
+            ? "Reveal pausiert"
+            : "Reveal läuft"
           : phase === "finished"
             ? "Reveal beendet"
             : "Tippen/Bewerten offen";

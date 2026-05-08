@@ -8,6 +8,7 @@ import { ParticipantPage } from "./pages/ParticipantPage";
 import { AdminPage } from "./pages/AdminPage";
 import { AdminResultsPage } from "./pages/AdminResultsPage";
 import { PublicLivePage } from "./pages/PublicLivePage";
+import { DatenschutzPage } from "./pages/DatenschutzPage";
 const storedUser = (() => {
     const storedUserRaw = localStorage.getItem("esc_user");
     if (!storedUserRaw)
@@ -28,7 +29,7 @@ export function App() {
     };
     return (_jsx(BrowserRouter, { children: _jsxs(Routes, { children: [_jsx(Route, { path: "/", element: user && user.role === "participant"
                         ? _jsx(ParticipantPage, { user: user, onLogout: handleLogout })
-                        : _jsx(ParticipantLogin, { onLogin: setUser }) }), _jsx(Route, { path: "/login", element: _jsx(ParticipantLogin, { onLogin: setUser }) }), _jsx(Route, { path: "/registrieren", element: _jsx(ParticipantRegister, {}) }), _jsx(Route, { path: "/live", element: _jsx(PublicLivePage, {}) }), _jsx(Route, { path: "/verwaltung/login", element: user && user.role === "admin"
+                        : _jsx(ParticipantLogin, { onLogin: setUser }) }), _jsx(Route, { path: "/login", element: _jsx(ParticipantLogin, { onLogin: setUser }) }), _jsx(Route, { path: "/registrieren", element: _jsx(ParticipantRegister, {}) }), _jsx(Route, { path: "/live", element: _jsx(PublicLivePage, {}) }), _jsx(Route, { path: "/datenschutz", element: _jsx(DatenschutzPage, {}) }), _jsx(Route, { path: "/verwaltung/login", element: user && user.role === "admin"
                         ? _jsx(Navigate, { to: "/verwaltung/", replace: true })
                         : _jsx(AdminLogin, { onLogin: setUser }) }), _jsx(Route, { path: "/verwaltung/", element: user && user.role === "admin"
                         ? _jsx(AdminPage, { user: user, onLogout: handleLogout })

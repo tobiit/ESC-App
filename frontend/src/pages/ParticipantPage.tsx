@@ -237,6 +237,18 @@ export function ParticipantPage({ user, onLogout }: { user: User; onLogout: () =
     setMessage(items.length < entries.length ? "Prediction-Entwurf gespeichert" : "Prediction gespeichert");
   };
 
+  const handleConfirmedSubmit = () => {
+    const submitTarget = submitConfirmation;
+    setSubmitConfirmation(null);
+    if (submitTarget === "rating") {
+      void submitRating();
+      return;
+    }
+    if (submitTarget === "prediction") {
+      void submitPrediction();
+    }
+  };
+
   const submitPrediction = async () => {
     if (!event) return;
     try {
@@ -812,10 +824,7 @@ export function ParticipantPage({ user, onLogout }: { user: User; onLogout: () =
                 </p>
                 <div className="submit-confirmation__actions">
                   <button className="btn" onClick={() => setSubmitConfirmation(null)}>Nein</button>
-                  <button
-                    className="btn btn-primary"
-                    onClick={() => void (submitConfirmation === "rating" ? submitRating() : submitPrediction())}
-                  >
+                  <button className="btn btn-primary" onClick={handleConfirmedSubmit}>
                     Ja
                   </button>
                 </div>

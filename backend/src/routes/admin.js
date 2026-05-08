@@ -12,6 +12,9 @@ import {
   getEventLiveState,
   getSubmissionOverview,
   maybeAutoStartTipEndCountdown,
+  pauseReveal,
+  restartReveal,
+  resumeReveal,
   startReveal,
   startTipEndCountdown,
   syncCountdownState,
@@ -893,6 +896,12 @@ adminRouter.get("/events/:id/live-control", async (req, res, next) => {
     const canStartReveal =
       liveState.revealState === "idle" &&
       (liveState.tipEndState === "reached" || submission.allSubmitted);
+    const canPauseReveal =
+      liveState.revealState === "running" && !liveState.revealPausedAt;
+    const canResumeReveal =
+      liveState.revealState === "running" && Boolean(liveState.revealPausedAt);
+    const canRestartReveal =
+      liveState.revealState === "running" || liveState.revealState === "finished";
 
     res.json({
       event: {
@@ -907,7 +916,10 @@ adminRouter.get("/events/:id/live-control", async (req, res, next) => {
       countdownRemainingSeconds,
       canStartTipEnd,
       canCancelTipEnd,
-      canStartReveal
+      canStartReveal,
+      canPauseReveal,
+      canResumeReveal,
+      canRestartReveal
     });
   } catch (error) {
     next(error);
@@ -1028,6 +1040,91 @@ adminRouter.post("/events/:id/live-control/reveal/start", async (req, res, next)
     await writeAuditLog({
       actorUserId: req.user.id,
       actionType: "REVEAL_START",
+      entityType: "event",
+      entityId: String(eventId)
+    });
+
+    res.json({ ok: true });
+  } catch (error) {
+    next(error);
+  }
+});
+
+adminRouter.post("/events/:id/live-control/reveal/pause", async (req, res, next) => {
+  try {
+    const eventId = Number(req.params.id);
+    if (!Number.isFinite(eventId)) {
+      return res.status(400).json({ message: "Ungültige Event-ID" });
+    }
+
+    const paused = await pauseReveal(pool, eventId);
+    if (!paused) {
+      return res.status(409).json({ message: "Reveal kann nur im laufenden Zustand pausiert werden" });
+    }
+
+    await writeAuditLog({
+      actorUserId: req.user.id,
+      actionType: "REVEAL_PAUSE",
+      entityType: "event",
+      entityId: String(eventId)
+    });
+
+    res.json({ ok: true });
+  } catch (error) {
+    next(error);
+  }
+});
+
+adminRouter.post("/events/:id/live-control/reveal/resume", async (req, res, next) => {
+  try {
+    const eventId = Number(req.params.id);
+    if (!Number.isFinite(eventId)) {
+      return res.status(400).json({ message: "Ungültige Event-ID" });
+    }
+
+    const resumed = await resumeReveal(pool, eventId);
+    if (!resumed) {
+      return res.status(409).json({ message: "Reveal ist nicht pausiert" });
+    }
+
+    await writeAuditLog({
+      actorUserId: req.user.id,
+      actionType: "REVEAL_RESUME",
+      entityType: "event",
+      entityId: String(eventId)
+    });
+
+    res.json({ ok: true });
+  } catch (error) {
+    next(error);
+  }
+});
+
+adminRouter.post("/events/:id/live-control/reveal/restart", async (req, res, next) => {
+  try {
+    const eventId = Number(req.params.id);
+    if (!Number.isFinite(eventId)) {
+      return res.status(400).json({ message: "Ungültige Event-ID" });
+    }
+
+    await syncCountdownState(pool, eventId);
+    const [liveState, submission] = await Promise.all([
+      getEventLiveState(pool, eventId),
+      getSubmissionOverview(pool, eventId)
+    ]);
+
+    if (!(liveState.tipEndState === "reached" || submission.allSubmitted)) {
+      return res.status(409).json({ message: "Reveal-Neustart erst nach Tippende oder vollständiger Einreichung möglich" });
+    }
+
+    const restarted = await restartReveal(pool, eventId);
+    if (!restarted) {
+      return res.status(409).json({ message: "Reveal-Neustart ist nur bei laufendem oder beendetem Reveal möglich" });
+    }
+
+    await writeAuditLog({
+      actorUserId: req.user.id,
+      actionType: "REVEAL_RESTART",
       entityType: "event",
       entityId: String(eventId)
     });

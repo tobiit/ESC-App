@@ -29,6 +29,8 @@ const toLiveStateDto = (row) => ({
   revealState: row.reveal_state,
   revealStartedAt: toIso(row.reveal_started_at),
   revealFinishedAt: toIso(row.reveal_finished_at),
+  revealPausedAt: toIso(row.reveal_paused_at),
+  revealPausedElapsedSeconds: Number(row.reveal_paused_elapsed_seconds || 0),
   revealPointPauseSeconds: Number(row.reveal_point_pause_seconds || 5),
   revealParticipantPauseSeconds: Number(row.reveal_participant_pause_seconds || 30),
   winnerEntryId: row.winner_entry_id != null ? Number(row.winner_entry_id) : null,
@@ -54,7 +56,7 @@ export const getEventLiveState = async (db, eventId) => {
   const row = await queryOne(
     db,
     `SELECT event_id, tip_end_state, tip_end_source, tip_end_countdown_started_at, tip_end_countdown_seconds,
-            tip_end_reached_at, reveal_state, reveal_started_at, reveal_finished_at,
+          tip_end_reached_at, reveal_state, reveal_started_at, reveal_finished_at, reveal_paused_at, reveal_paused_elapsed_seconds,
             reveal_point_pause_seconds, reveal_participant_pause_seconds,
             winner_entry_id, winner_reason, winner_tiebreak_seed, winner_resolved_at, updated_at
        FROM event_live_state
@@ -191,7 +193,8 @@ const buildStepPlan = (participants, ratingItemsByParticipant) => {
 };
 
 const buildStepTimeline = (steps, participants, pointPauseSeconds, participantPauseSeconds) => {
-  let cursorSeconds = 0;
+  // Start after an initial participant-pause so the table shows the start order before step 1.
+  let cursorSeconds = participantPauseSeconds;
   const participantStepCount = new Map();
   const participantOrder = participants.map((p) => p.participantId);
   for (const step of steps) {
@@ -313,7 +316,11 @@ export const buildRevealRuntime = (liveState, entries, participants, ratingItems
     };
   }
 
-  const elapsedSeconds = Math.max(0, Math.floor((now.getTime() - revealStartedAt.getTime()) / 1000));
+  const pausedAt = parseDate(liveState.revealPausedAt);
+  const elapsedWhilePaused = Math.max(0, Number(liveState.revealPausedElapsedSeconds || 0));
+  const elapsedSeconds = pausedAt
+    ? elapsedWhilePaused
+    : Math.max(0, Math.floor((now.getTime() - revealStartedAt.getTime()) / 1000));
   let appliedStepCount = 0;
   let activeStep = null;
 
@@ -335,6 +342,7 @@ export const buildRevealRuntime = (liveState, entries, participants, ratingItems
     totalSteps: timeline.length,
     appliedStepCount,
     activeStep,
+    isPaused: Boolean(pausedAt),
     isFinished,
     ranking
   };
@@ -371,11 +379,62 @@ export const startReveal = async (db, eventId) => {
         SET reveal_state = 'running',
             reveal_started_at = UTC_TIMESTAMP(),
             reveal_finished_at = NULL,
+            reveal_paused_at = NULL,
+            reveal_paused_elapsed_seconds = 0,
             winner_entry_id = NULL,
             winner_reason = NULL,
             winner_resolved_at = NULL
       WHERE event_id = ?
         AND reveal_state = 'idle'`,
+    [eventId]
+  );
+  return Number(updated?.affectedRows || 0) > 0;
+};
+
+export const pauseReveal = async (db, eventId) => {
+  await ensureEventLiveState(db, eventId);
+  const updated = await db.query(
+    `UPDATE event_live_state
+        SET reveal_paused_elapsed_seconds = GREATEST(0, TIMESTAMPDIFF(SECOND, reveal_started_at, UTC_TIMESTAMP())),
+            reveal_paused_at = UTC_TIMESTAMP()
+      WHERE event_id = ?
+        AND reveal_state = 'running'
+        AND reveal_started_at IS NOT NULL
+        AND reveal_paused_at IS NULL`,
+    [eventId]
+  );
+  return Number(updated?.affectedRows || 0) > 0;
+};
+
+export const resumeReveal = async (db, eventId) => {
+  await ensureEventLiveState(db, eventId);
+  const updated = await db.query(
+    `UPDATE event_live_state
+        SET reveal_started_at = DATE_SUB(UTC_TIMESTAMP(), INTERVAL reveal_paused_elapsed_seconds SECOND),
+            reveal_paused_at = NULL
+      WHERE event_id = ?
+        AND reveal_state = 'running'
+        AND reveal_paused_at IS NOT NULL`,
+    [eventId]
+  );
+  return Number(updated?.affectedRows || 0) > 0;
+};
+
+export const restartReveal = async (db, eventId) => {
+  await ensureEventLiveState(db, eventId);
+  const updated = await db.query(
+    `UPDATE event_live_state
+        SET reveal_state = 'running',
+            reveal_started_at = UTC_TIMESTAMP(),
+            reveal_finished_at = NULL,
+            reveal_paused_at = NULL,
+            reveal_paused_elapsed_seconds = 0,
+            winner_entry_id = NULL,
+            winner_reason = NULL,
+            winner_tiebreak_seed = NULL,
+            winner_resolved_at = NULL
+      WHERE event_id = ?
+        AND reveal_state IN ('running', 'finished')`,
     [eventId]
   );
   return Number(updated?.affectedRows || 0) > 0;

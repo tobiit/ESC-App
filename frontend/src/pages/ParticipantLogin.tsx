@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { api, setTokens } from "../api";
 
 type User = { id: number; role: "admin" | "participant"; username: string; displayName: string };
@@ -126,6 +126,9 @@ export function ParticipantLogin({ onLogin }: { onLogin: (user: User) => void })
             Als neuer Teilnehmer registrieren
           </button>
         </div>
+        <p style={{ textAlign: "center", marginTop: "1rem", fontSize: "0.75rem", opacity: 0.6 }}>
+          <Link to="/datenschutz">Datenschutzerklärung</Link>
+        </p>
       </div>
     </div>
   );

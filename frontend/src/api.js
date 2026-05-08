@@ -138,5 +138,8 @@ export const api = {
     adminUpdateLiveSettings: (eventId, payload) => request(`/admin/events/${eventId}/live-control/settings`, { method: "PUT", body: JSON.stringify(payload) }),
     adminStartTipEnd: (eventId) => request(`/admin/events/${eventId}/live-control/tip-end/start`, { method: "POST" }),
     adminCancelTipEnd: (eventId) => request(`/admin/events/${eventId}/live-control/tip-end/cancel`, { method: "POST" }),
-    adminStartReveal: (eventId) => request(`/admin/events/${eventId}/live-control/reveal/start`, { method: "POST" })
+    adminStartReveal: (eventId) => request(`/admin/events/${eventId}/live-control/reveal/start`, { method: "POST" }),
+    adminPauseReveal: (eventId) => request(`/admin/events/${eventId}/live-control/reveal/pause`, { method: "POST" }),
+    adminResumeReveal: (eventId) => request(`/admin/events/${eventId}/live-control/reveal/resume`, { method: "POST" }),
+    adminRestartReveal: (eventId) => request(`/admin/events/${eventId}/live-control/reveal/restart`, { method: "POST" })
 };
