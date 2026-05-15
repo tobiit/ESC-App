@@ -2,6 +2,65 @@ import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-run
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { api } from "../api";
 import { getCountryNameDe } from "../lib/countries";
+const POLL_REQUEST_TIMEOUT_MS = 8000;
+const REVEAL_START_SCROLL_DELAY_MS = 120;
+const REVEAL_SCROLL_RETRY_COUNT = 6;
+const REVEAL_SCROLL_RETRY_INTERVAL_MS = 220;
+function getScrollableAncestor(element) {
+    let current = element?.parentElement || null;
+    while (current) {
+        const style = window.getComputedStyle(current);
+        const overflowY = style.overflowY;
+        const canScroll = (overflowY === "auto" || overflowY === "scroll" || overflowY === "overlay") &&
+            current.scrollHeight > current.clientHeight + 1;
+        if (canScroll) {
+            return current;
+        }
+        current = current.parentElement;
+    }
+    return window;
+}
+function scrollToRankingEnd(container) {
+    if (!container)
+        return;
+    container.scrollIntoView({
+        behavior: "smooth",
+        block: "end"
+    });
+    const scrollableAncestor = getScrollableAncestor(container);
+    const rect = container.getBoundingClientRect();
+    if (scrollableAncestor === window) {
+        const targetTop = Math.max(0, window.scrollY + rect.top + container.offsetHeight - window.innerHeight + 24);
+        window.scrollTo({
+            top: targetTop,
+            behavior: "smooth"
+        });
+        return;
+    }
+    const parent = scrollableAncestor;
+    const parentRect = parent.getBoundingClientRect();
+    const deltaBottom = rect.bottom - parentRect.bottom + 24;
+    parent.scrollTo({
+        top: Math.max(0, parent.scrollTop + deltaBottom),
+        behavior: "smooth"
+    });
+}
+function withTimeout(promise, timeoutMs, timeoutMessage) {
+    return new Promise((resolve, reject) => {
+        const timeoutId = window.setTimeout(() => {
+            reject(new Error(timeoutMessage));
+        }, timeoutMs);
+        promise
+            .then((value) => {
+            window.clearTimeout(timeoutId);
+            resolve(value);
+        })
+            .catch((error) => {
+            window.clearTimeout(timeoutId);
+            reject(error);
+        });
+    });
+}
 function getFlagEmoji(countryCode) {
     const normalized = String(countryCode || "").toUpperCase().trim();
     if (!/^[A-Z]{2}$/.test(normalized))
@@ -25,41 +84,45 @@ export function PublicLivePage() {
     const announcementKeyRef = useRef(null);
     const rankingUpdateTimeoutRef = useRef(null);
     const latestRankingRef = useRef([]);
+    const requestVersionRef = useRef(0);
+    const lastRevealScrollKeyRef = useRef(null);
     const phase = dashboard?.phase ?? "collecting";
     const shouldAutoRefresh = phase !== "finished";
     const refreshMs = phase === "revealing" || phase === "tip_end_countdown" ? 1000 : 5000;
     useEffect(() => {
         let disposed = false;
-        let timeoutId = null;
+        let intervalId = null;
         const load = async () => {
+            const requestVersion = ++requestVersionRef.current;
             try {
-                const data = await api.getPublicLiveDashboard();
-                if (disposed)
+                const data = await withTimeout(api.getPublicLiveDashboard(), POLL_REQUEST_TIMEOUT_MS, "Live-Daten konnten nicht rechtzeitig geladen werden");
+                if (disposed || requestVersion !== requestVersionRef.current)
                     return;
                 setDashboard(data);
                 setError("");
             }
             catch (err) {
-                if (disposed)
+                if (disposed || requestVersion !== requestVersionRef.current)
                     return;
                 setError(err.message);
             }
             finally {
                 if (!disposed) {
                     setLoading(false);
-                    if (shouldAutoRefresh) {
-                        timeoutId = window.setTimeout(() => {
-                            void load();
-                        }, refreshMs);
-                    }
                 }
             }
         };
         void load();
+        if (shouldAutoRefresh) {
+            intervalId = window.setInterval(() => {
+                void load();
+            }, refreshMs);
+        }
         return () => {
             disposed = true;
-            if (timeoutId != null) {
-                window.clearTimeout(timeoutId);
+            requestVersionRef.current += 1;
+            if (intervalId != null) {
+                window.clearInterval(intervalId);
             }
         };
     }, [refreshMs, shouldAutoRefresh]);
@@ -120,10 +183,35 @@ export function PublicLivePage() {
                 window.clearTimeout(rankingUpdateTimeoutRef.current);
                 rankingUpdateTimeoutRef.current = null;
             }
+        }
+        if (dashboard?.phase !== "revealing" || displayedRankingEntries.length === 0) {
             setDisplayedRankingEntries(latestRankingRef.current);
         }
         // During revealing: table updates are driven by the announcement effect below.
-    }, [dashboard?.localRanking, dashboard?.phase]);
+    }, [dashboard?.localRanking, dashboard?.phase, displayedRankingEntries.length]);
+    useEffect(() => {
+        if (phase !== "revealing" || !showRankingTable) {
+            return;
+        }
+        const revealStartKey = dashboard?.liveState?.revealStartedAt || null;
+        if (!revealStartKey || lastRevealScrollKeyRef.current === revealStartKey) {
+            return;
+        }
+        lastRevealScrollKeyRef.current = revealStartKey;
+        const scrollTimers = [];
+        for (let attempt = 0; attempt < REVEAL_SCROLL_RETRY_COUNT; attempt += 1) {
+            const timeoutMs = REVEAL_START_SCROLL_DELAY_MS + attempt * REVEAL_SCROLL_RETRY_INTERVAL_MS;
+            const timerId = window.setTimeout(() => {
+                scrollToRankingEnd(rankingContainerRef.current);
+            }, timeoutMs);
+            scrollTimers.push(timerId);
+        }
+        return () => {
+            for (const timerId of scrollTimers) {
+                window.clearTimeout(timerId);
+            }
+        };
+    }, [phase, showRankingTable, dashboard?.liveState?.revealStartedAt]);
     // Single cascaded effect: show popover (50%) → hide → wait 1s → update table.
     useEffect(() => {
         const announcement = dashboard?.reveal?.currentAnnouncement;

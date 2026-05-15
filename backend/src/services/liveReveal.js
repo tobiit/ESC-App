@@ -425,7 +425,7 @@ export const restartReveal = async (db, eventId) => {
   const updated = await db.query(
     `UPDATE event_live_state
         SET reveal_state = 'running',
-            reveal_started_at = UTC_TIMESTAMP(),
+            reveal_started_at = DATE_SUB(UTC_TIMESTAMP(), INTERVAL COALESCE(reveal_participant_pause_seconds, 0) SECOND),
             reveal_finished_at = NULL,
             reveal_paused_at = NULL,
             reveal_paused_elapsed_seconds = 0,
