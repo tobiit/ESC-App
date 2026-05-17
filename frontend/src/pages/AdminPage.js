@@ -23,6 +23,9 @@ export function AdminPage({ user, onLogout }) {
     const [anthropicModels, setAnthropicModels] = useState([]);
     const [anthropicLoading, setAnthropicLoading] = useState(false);
     const [anthropicSaving, setAnthropicSaving] = useState(false);
+    const [sessionAccessTtlMinutesInput, setSessionAccessTtlMinutesInput] = useState("360");
+    const [sessionWarningSecondsInput, setSessionWarningSecondsInput] = useState("30");
+    const [sessionSettingsSaving, setSessionSettingsSaving] = useState(false);
     const [message, setMessage] = useState("");
     const [toastFading, setToastFading] = useState(false);
     const navigate = useNavigate();
@@ -93,6 +96,9 @@ export function AdminPage({ user, onLogout }) {
             setEventRows(normalizedEvents);
             setParticipantRows(normalizedParticipants);
             setPendingParticipants(pendingResponse);
+            const sessionSettings = await api.adminSessionSettings();
+            setSessionAccessTtlMinutesInput(String(sessionSettings.accessTtlMinutes));
+            setSessionWarningSecondsInput(String(sessionSettings.warningSeconds));
             await loadAnthropicConfig();
             const activeEvent = normalizedEvents.find((event) => Boolean(event.isActive) && !event.deletedAt);
             if (!activeEvent?.id) {
@@ -225,6 +231,30 @@ export function AdminPage({ user, onLogout }) {
         }
         finally {
             setAnthropicSaving(false);
+        }
+    };
+    const saveSessionSettings = async () => {
+        const accessTtlMinutes = Number(sessionAccessTtlMinutesInput);
+        const warningSeconds = Number(sessionWarningSecondsInput);
+        if (!Number.isFinite(accessTtlMinutes) || !Number.isFinite(warningSeconds)) {
+            setMessage("Bitte gültige Session-Werte eintragen.");
+            return;
+        }
+        setSessionSettingsSaving(true);
+        try {
+            const saved = await api.adminSaveSessionSettings({
+                accessTtlMinutes: Math.max(360, Math.min(1440, Math.floor(accessTtlMinutes))),
+                warningSeconds: Math.max(5, Math.min(300, Math.floor(warningSeconds)))
+            });
+            setSessionAccessTtlMinutesInput(String(saved.accessTtlMinutes));
+            setSessionWarningSecondsInput(String(saved.warningSeconds));
+            setMessage("Session-Einstellungen gespeichert");
+        }
+        catch (err) {
+            setMessage(`Fehler beim Speichern der Session-Einstellungen: ${err.message}`);
+        }
+        finally {
+            setSessionSettingsSaving(false);
         }
     };
     const updateParticipantRow = (rowIndex, key, value) => {
@@ -523,5 +553,5 @@ export function AdminPage({ user, onLogout }) {
                                         label: "Aktionen",
                                         render: (row) => row.id ? (_jsxs("div", { style: { display: "flex", gap: "6px", flexWrap: "wrap" }, children: [row.status === "finished" && (_jsx("button", { className: "btn btn-sm", onClick: () => navigate(`/verwaltung/ergebnis/${row.id}`), children: "Ergebnis" })), row.deletedAt ? (_jsx("button", { className: "btn btn-sm", onClick: () => void restoreEvent(row.id), children: "Wiederherstellen" })) : (_jsx("button", { className: "btn btn-danger btn-sm", onClick: () => void softDeleteEvent(row.id), children: "L\u00F6schen" }))] })) : ""
                                     }
-                                ], data: eventRows, onChange: updateEventRow, rowClassName: (row) => row.deletedAt ? "row--deleted" : "" }), _jsxs("div", { className: "admin-actions", children: [_jsx("button", { className: "btn", onClick: addEventRow, children: "Zeile hinzuf\u00FCgen" }), _jsx("button", { className: "btn btn-primary", onClick: () => void saveEvents(), children: "Events speichern" })] })] }), _jsxs("div", { className: "card", children: [_jsx("h3", { children: "Anthropic KI-Konfiguration" }), _jsx("p", { style: { marginTop: "-0.4rem", marginBottom: "0.8rem", color: "#666", fontSize: "0.92rem" }, children: "API-Key und Modell werden global f\u00FCr die Fotoerkennung der offiziellen Finalrangliste verwendet." }), _jsxs("div", { style: { display: "grid", gap: "12px", maxWidth: "760px" }, children: [_jsxs("label", { style: { display: "grid", gap: "6px" }, children: [_jsx("span", { children: "Anthropic API-Key" }), _jsx("input", { type: "text", value: anthropicApiKey, onChange: (e) => setAnthropicApiKey(e.target.value), placeholder: "sk-ant-...", disabled: anthropicSaving })] }), _jsxs("label", { style: { display: "grid", gap: "6px" }, children: [_jsx("span", { children: "Claude-Modell" }), _jsxs("select", { value: anthropicModel, onChange: (e) => setAnthropicModel(e.target.value), disabled: anthropicSaving || anthropicLoading || anthropicModels.length === 0, children: [anthropicModels.length === 0 && _jsx("option", { value: "", children: "Keine Modelle geladen" }), anthropicModels.map((model) => (_jsxs("option", { value: model.id, children: [model.displayName, " (", model.id, ")"] }, model.id)))] })] }), _jsxs("div", { style: { display: "flex", gap: "10px", flexWrap: "wrap", alignItems: "center" }, children: [_jsx("button", { className: "btn btn-primary", onClick: () => void saveAnthropicConfig(), disabled: anthropicSaving, children: anthropicSaving ? "Speichert…" : "Konfiguration speichern" }), _jsx("button", { className: "btn", onClick: () => void refreshAnthropicModels(), disabled: anthropicLoading || anthropicSaving, children: anthropicLoading ? "Lädt Modelle…" : "Modelle neu laden" }), _jsx("button", { className: "btn btn-danger", onClick: () => void deleteAnthropicConfig(), disabled: anthropicSaving, children: "Konfiguration l\u00F6schen" })] }), _jsxs("span", { style: { color: "#666", fontSize: "0.88rem" }, children: ["Verf\u00FCgbare Modelle: ", _jsx("strong", { children: anthropicModels.length })] })] })] }), _jsx(EscImport, { onImported: load }), eventRows.length > 0 && _jsx(AdminEventManager, { events: eventRows, onSave: load }), message && _jsx("div", { className: `toast ${toastFading ? 'toast--fade-out' : ''}`, children: message })] }), _jsxs("footer", { style: { textAlign: "center", padding: "1.5rem 0 1rem", color: "var(--esc-color-blue-400, #888)", fontSize: "0.72rem", opacity: 0.7 }, children: ["ESC-App \u00B7 Commit", " ", _jsx("a", { href: `https://github.com/tobiit/ESC-App/commit/${__GIT_COMMIT__}`, target: "_blank", rel: "noreferrer", style: { color: "inherit", fontFamily: "monospace" }, children: __GIT_COMMIT__ })] })] }));
+                                ], data: eventRows, onChange: updateEventRow, rowClassName: (row) => row.deletedAt ? "row--deleted" : "" }), _jsxs("div", { className: "admin-actions", children: [_jsx("button", { className: "btn", onClick: addEventRow, children: "Zeile hinzuf\u00FCgen" }), _jsx("button", { className: "btn btn-primary", onClick: () => void saveEvents(), children: "Events speichern" })] })] }), _jsxs("div", { className: "card", children: [_jsx("h3", { children: "Session-Konfiguration" }), _jsx("p", { style: { marginTop: "-0.4rem", marginBottom: "0.8rem", color: "#666", fontSize: "0.92rem" }, children: "Konfigurieren Sie Ablaufzeit und Vorwarnung. Die Ablaufzeit ist aus Sicherheitsgr\u00FCnden auf mindestens 6 Stunden begrenzt." }), _jsxs("div", { style: { display: "flex", flexWrap: "wrap", gap: "0.75rem", alignItems: "flex-end" }, children: [_jsxs("label", { className: "form-field", style: { margin: 0 }, children: [_jsx("span", { className: "form-label", children: "Session-Laufzeit (Minuten)" }), _jsx("input", { className: "form-input", type: "number", min: 360, max: 1440, value: sessionAccessTtlMinutesInput, onChange: (e) => setSessionAccessTtlMinutesInput(e.target.value), style: { width: "12rem" } })] }), _jsxs("label", { className: "form-field", style: { margin: 0 }, children: [_jsx("span", { className: "form-label", children: "Vorwarnung vor Ablauf (Sek.)" }), _jsx("input", { className: "form-input", type: "number", min: 5, max: 300, value: sessionWarningSecondsInput, onChange: (e) => setSessionWarningSecondsInput(e.target.value), style: { width: "12rem" } })] }), _jsx("button", { className: "btn", onClick: () => void saveSessionSettings(), disabled: sessionSettingsSaving, children: sessionSettingsSaving ? "Speichert…" : "Session-Einstellungen speichern" })] })] }), _jsxs("div", { className: "card", children: [_jsx("h3", { children: "Anthropic KI-Konfiguration" }), _jsx("p", { style: { marginTop: "-0.4rem", marginBottom: "0.8rem", color: "#666", fontSize: "0.92rem" }, children: "API-Key und Modell werden global f\u00FCr die Fotoerkennung der offiziellen Finalrangliste verwendet." }), _jsxs("div", { style: { display: "grid", gap: "12px", maxWidth: "760px" }, children: [_jsxs("label", { style: { display: "grid", gap: "6px" }, children: [_jsx("span", { children: "Anthropic API-Key" }), _jsx("input", { type: "text", value: anthropicApiKey, onChange: (e) => setAnthropicApiKey(e.target.value), placeholder: "sk-ant-...", disabled: anthropicSaving })] }), _jsxs("label", { style: { display: "grid", gap: "6px" }, children: [_jsx("span", { children: "Claude-Modell" }), _jsxs("select", { value: anthropicModel, onChange: (e) => setAnthropicModel(e.target.value), disabled: anthropicSaving || anthropicLoading || anthropicModels.length === 0, children: [anthropicModels.length === 0 && _jsx("option", { value: "", children: "Keine Modelle geladen" }), anthropicModels.map((model) => (_jsxs("option", { value: model.id, children: [model.displayName, " (", model.id, ")"] }, model.id)))] })] }), _jsxs("div", { style: { display: "flex", gap: "10px", flexWrap: "wrap", alignItems: "center" }, children: [_jsx("button", { className: "btn btn-primary", onClick: () => void saveAnthropicConfig(), disabled: anthropicSaving, children: anthropicSaving ? "Speichert…" : "Konfiguration speichern" }), _jsx("button", { className: "btn", onClick: () => void refreshAnthropicModels(), disabled: anthropicLoading || anthropicSaving, children: anthropicLoading ? "Lädt Modelle…" : "Modelle neu laden" }), _jsx("button", { className: "btn btn-danger", onClick: () => void deleteAnthropicConfig(), disabled: anthropicSaving, children: "Konfiguration l\u00F6schen" })] }), _jsxs("span", { style: { color: "#666", fontSize: "0.88rem" }, children: ["Verf\u00FCgbare Modelle: ", _jsx("strong", { children: anthropicModels.length })] })] })] }), _jsx(EscImport, { onImported: load }), eventRows.length > 0 && _jsx(AdminEventManager, { events: eventRows, onSave: load }), message && _jsx("div", { className: `toast ${toastFading ? 'toast--fade-out' : ''}`, children: message })] }), _jsxs("footer", { style: { textAlign: "center", padding: "1.5rem 0 1rem", color: "var(--esc-color-blue-400, #888)", fontSize: "0.72rem", opacity: 0.7 }, children: ["ESC-App \u00B7 Commit", " ", _jsx("a", { href: `https://github.com/tobiit/ESC-App/commit/${__GIT_COMMIT__}`, target: "_blank", rel: "noreferrer", style: { color: "inherit", fontFamily: "monospace" }, children: __GIT_COMMIT__ })] })] }));
 }

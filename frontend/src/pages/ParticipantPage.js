@@ -1,9 +1,29 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { api, clearTokens } from "../api";
+import { api, clearTokens, extendSession, getAccessTokenExpiryMs } from "../api";
 import { getCountryNameDe } from "../lib/countries";
 const ESC_POINTS = [12, 10, 8, 7, 6, 5, 4, 3, 2, 1];
+const SESSION_WARNING_FALLBACK_SECONDS = 30;
+const SESSION_ACTIVITY_REFRESH_INTERVAL_MS = 60000;
+const buildDraftKey = (userId, eventId) => `esc_participant_draft_${userId}_${eventId}`;
+const readParticipantDraft = (userId, eventId) => {
+    const raw = localStorage.getItem(buildDraftKey(userId, eventId));
+    if (!raw)
+        return null;
+    try {
+        const parsed = JSON.parse(raw);
+        if (parsed?.version !== 1)
+            return null;
+        return parsed;
+    }
+    catch {
+        return null;
+    }
+};
+const writeParticipantDraft = (userId, eventId, draft) => {
+    localStorage.setItem(buildDraftKey(userId, eventId), JSON.stringify(draft));
+};
 export function ParticipantPage({ user, onLogout }) {
     const [event, setEvent] = useState(null);
     const [entries, setEntries] = useState([]);
@@ -25,7 +45,14 @@ export function ParticipantPage({ user, onLogout }) {
     const [tutorialOpen, setTutorialOpen] = useState(false);
     const [tutorialIndex, setTutorialIndex] = useState(0);
     const [submitConfirmation, setSubmitConfirmation] = useState(null);
+    const [sessionWarningSeconds, setSessionWarningSeconds] = useState(SESSION_WARNING_FALLBACK_SECONDS);
+    const [sessionCountdownSeconds, setSessionCountdownSeconds] = useState(null);
+    const [sessionPromptOpen, setSessionPromptOpen] = useState(false);
     const rankInputRefs = useRef({});
+    const sessionExpiryRef = useRef(getAccessTokenExpiryMs());
+    const lastSessionRefreshRef = useRef(0);
+    const sessionLogoutTriggeredRef = useRef(false);
+    const audioContextRef = useRef(null);
     const navigate = useNavigate();
     const tutorialSteps = [
         {
@@ -103,6 +130,47 @@ export function ParticipantPage({ user, onLogout }) {
             clearTimeout(clearTimer);
         };
     }, [message]);
+    const persistLocalDraft = () => {
+        if (!event?.id)
+            return;
+        writeParticipantDraft(user.id, Number(event.id), {
+            version: 1,
+            ratingMap,
+            prediction,
+            rankInputs,
+            savedAt: Date.now()
+        });
+    };
+    const playSessionWarningBeep = () => {
+        try {
+            const audioContext = audioContextRef.current || new AudioContext();
+            audioContextRef.current = audioContext;
+            const oscillator = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+            oscillator.type = "sine";
+            oscillator.frequency.value = 880;
+            gain.gain.value = 0.08;
+            oscillator.connect(gain);
+            gain.connect(audioContext.destination);
+            const now = audioContext.currentTime;
+            oscillator.start(now);
+            oscillator.stop(now + 0.14);
+        }
+        catch {
+            // Audio warnings can fail silently if browser autoplay policy blocks sound.
+        }
+    };
+    const forceSessionLogout = async (reasonMessage) => {
+        if (sessionLogoutTriggeredRef.current)
+            return;
+        sessionLogoutTriggeredRef.current = true;
+        persistLocalDraft();
+        setSessionPromptOpen(false);
+        setMessage(reasonMessage);
+        clearTokens();
+        onLogout();
+        navigate("/login");
+    };
     useEffect(() => {
         if (user.role !== "participant") {
             navigate("/verwaltung/");
@@ -110,28 +178,41 @@ export function ParticipantPage({ user, onLogout }) {
         }
         void (async () => {
             try {
+                try {
+                    const sessionConfig = await api.getSessionConfig();
+                    setSessionWarningSeconds(sessionConfig.warningSeconds || SESSION_WARNING_FALLBACK_SECONDS);
+                }
+                catch {
+                    setSessionWarningSeconds(SESSION_WARNING_FALLBACK_SECONDS);
+                }
                 const activeEvent = await api.getActiveEvent();
                 setEvent(activeEvent);
                 if (!activeEvent)
                     return;
+                const localDraft = readParticipantDraft(user.id, Number(activeEvent.id));
                 const loadedEntries = await api.getEntries(activeEvent.id);
                 setEntries(loadedEntries);
                 setPrediction(loadedEntries.map((entry) => entry.id));
                 const myRating = await api.getMyRating(activeEvent.id);
                 setRatingSubmitted(myRating.status === "submitted");
-                const map = {};
+                const serverRatingMap = {};
                 for (const item of myRating.items || [])
-                    map[item.entryId] = item.points;
+                    serverRatingMap[item.entryId] = item.points;
+                const map = Object.keys(serverRatingMap).length > 0
+                    ? serverRatingMap
+                    : (localDraft?.ratingMap || {});
                 setRatingMap(map);
                 const myPrediction = await api.getMyPrediction(activeEvent.id);
                 setPredictionSubmitted(myPrediction.status === "submitted");
+                const allEntryIds = loadedEntries.map((entry) => entry.id);
                 if ((myPrediction.items || []).length > 0) {
                     const byRank = [...myPrediction.items].sort((a, b) => Number(a.rank) - Number(b.rank));
                     const rankedIds = byRank.map((item) => Number(item.entryId));
                     const remainingIds = loadedEntries
                         .map((entry) => entry.id)
                         .filter((entryId) => !rankedIds.includes(entryId));
-                    setPrediction([...rankedIds, ...remainingIds]);
+                    const nextPrediction = [...rankedIds, ...remainingIds];
+                    setPrediction(nextPrediction);
                     const draftRankInputs = {};
                     for (const entry of loadedEntries) {
                         draftRankInputs[entry.id] = "";
@@ -140,6 +221,18 @@ export function ParticipantPage({ user, onLogout }) {
                         draftRankInputs[Number(item.entryId)] = String(item.rank);
                     }
                     setRankInputs(draftRankInputs);
+                }
+                else if (localDraft?.prediction?.length) {
+                    const normalizedDraftPrediction = [
+                        ...localDraft.prediction.filter((entryId) => allEntryIds.includes(entryId)),
+                        ...allEntryIds.filter((entryId) => !localDraft.prediction.includes(entryId))
+                    ];
+                    setPrediction(normalizedDraftPrediction);
+                    setRankInputs(localDraft.rankInputs || {});
+                }
+                else {
+                    setPrediction(allEntryIds);
+                    setRankInputs({});
                 }
                 if (activeEvent.status === "finished") {
                     const data = await api.getResults(activeEvent.id);
@@ -151,14 +244,76 @@ export function ParticipantPage({ user, onLogout }) {
             }
         })();
     }, [user, navigate]);
+    useEffect(() => {
+        if (!event?.id)
+            return;
+        persistLocalDraft();
+    }, [event?.id, ratingMap, prediction, rankInputs]);
+    useEffect(() => {
+        const interval = window.setInterval(() => {
+            const latestExpiry = getAccessTokenExpiryMs();
+            if (latestExpiry) {
+                sessionExpiryRef.current = latestExpiry;
+            }
+            const expiry = sessionExpiryRef.current;
+            if (!expiry)
+                return;
+            const remainingSeconds = Math.max(0, Math.ceil((expiry - Date.now()) / 1000));
+            setSessionCountdownSeconds(remainingSeconds);
+            if (remainingSeconds <= 0) {
+                void forceSessionLogout("Sitzung abgelaufen. Ihr letzter Stand wurde lokal gespeichert.");
+                return;
+            }
+            if (remainingSeconds <= sessionWarningSeconds) {
+                setSessionPromptOpen(true);
+            }
+        }, 1000);
+        return () => window.clearInterval(interval);
+    }, [sessionWarningSeconds]);
+    useEffect(() => {
+        if (!sessionPromptOpen)
+            return;
+        const beepInterval = window.setInterval(() => {
+            playSessionWarningBeep();
+        }, 2000);
+        return () => window.clearInterval(beepInterval);
+    }, [sessionPromptOpen]);
+    useEffect(() => {
+        const attemptRefresh = async () => {
+            const now = Date.now();
+            if (now - lastSessionRefreshRef.current < SESSION_ACTIVITY_REFRESH_INTERVAL_MS)
+                return;
+            lastSessionRefreshRef.current = now;
+            try {
+                await extendSession();
+                sessionExpiryRef.current = getAccessTokenExpiryMs();
+                setSessionPromptOpen(false);
+            }
+            catch {
+                await forceSessionLogout("Sitzung abgelaufen. Ihr letzter Stand wurde lokal gespeichert.");
+            }
+        };
+        const onInteraction = () => {
+            void attemptRefresh();
+        };
+        window.addEventListener("click", onInteraction, { passive: true });
+        window.addEventListener("keydown", onInteraction, { passive: true });
+        window.addEventListener("touchstart", onInteraction, { passive: true });
+        return () => {
+            window.removeEventListener("click", onInteraction);
+            window.removeEventListener("keydown", onInteraction);
+            window.removeEventListener("touchstart", onInteraction);
+        };
+    }, []);
     const handleLogout = async () => {
+        persistLocalDraft();
         try {
             await api.logout();
         }
         finally {
             clearTokens();
             onLogout();
-            navigate("/");
+            navigate("/login");
         }
     };
     const buildRatingItems = () => Object.entries(ratingMap).map(([entryId, points]) => ({ entryId: Number(entryId), points }));
@@ -493,5 +648,16 @@ export function ParticipantPage({ user, onLogout }) {
                                                                                         ? "🥉"
                                                                                         : participant.rank }), _jsx("td", { children: participant.displayName }), _jsx("td", { className: "results-table__points-cell", children: participant.points })] }, participant.participantId))) })] }), results.leaderboardA.length > 5 && !expandedLeaderboardA && (_jsxs("button", { className: "btn btn-plain", onClick: () => setExpandedLeaderboardA(true), children: [results.leaderboardA.length - 5, " weitere Teilnehmer anzeigen"] })), expandedLeaderboardA && results.leaderboardA.length > 5 && (_jsx("button", { className: "btn btn-plain", onClick: () => setExpandedLeaderboardA(false), children: "Einklappen" }))] })) : (_jsx("p", { className: "hint", children: "Keine Ergebnisse verf\u00FCgbar." }))] }), _jsxs("div", { className: "results-section", children: [_jsx("h4", { children: "Internes Ranking (aus Teilnehmer-Bewertungen)" }), results.ratingRanking && results.ratingRanking.length > 0 ? (_jsxs("table", { className: "data-table results-table", children: [_jsx("thead", { children: _jsxs("tr", { children: [_jsx("th", { className: "results-table__rank", children: "Rang" }), _jsx("th", { children: "Land" }), _jsx("th", { className: "results-table__points", children: "Gesamt-Punkte" })] }) }), _jsx("tbody", { children: results.ratingRanking.map((entry, idx) => (_jsxs("tr", { className: idx % 2 === 0 ? "results-table__row--even" : "", children: [_jsx("td", { className: "results-table__rank-cell", children: entry.rank }), _jsx("td", { children: getCountryNameDe(entry.countryCode) }), _jsx("td", { className: "results-table__points-cell", children: entry.total })] }, entry.entryId))) })] })) : (_jsx("p", { className: "hint", children: "Keine Bewertungsrangliste verf\u00FCgbar." }))] })] }))] })), submitConfirmation && (_jsxs("div", { className: "submit-confirmation", role: "dialog", "aria-modal": "true", "aria-labelledby": "submit-confirmation-title", children: [_jsx("div", { className: "submit-confirmation__backdrop", onClick: () => setSubmitConfirmation(null) }), _jsxs("div", { className: "submit-confirmation__card card", children: [_jsx("h3", { id: "submit-confirmation-title", children: "Endg\u00FCltig einreichen?" }), _jsx("p", { children: submitConfirmation === "rating"
                                             ? "Sie reichen Ihre Bewertung endgültig ein. Danach können Sie daran nichts mehr ändern. Wollen Sie jetzt einreichen?"
-                                            : "Sie reichen Ihren Gewinntipp endgültig ein. Danach können Sie daran nichts mehr ändern. Wollen Sie jetzt einreichen?" }), _jsxs("div", { className: "submit-confirmation__actions", children: [_jsx("button", { className: "btn", onClick: () => setSubmitConfirmation(null), children: "Nein" }), _jsx("button", { className: "btn btn-primary", onClick: handleConfirmedSubmit, children: "Ja" })] })] })] })), message && _jsx("div", { className: `toast ${toastFading ? 'toast--fade-out' : ''}`, children: message }), tutorialOpen && (_jsxs("div", { className: "tutorial-overlay", role: "dialog", "aria-modal": "true", "aria-label": "Einweisungstour", children: [_jsxs("div", { className: "tutorial-overlay__controls", children: [_jsx("button", { className: "tutorial-overlay__nav", onClick: previousTutorialStep, disabled: tutorialIndex === 0, children: "\u2190" }), _jsxs("div", { className: "tutorial-overlay__progress", children: [tutorialIndex + 1, " / ", tutorialSteps.length] }), _jsx("button", { className: "tutorial-overlay__nav", onClick: nextTutorialStep, disabled: tutorialIndex === tutorialSteps.length - 1, children: "\u2192" }), _jsx("button", { className: "tutorial-overlay__close", onClick: stopTutorial, "aria-label": "Tutorial schlie\u00DFen", children: "x" })] }), _jsxs("div", { className: "tutorial-overlay__bubble", children: [_jsx("h4", { children: tutorialStep.title }), _jsx("p", { children: tutorialStep.body })] })] }))] }))] }));
+                                            : "Sie reichen Ihren Gewinntipp endgültig ein. Danach können Sie daran nichts mehr ändern. Wollen Sie jetzt einreichen?" }), _jsxs("div", { className: "submit-confirmation__actions", children: [_jsx("button", { className: "btn", onClick: () => setSubmitConfirmation(null), children: "Nein" }), _jsx("button", { className: "btn btn-primary", onClick: handleConfirmedSubmit, children: "Ja" })] })] })] })), sessionPromptOpen && (_jsxs("div", { className: "submit-confirmation", role: "dialog", "aria-modal": "true", "aria-labelledby": "session-warning-title", children: [_jsx("div", { className: "submit-confirmation__backdrop" }), _jsxs("div", { className: "submit-confirmation__card card", children: [_jsx("h3", { id: "session-warning-title", children: "Inaktivit\u00E4tswarnung" }), _jsxs("p", { children: ["Sie waren lange inaktiv. In ", Math.max(0, sessionCountdownSeconds ?? sessionWarningSeconds), " Sekunden werden Sie abgemeldet."] }), _jsxs("div", { className: "submit-confirmation__actions", children: [_jsx("button", { className: "btn", onClick: () => {
+                                                    void (async () => {
+                                                        try {
+                                                            await extendSession();
+                                                            sessionExpiryRef.current = getAccessTokenExpiryMs();
+                                                            setSessionPromptOpen(false);
+                                                        }
+                                                        catch {
+                                                            await forceSessionLogout("Sitzung abgelaufen. Ihr letzter Stand wurde lokal gespeichert.");
+                                                        }
+                                                    })();
+                                                }, children: "Weitermachen" }), _jsx("button", { className: "btn btn-danger", onClick: () => void handleLogout(), children: "Tats\u00E4chlich abmelden" })] })] })] })), message && _jsx("div", { className: `toast ${toastFading ? 'toast--fade-out' : ''}`, children: message }), tutorialOpen && (_jsxs("div", { className: "tutorial-overlay", role: "dialog", "aria-modal": "true", "aria-label": "Einweisungstour", children: [_jsxs("div", { className: "tutorial-overlay__controls", children: [_jsx("button", { className: "tutorial-overlay__nav", onClick: previousTutorialStep, disabled: tutorialIndex === 0, children: "\u2190" }), _jsxs("div", { className: "tutorial-overlay__progress", children: [tutorialIndex + 1, " / ", tutorialSteps.length] }), _jsx("button", { className: "tutorial-overlay__nav", onClick: nextTutorialStep, disabled: tutorialIndex === tutorialSteps.length - 1, children: "\u2192" }), _jsx("button", { className: "tutorial-overlay__close", onClick: stopTutorial, "aria-label": "Tutorial schlie\u00DFen", children: "x" })] }), _jsxs("div", { className: "tutorial-overlay__bubble", children: [_jsx("h4", { children: tutorialStep.title }), _jsx("p", { children: tutorialStep.body })] })] }))] }))] }));
 }

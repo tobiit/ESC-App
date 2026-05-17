@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { api, clearTokens } from "../api";
+import { api, clearTokens, extendSession, getAccessTokenExpiryMs } from "../api";
 import { getCountryNameDe } from "../lib/countries";
 
 type Entry = { id: number; countryCode: string; songTitle?: string; artistName?: string; sortOrder: number };
@@ -23,6 +23,34 @@ type TutorialStep = {
 };
 
 const ESC_POINTS = [12, 10, 8, 7, 6, 5, 4, 3, 2, 1];
+const SESSION_WARNING_FALLBACK_SECONDS = 30;
+const SESSION_ACTIVITY_REFRESH_INTERVAL_MS = 60_000;
+
+type ParticipantLocalDraft = {
+  version: 1;
+  ratingMap: Record<number, number>;
+  prediction: number[];
+  rankInputs: Record<number, string>;
+  savedAt: number;
+};
+
+const buildDraftKey = (userId: number, eventId: number) => `esc_participant_draft_${userId}_${eventId}`;
+
+const readParticipantDraft = (userId: number, eventId: number): ParticipantLocalDraft | null => {
+  const raw = localStorage.getItem(buildDraftKey(userId, eventId));
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw) as ParticipantLocalDraft;
+    if (parsed?.version !== 1) return null;
+    return parsed;
+  } catch {
+    return null;
+  }
+};
+
+const writeParticipantDraft = (userId: number, eventId: number, draft: ParticipantLocalDraft) => {
+  localStorage.setItem(buildDraftKey(userId, eventId), JSON.stringify(draft));
+};
 
 export function ParticipantPage({ user, onLogout }: { user: User; onLogout: () => void }) {
   const [event, setEvent] = useState<any>(null);
@@ -45,7 +73,14 @@ export function ParticipantPage({ user, onLogout }: { user: User; onLogout: () =
   const [tutorialOpen, setTutorialOpen] = useState(false);
   const [tutorialIndex, setTutorialIndex] = useState(0);
   const [submitConfirmation, setSubmitConfirmation] = useState<null | "rating" | "prediction">(null);
+  const [sessionWarningSeconds, setSessionWarningSeconds] = useState(SESSION_WARNING_FALLBACK_SECONDS);
+  const [sessionCountdownSeconds, setSessionCountdownSeconds] = useState<number | null>(null);
+  const [sessionPromptOpen, setSessionPromptOpen] = useState(false);
   const rankInputRefs = useRef<Record<number, HTMLInputElement | null>>({});
+  const sessionExpiryRef = useRef<number | null>(getAccessTokenExpiryMs());
+  const lastSessionRefreshRef = useRef(0);
+  const sessionLogoutTriggeredRef = useRef(false);
+  const audioContextRef = useRef<AudioContext | null>(null);
   const navigate = useNavigate();
 
   const tutorialSteps: TutorialStep[] = [
@@ -127,6 +162,47 @@ export function ParticipantPage({ user, onLogout }: { user: User; onLogout: () =
     };
   }, [message]);
 
+  const persistLocalDraft = () => {
+    if (!event?.id) return;
+    writeParticipantDraft(user.id, Number(event.id), {
+      version: 1,
+      ratingMap,
+      prediction,
+      rankInputs,
+      savedAt: Date.now()
+    });
+  };
+
+  const playSessionWarningBeep = () => {
+    try {
+      const audioContext = audioContextRef.current || new AudioContext();
+      audioContextRef.current = audioContext;
+      const oscillator = audioContext.createOscillator();
+      const gain = audioContext.createGain();
+      oscillator.type = "sine";
+      oscillator.frequency.value = 880;
+      gain.gain.value = 0.08;
+      oscillator.connect(gain);
+      gain.connect(audioContext.destination);
+      const now = audioContext.currentTime;
+      oscillator.start(now);
+      oscillator.stop(now + 0.14);
+    } catch {
+      // Audio warnings can fail silently if browser autoplay policy blocks sound.
+    }
+  };
+
+  const forceSessionLogout = async (reasonMessage: string) => {
+    if (sessionLogoutTriggeredRef.current) return;
+    sessionLogoutTriggeredRef.current = true;
+    persistLocalDraft();
+    setSessionPromptOpen(false);
+    setMessage(reasonMessage);
+    clearTokens();
+    onLogout();
+    navigate("/login");
+  };
+
   useEffect(() => {
     if (user.role !== "participant") {
       navigate("/verwaltung/");
@@ -134,28 +210,41 @@ export function ParticipantPage({ user, onLogout }: { user: User; onLogout: () =
     }
     void (async () => {
       try {
+        try {
+          const sessionConfig = await api.getSessionConfig();
+          setSessionWarningSeconds(sessionConfig.warningSeconds || SESSION_WARNING_FALLBACK_SECONDS);
+        } catch {
+          setSessionWarningSeconds(SESSION_WARNING_FALLBACK_SECONDS);
+        }
+
         const activeEvent = await api.getActiveEvent();
         setEvent(activeEvent);
         if (!activeEvent) return;
+        const localDraft = readParticipantDraft(user.id, Number(activeEvent.id));
         const loadedEntries = await api.getEntries(activeEvent.id);
         setEntries(loadedEntries);
         setPrediction(loadedEntries.map((entry: Entry) => entry.id));
 
         const myRating = await api.getMyRating(activeEvent.id);
         setRatingSubmitted(myRating.status === "submitted");
-        const map: Record<number, number> = {};
-        for (const item of myRating.items || []) map[item.entryId] = item.points;
+        const serverRatingMap: Record<number, number> = {};
+        for (const item of myRating.items || []) serverRatingMap[item.entryId] = item.points;
+        const map = Object.keys(serverRatingMap).length > 0
+          ? serverRatingMap
+          : (localDraft?.ratingMap || {});
         setRatingMap(map);
 
         const myPrediction = await api.getMyPrediction(activeEvent.id);
         setPredictionSubmitted(myPrediction.status === "submitted");
+        const allEntryIds = loadedEntries.map((entry: Entry) => entry.id);
         if ((myPrediction.items || []).length > 0) {
           const byRank = [...myPrediction.items].sort((a: any, b: any) => Number(a.rank) - Number(b.rank));
           const rankedIds = byRank.map((item: any) => Number(item.entryId));
           const remainingIds = loadedEntries
             .map((entry: Entry) => entry.id)
             .filter((entryId: number) => !rankedIds.includes(entryId));
-          setPrediction([...rankedIds, ...remainingIds]);
+          const nextPrediction = [...rankedIds, ...remainingIds];
+          setPrediction(nextPrediction);
 
           const draftRankInputs: Record<number, string> = {};
           for (const entry of loadedEntries) {
@@ -165,6 +254,16 @@ export function ParticipantPage({ user, onLogout }: { user: User; onLogout: () =
             draftRankInputs[Number(item.entryId)] = String(item.rank);
           }
           setRankInputs(draftRankInputs);
+        } else if (localDraft?.prediction?.length) {
+          const normalizedDraftPrediction = [
+            ...localDraft.prediction.filter((entryId) => allEntryIds.includes(entryId)),
+            ...allEntryIds.filter((entryId: number) => !localDraft.prediction.includes(entryId))
+          ];
+          setPrediction(normalizedDraftPrediction);
+          setRankInputs(localDraft.rankInputs || {});
+        } else {
+          setPrediction(allEntryIds);
+          setRankInputs({});
         }
 
         if (activeEvent.status === "finished") {
@@ -177,8 +276,82 @@ export function ParticipantPage({ user, onLogout }: { user: User; onLogout: () =
     })();
   }, [user, navigate]);
 
+  useEffect(() => {
+    if (!event?.id) return;
+    persistLocalDraft();
+  }, [event?.id, ratingMap, prediction, rankInputs]);
+
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      const latestExpiry = getAccessTokenExpiryMs();
+      if (latestExpiry) {
+        sessionExpiryRef.current = latestExpiry;
+      }
+
+      const expiry = sessionExpiryRef.current;
+      if (!expiry) return;
+      const remainingSeconds = Math.max(0, Math.ceil((expiry - Date.now()) / 1000));
+      setSessionCountdownSeconds(remainingSeconds);
+
+      if (remainingSeconds <= 0) {
+        void forceSessionLogout("Sitzung abgelaufen. Ihr letzter Stand wurde lokal gespeichert.");
+        return;
+      }
+
+      if (remainingSeconds <= sessionWarningSeconds) {
+        setSessionPromptOpen(true);
+      }
+    }, 1000);
+
+    return () => window.clearInterval(interval);
+  }, [sessionWarningSeconds]);
+
+  useEffect(() => {
+    if (!sessionPromptOpen) return;
+    const beepInterval = window.setInterval(() => {
+      playSessionWarningBeep();
+    }, 2000);
+    return () => window.clearInterval(beepInterval);
+  }, [sessionPromptOpen]);
+
+  useEffect(() => {
+    const attemptRefresh = async () => {
+      const now = Date.now();
+      if (now - lastSessionRefreshRef.current < SESSION_ACTIVITY_REFRESH_INTERVAL_MS) return;
+      lastSessionRefreshRef.current = now;
+      try {
+        await extendSession();
+        sessionExpiryRef.current = getAccessTokenExpiryMs();
+        setSessionPromptOpen(false);
+      } catch {
+        await forceSessionLogout("Sitzung abgelaufen. Ihr letzter Stand wurde lokal gespeichert.");
+      }
+    };
+
+    const onInteraction = () => {
+      void attemptRefresh();
+    };
+
+    window.addEventListener("click", onInteraction, { passive: true });
+    window.addEventListener("keydown", onInteraction, { passive: true });
+    window.addEventListener("touchstart", onInteraction, { passive: true });
+
+    return () => {
+      window.removeEventListener("click", onInteraction);
+      window.removeEventListener("keydown", onInteraction);
+      window.removeEventListener("touchstart", onInteraction);
+    };
+  }, []);
+
   const handleLogout = async () => {
-    try { await api.logout(); } finally { clearTokens(); onLogout(); navigate("/"); }
+    persistLocalDraft();
+    try {
+      await api.logout();
+    } finally {
+      clearTokens();
+      onLogout();
+      navigate("/login");
+    }
   };
 
   const buildRatingItems = () =>
@@ -826,6 +999,39 @@ export function ParticipantPage({ user, onLogout }: { user: User; onLogout: () =
                   <button className="btn" onClick={() => setSubmitConfirmation(null)}>Nein</button>
                   <button className="btn btn-primary" onClick={handleConfirmedSubmit}>
                     Ja
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {sessionPromptOpen && (
+            <div className="submit-confirmation" role="dialog" aria-modal="true" aria-labelledby="session-warning-title">
+              <div className="submit-confirmation__backdrop" />
+              <div className="submit-confirmation__card card">
+                <h3 id="session-warning-title">Inaktivitätswarnung</h3>
+                <p>
+                  Sie waren lange inaktiv. In {Math.max(0, sessionCountdownSeconds ?? sessionWarningSeconds)} Sekunden werden Sie abgemeldet.
+                </p>
+                <div className="submit-confirmation__actions">
+                  <button
+                    className="btn"
+                    onClick={() => {
+                      void (async () => {
+                        try {
+                          await extendSession();
+                          sessionExpiryRef.current = getAccessTokenExpiryMs();
+                          setSessionPromptOpen(false);
+                        } catch {
+                          await forceSessionLogout("Sitzung abgelaufen. Ihr letzter Stand wurde lokal gespeichert.");
+                        }
+                      })();
+                    }}
+                  >
+                    Weitermachen
+                  </button>
+                  <button className="btn btn-danger" onClick={() => void handleLogout()}>
+                    Tatsächlich abmelden
                   </button>
                 </div>
               </div>

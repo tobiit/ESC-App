@@ -90,6 +90,7 @@ dependencies {
   implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.1")
 
   implementation("androidx.security:security-crypto:1.1.0-alpha06")
+  implementation("androidx.biometric:biometric:1.2.0-alpha05")
   implementation("androidx.datastore:datastore-preferences:1.1.1")
 
   // Drag & Drop für Prediction-Liste

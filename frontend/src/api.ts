@@ -94,6 +94,11 @@ export type AdminLiveControlPayload = {
   canRestartReveal: boolean;
 };
 
+export type SessionSettingsPayload = {
+  accessTtlMinutes: number;
+  warningSeconds: number;
+};
+
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 let accessToken: string | null = localStorage.getItem("esc_access_token");
@@ -116,6 +121,56 @@ export const clearTokens = () => {
   localStorage.removeItem("esc_user");
 };
 
+const AUTH_EXPIRED_EVENT = "esc-auth-expired";
+
+const notifyAuthExpired = () => {
+  window.dispatchEvent(new CustomEvent(AUTH_EXPIRED_EVENT));
+};
+
+const refreshAccessToken = async (): Promise<boolean> => {
+  if (!refreshToken) return false;
+  const refreshed = await fetch(`${API_URL}/auth/refresh`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ refreshToken })
+  });
+  if (!refreshed.ok) {
+    clearTokens();
+    notifyAuthExpired();
+    return false;
+  }
+  const data = await refreshed.json();
+  setTokens({ accessToken: data.accessToken });
+  return true;
+};
+
+export const onAuthExpired = (callback: () => void) => {
+  const handler = () => callback();
+  window.addEventListener(AUTH_EXPIRED_EVENT, handler);
+  return () => window.removeEventListener(AUTH_EXPIRED_EVENT, handler);
+};
+
+export const getAccessTokenExpiryMs = () => {
+  if (!accessToken) return null;
+  try {
+    const payloadBase64 = accessToken.split(".")[1];
+    if (!payloadBase64) return null;
+    const payloadRaw = atob(payloadBase64.replace(/-/g, "+").replace(/_/g, "/"));
+    const payload = JSON.parse(payloadRaw);
+    const exp = Number(payload?.exp);
+    if (!Number.isFinite(exp)) return null;
+    return exp * 1000;
+  } catch {
+    return null;
+  }
+};
+
+export const extendSession = async () => {
+  const ok = await refreshAccessToken();
+  if (!ok) throw new Error("Sitzung abgelaufen");
+  return true;
+};
+
 async function request(path: string, options: RequestInit = {}, allowRetry = true) {
   const headers = new Headers(options.headers || {});
   headers.set("Content-Type", "application/json");
@@ -123,17 +178,10 @@ async function request(path: string, options: RequestInit = {}, allowRetry = tru
 
   const response = await fetch(`${API_URL}${path}`, { ...options, headers });
   if (response.status === 401 && allowRetry && refreshToken) {
-    const refreshed = await fetch(`${API_URL}/auth/refresh`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ refreshToken })
-    });
-    if (refreshed.ok) {
-      const data = await refreshed.json();
-      setTokens({ accessToken: data.accessToken });
+    const refreshed = await refreshAccessToken();
+    if (refreshed) {
       return request(path, options, false);
     }
-    clearTokens();
   }
   if (!response.ok) {
     const errorBody = await response.json().catch(() => ({ message: "Fehler" }));
@@ -200,6 +248,10 @@ export const api = {
   adminDeleteAnthropicConfig: () => request("/admin/integrations/anthropic", { method: "DELETE" }) as Promise<{ ok: boolean }>,
   adminAnthropicModels: () =>
     request("/admin/integrations/anthropic/models") as Promise<{ models: AnthropicModelPayload[]; count: number }>,
+  adminSessionSettings: () => request("/admin/session-settings") as Promise<SessionSettingsPayload>,
+  adminSaveSessionSettings: (payload: SessionSettingsPayload) =>
+    request("/admin/session-settings", { method: "PUT", body: JSON.stringify(payload) }) as Promise<{ ok: boolean } & SessionSettingsPayload>,
+  getSessionConfig: () => request("/auth/session-config") as Promise<SessionSettingsPayload>,
   adminEvents: () => request("/admin/events"),
   adminCreateEvent: (payload: { name: string; year?: number; status: string; isActive: boolean }) =>
     request("/admin/events", { method: "POST", body: JSON.stringify(payload) }),

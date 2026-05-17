@@ -25,3 +25,4 @@ android/local.properties
 # Large local deployment binaries (not source code)
 deploy/cmdline-tools/
 android/app/build.gradle.kts
+deploy/.last-build-context.sha256

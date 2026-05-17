@@ -16,6 +16,56 @@ export const clearTokens = () => {
     localStorage.removeItem("esc_refresh_token");
     localStorage.removeItem("esc_user");
 };
+const AUTH_EXPIRED_EVENT = "esc-auth-expired";
+const notifyAuthExpired = () => {
+    window.dispatchEvent(new CustomEvent(AUTH_EXPIRED_EVENT));
+};
+const refreshAccessToken = async () => {
+    if (!refreshToken)
+        return false;
+    const refreshed = await fetch(`${API_URL}/auth/refresh`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ refreshToken })
+    });
+    if (!refreshed.ok) {
+        clearTokens();
+        notifyAuthExpired();
+        return false;
+    }
+    const data = await refreshed.json();
+    setTokens({ accessToken: data.accessToken });
+    return true;
+};
+export const onAuthExpired = (callback) => {
+    const handler = () => callback();
+    window.addEventListener(AUTH_EXPIRED_EVENT, handler);
+    return () => window.removeEventListener(AUTH_EXPIRED_EVENT, handler);
+};
+export const getAccessTokenExpiryMs = () => {
+    if (!accessToken)
+        return null;
+    try {
+        const payloadBase64 = accessToken.split(".")[1];
+        if (!payloadBase64)
+            return null;
+        const payloadRaw = atob(payloadBase64.replace(/-/g, "+").replace(/_/g, "/"));
+        const payload = JSON.parse(payloadRaw);
+        const exp = Number(payload?.exp);
+        if (!Number.isFinite(exp))
+            return null;
+        return exp * 1000;
+    }
+    catch {
+        return null;
+    }
+};
+export const extendSession = async () => {
+    const ok = await refreshAccessToken();
+    if (!ok)
+        throw new Error("Sitzung abgelaufen");
+    return true;
+};
 async function request(path, options = {}, allowRetry = true) {
     const headers = new Headers(options.headers || {});
     headers.set("Content-Type", "application/json");
@@ -23,17 +73,10 @@ async function request(path, options = {}, allowRetry = true) {
         headers.set("Authorization", `Bearer ${accessToken}`);
     const response = await fetch(`${API_URL}${path}`, { ...options, headers });
     if (response.status === 401 && allowRetry && refreshToken) {
-        const refreshed = await fetch(`${API_URL}/auth/refresh`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ refreshToken })
-        });
-        if (refreshed.ok) {
-            const data = await refreshed.json();
-            setTokens({ accessToken: data.accessToken });
+        const refreshed = await refreshAccessToken();
+        if (refreshed) {
             return request(path, options, false);
         }
-        clearTokens();
     }
     if (!response.ok) {
         const errorBody = await response.json().catch(() => ({ message: "Fehler" }));
@@ -90,6 +133,9 @@ export const api = {
     adminSaveAnthropicConfig: (payload) => request("/admin/integrations/anthropic", { method: "PUT", body: JSON.stringify(payload) }),
     adminDeleteAnthropicConfig: () => request("/admin/integrations/anthropic", { method: "DELETE" }),
     adminAnthropicModels: () => request("/admin/integrations/anthropic/models"),
+    adminSessionSettings: () => request("/admin/session-settings"),
+    adminSaveSessionSettings: (payload) => request("/admin/session-settings", { method: "PUT", body: JSON.stringify(payload) }),
+    getSessionConfig: () => request("/auth/session-config"),
     adminEvents: () => request("/admin/events"),
     adminCreateEvent: (payload) => request("/admin/events", { method: "POST", body: JSON.stringify(payload) }),
     adminUpdateEvent: (id, payload) => request(`/admin/events/${id}`, { method: "PUT", body: JSON.stringify(payload) }),

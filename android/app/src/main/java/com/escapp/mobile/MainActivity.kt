@@ -1,7 +1,8 @@
 package com.escapp.mobile
 
 import android.os.Bundle
-import androidx.activity.ComponentActivity
+import androidx.biometric.BiometricManager
+import androidx.biometric.BiometricPrompt
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.AnimatedVisibility
@@ -21,14 +22,17 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.fragment.app.FragmentActivity
 import com.escapp.mobile.data.DraftStore
 import com.escapp.mobile.data.EscApi
 import com.escapp.mobile.data.TokenStore
+import com.escapp.mobile.data.CredentialStore
 import com.escapp.mobile.model.RefreshRequest
 import com.escapp.mobile.ui.screen.*
 import com.escapp.mobile.ui.theme.*
@@ -43,6 +47,7 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import java.util.concurrent.TimeUnit
+import androidx.core.content.ContextCompat
 
 private data class TutorialStep(
     val title: String,
@@ -70,7 +75,7 @@ private fun Modifier.tutorialHighlight(active: Boolean): Modifier {
     )
 }
 
-class MainActivity : ComponentActivity() {
+class MainActivity : FragmentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -78,6 +83,7 @@ class MainActivity : ComponentActivity() {
 
         val tokenStore = TokenStore(applicationContext)
         val draftStore = DraftStore(applicationContext)
+        val credentialStore = CredentialStore(applicationContext)
         val json = Json { ignoreUnknownKeys = true }
 
         /* ── Auth interceptor: attaches Bearer token to every request ── */
@@ -104,10 +110,8 @@ class MainActivity : ComponentActivity() {
                             okhttp3.RequestBody.create("application/json".toMediaType(), it)
                         })
                         .build()
-                    val refreshResponse = chain.connection()?.let {
-                        OkHttpClient().newCall(refreshRequest).execute()
-                    }
-                    if (refreshResponse?.isSuccessful == true) {
+                    val refreshResponse = OkHttpClient().newCall(refreshRequest).execute()
+                    if (refreshResponse.isSuccessful) {
                         val respBody = refreshResponse.body?.string()
                         if (respBody != null) {
                             val parsed = json.decodeFromString<com.escapp.mobile.model.RefreshResponse>(respBody)
@@ -118,9 +122,8 @@ class MainActivity : ComponentActivity() {
                             return@Interceptor chain.proceed(retry)
                         }
                     }
+                    refreshResponse.close()
                 }
-                // Refresh also failed – return the original 401
-                // Need to re-issue original request since we closed it
                 return@Interceptor chain.proceed(chain.request())
             }
             response
@@ -145,7 +148,7 @@ class MainActivity : ComponentActivity() {
         val vmFactory = object : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 @Suppress("UNCHECKED_CAST")
-                return AppViewModel(api, tokenStore, draftStore) as T
+                return AppViewModel(api, tokenStore, draftStore, credentialStore) as T
             }
         }
 
@@ -166,11 +169,42 @@ class MainActivity : ComponentActivity() {
 @Composable
 private fun EscApp(vm: AppViewModel) {
     val ui = vm.ui
+    val activity = LocalContext.current as? FragmentActivity
     var tab by remember { mutableIntStateOf(0) }
     var currentScreen by remember { mutableStateOf("login") }  // "login", "register", "terms"
     var registerSuccess by remember { mutableStateOf(false) }
     var tutorialOpen by remember { mutableStateOf(false) }
     var tutorialIndex by remember { mutableIntStateOf(0) }
+    var savedLoginUsername by remember { mutableStateOf(vm.getSavedLoginUsername()) }
+    var biometricLoginAvailable by remember { mutableStateOf(false) }
+    var biometricPromptDismissedByUser by remember { mutableStateOf(false) }
+    var biometricPromptShownInThisSession by remember { mutableStateOf(false) }
+
+    LaunchedEffect(ui.user, currentScreen) {
+        val context = activity ?: return@LaunchedEffect
+        val canAuthenticate = BiometricManager.from(context).canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_WEAK)
+        biometricLoginAvailable = canAuthenticate == BiometricManager.BIOMETRIC_SUCCESS && vm.hasSavedLoginCredentials()
+        savedLoginUsername = vm.getSavedLoginUsername()
+
+        if (ui.user != null) {
+            biometricPromptDismissedByUser = false
+            biometricPromptShownInThisSession = false
+            return@LaunchedEffect
+        }
+
+        if (currentScreen != "login") return@LaunchedEffect
+        if (!biometricLoginAvailable) return@LaunchedEffect
+        if (biometricPromptDismissedByUser) return@LaunchedEffect
+        if (biometricPromptShownInThisSession) return@LaunchedEffect
+
+        biometricPromptShownInThisSession = true
+        showBiometricPrompt(
+            activity = context,
+            onSuccess = { vm.loginWithSavedCredentials() },
+            onUserCancelled = { biometricPromptDismissedByUser = true },
+            onFailed = { biometricPromptDismissedByUser = true }
+        )
+    }
 
     val tutorialSteps = remember {
         listOf(
@@ -313,7 +347,10 @@ private fun EscApp(vm: AppViewModel) {
                 when (currentScreen) {
                     "login" -> {
                         LoginScreen(
-                            onLogin = vm::login,
+                            onLogin = { username, password, rememberLogin ->
+                                vm.login(username, password, rememberLogin = rememberLogin)
+                            },
+                            savedUsernameHint = savedLoginUsername,
                             onVerifyDeleteAccount = vm::verifyDeleteAccount,
                             onDeleteAccount = vm::deleteAccount,
                             onNavigateToRegister = {
@@ -551,4 +588,49 @@ private fun statusLabel(status: String): String = when (status) {
     "locked" -> "Gesperrt"
     "finished" -> "Beendet"
     else -> status
+}
+
+private fun showBiometricPrompt(
+    activity: FragmentActivity,
+    onSuccess: () -> Unit,
+    onUserCancelled: () -> Unit,
+    onFailed: () -> Unit
+) {
+    val executor = ContextCompat.getMainExecutor(activity)
+    val prompt = BiometricPrompt(
+        activity,
+        executor,
+        object : BiometricPrompt.AuthenticationCallback() {
+            override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
+                super.onAuthenticationSucceeded(result)
+                onSuccess()
+            }
+
+            override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
+                super.onAuthenticationError(errorCode, errString)
+                if (
+                    errorCode == BiometricPrompt.ERROR_USER_CANCELED ||
+                    errorCode == BiometricPrompt.ERROR_NEGATIVE_BUTTON ||
+                    errorCode == BiometricPrompt.ERROR_CANCELED
+                ) {
+                    onUserCancelled()
+                } else {
+                    onFailed()
+                }
+            }
+
+            override fun onAuthenticationFailed() {
+                super.onAuthenticationFailed()
+                // Keep prompt open; no fallback yet. User may retry biometrics immediately.
+            }
+        }
+    )
+
+    val promptInfo = BiometricPrompt.PromptInfo.Builder()
+        .setTitle("Biometrische Anmeldung")
+        .setSubtitle("Mit Fingerabdruck oder Gesicht anmelden")
+        .setNegativeButtonText("Abbrechen")
+        .build()
+
+    prompt.authenticate(promptInfo)
 }

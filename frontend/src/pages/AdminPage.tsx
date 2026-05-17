@@ -28,6 +28,9 @@ export function AdminPage({ user, onLogout }: { user: User; onLogout: () => void
   const [anthropicModels, setAnthropicModels] = useState<AnthropicModelOption[]>([]);
   const [anthropicLoading, setAnthropicLoading] = useState(false);
   const [anthropicSaving, setAnthropicSaving] = useState(false);
+  const [sessionAccessTtlMinutesInput, setSessionAccessTtlMinutesInput] = useState("360");
+  const [sessionWarningSecondsInput, setSessionWarningSecondsInput] = useState("30");
+  const [sessionSettingsSaving, setSessionSettingsSaving] = useState(false);
 
   const [message, setMessage] = useState("");
   const [toastFading, setToastFading] = useState(false);
@@ -106,6 +109,10 @@ export function AdminPage({ user, onLogout }: { user: User; onLogout: () => void
       setEventRows(normalizedEvents);
       setParticipantRows(normalizedParticipants);
       setPendingParticipants(pendingResponse);
+
+      const sessionSettings = await api.adminSessionSettings();
+      setSessionAccessTtlMinutesInput(String(sessionSettings.accessTtlMinutes));
+      setSessionWarningSecondsInput(String(sessionSettings.warningSeconds));
 
       await loadAnthropicConfig();
 
@@ -241,6 +248,30 @@ export function AdminPage({ user, onLogout }: { user: User; onLogout: () => void
       setMessage(`Fehler beim Löschen der Anthropic-Konfiguration: ${(err as Error).message}`);
     } finally {
       setAnthropicSaving(false);
+    }
+  };
+
+  const saveSessionSettings = async () => {
+    const accessTtlMinutes = Number(sessionAccessTtlMinutesInput);
+    const warningSeconds = Number(sessionWarningSecondsInput);
+    if (!Number.isFinite(accessTtlMinutes) || !Number.isFinite(warningSeconds)) {
+      setMessage("Bitte gültige Session-Werte eintragen.");
+      return;
+    }
+
+    setSessionSettingsSaving(true);
+    try {
+      const saved = await api.adminSaveSessionSettings({
+        accessTtlMinutes: Math.max(360, Math.min(1440, Math.floor(accessTtlMinutes))),
+        warningSeconds: Math.max(5, Math.min(300, Math.floor(warningSeconds)))
+      });
+      setSessionAccessTtlMinutesInput(String(saved.accessTtlMinutes));
+      setSessionWarningSecondsInput(String(saved.warningSeconds));
+      setMessage("Session-Einstellungen gespeichert");
+    } catch (err) {
+      setMessage(`Fehler beim Speichern der Session-Einstellungen: ${(err as Error).message}`);
+    } finally {
+      setSessionSettingsSaving(false);
     }
   };
 
@@ -761,6 +792,42 @@ export function AdminPage({ user, onLogout }: { user: User; onLogout: () => void
             <button className="btn btn-primary" onClick={() => void saveEvents()}>Events speichern</button>
           </div>
 
+        </div>
+
+        <div className="card">
+          <h3>Session-Konfiguration</h3>
+          <p style={{ marginTop: "-0.4rem", marginBottom: "0.8rem", color: "#666", fontSize: "0.92rem" }}>
+            Konfigurieren Sie Ablaufzeit und Vorwarnung. Die Ablaufzeit ist aus Sicherheitsgründen auf mindestens 6 Stunden begrenzt.
+          </p>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "0.75rem", alignItems: "flex-end" }}>
+            <label className="form-field" style={{ margin: 0 }}>
+              <span className="form-label">Session-Laufzeit (Minuten)</span>
+              <input
+                className="form-input"
+                type="number"
+                min={360}
+                max={1440}
+                value={sessionAccessTtlMinutesInput}
+                onChange={(e) => setSessionAccessTtlMinutesInput(e.target.value)}
+                style={{ width: "12rem" }}
+              />
+            </label>
+            <label className="form-field" style={{ margin: 0 }}>
+              <span className="form-label">Vorwarnung vor Ablauf (Sek.)</span>
+              <input
+                className="form-input"
+                type="number"
+                min={5}
+                max={300}
+                value={sessionWarningSecondsInput}
+                onChange={(e) => setSessionWarningSecondsInput(e.target.value)}
+                style={{ width: "12rem" }}
+              />
+            </label>
+            <button className="btn" onClick={() => void saveSessionSettings()} disabled={sessionSettingsSaving}>
+              {sessionSettingsSaving ? "Speichert…" : "Session-Einstellungen speichern"}
+            </button>
+          </div>
         </div>
 
         <div className="card">

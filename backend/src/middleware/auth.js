@@ -1,11 +1,14 @@
 import jwt from "jsonwebtoken";
 import { config } from "../config.js";
 import { pool } from "../db/pool.js";
+import { getAccessTokenTtlString } from "../services/sessionSettings.js";
 
-export const signAccessToken = (user) =>
-  jwt.sign({ sub: user.id, role: user.role, displayName: user.display_name }, config.jwt.accessSecret, {
-    expiresIn: config.jwt.accessTtl
+export const signAccessToken = async (user) => {
+  const ttl = await getAccessTokenTtlString();
+  return jwt.sign({ sub: user.id, role: user.role, displayName: user.display_name }, config.jwt.accessSecret, {
+    expiresIn: ttl
   });
+};
 
 export const signRefreshToken = (user) =>
   jwt.sign({ sub: user.id, role: user.role }, config.jwt.refreshSecret, {

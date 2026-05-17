@@ -1,6 +1,7 @@
 package com.escapp.mobile.ui.screen
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -19,18 +20,27 @@ import com.escapp.mobile.ui.theme.*
  */
 @Composable
 fun LoginScreen(
-    onLogin: (String, String) -> Unit,
+    onLogin: (String, String, Boolean) -> Unit,
+    savedUsernameHint: String?,
     onVerifyDeleteAccount: (String, String, (Boolean) -> Unit) -> Unit,
     onDeleteAccount: (String, String, (Boolean) -> Unit) -> Unit,
     onNavigateToRegister: () -> Unit,
     isLoading: Boolean,
     error: String?
 ) {
-    var username by remember { mutableStateOf("") }
+    var username by remember { mutableStateOf(savedUsernameHint ?: "") }
     var password by remember { mutableStateOf("") }
+    var rememberLogin by remember { mutableStateOf(savedUsernameHint != null) }
     var localError by remember { mutableStateOf<String?>(null) }
     var infoMessage by remember { mutableStateOf<String?>(null) }
     var showDeleteConfirm by remember { mutableStateOf(false) }
+    LaunchedEffect(savedUsernameHint) {
+        if (!savedUsernameHint.isNullOrBlank() && username.isBlank()) {
+            username = savedUsernameHint
+            rememberLogin = true
+        }
+    }
+
 
     val displayError = localError ?: error
 
@@ -93,7 +103,11 @@ fun LoginScreen(
                     modifier = Modifier.fillMaxWidth(),
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(
-                        onDone = { if (username.isNotBlank() && password.isNotBlank()) onLogin(username, password) }
+                        onDone = {
+                            if (username.isNotBlank() && password.isNotBlank()) {
+                                onLogin(username, password, rememberLogin)
+                            }
+                        }
                     ),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor   = MaterialTheme.colorScheme.primary,
@@ -105,7 +119,7 @@ fun LoginScreen(
 
                 /* ── Login Button ── */
                 Button(
-                    onClick = { onLogin(username, password) },
+                    onClick = { onLogin(username, password, rememberLogin) },
                     enabled = username.isNotBlank() && password.isNotBlank() && !isLoading,
                     modifier = Modifier.fillMaxWidth().height(48.dp),
                     colors = ButtonDefaults.buttonColors(
@@ -125,6 +139,23 @@ fun LoginScreen(
                     } else {
                         Text("Anmelden", style = MaterialTheme.typography.labelLarge)
                     }
+                }
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { rememberLogin = !rememberLogin },
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Checkbox(
+                        checked = rememberLogin,
+                        onCheckedChange = { rememberLogin = it }
+                    )
+                    Text(
+                        text = "Login speichern",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
                 }
 
                 /* ── Delete account button (analog zu btn-secondary action) ── */

@@ -20,6 +20,7 @@ import {
   syncCountdownState,
   updateLiveSettings
 } from "../services/liveReveal.js";
+import { getSessionSettings, saveSessionSettings } from "../services/sessionSettings.js";
 
 /** Countries von der Eurovision-API laden (ESC API gibt Codes bereits zurück) */
 async function fetchEscCountries() {
@@ -155,6 +156,45 @@ const eventSchema = z.object({
   year: z.number().int().optional(),
   status: z.enum(["draft", "open", "locked", "finished"]).optional(),
   isActive: z.boolean().optional()
+});
+
+const sessionSettingsSchema = z.object({
+  accessTtlMinutes: z.number().int().min(360).max(60 * 24),
+  warningSeconds: z.number().int().min(5).max(300)
+});
+
+adminRouter.get("/session-settings", async (_req, res, next) => {
+  try {
+    const settings = await getSessionSettings({ force: true });
+    res.json(settings);
+  } catch (error) {
+    next(error);
+  }
+});
+
+adminRouter.put("/session-settings", async (req, res, next) => {
+  try {
+    const parsed = sessionSettingsSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ message: "Ungültige Nutzdaten" });
+    }
+
+    const before = await getSessionSettings({ force: true });
+    const after = await saveSessionSettings(parsed.data);
+
+    await writeAuditLog({
+      actorUserId: req.user.id,
+      actionType: "SESSION_SETTINGS_UPDATE",
+      entityType: "app_settings",
+      entityId: "session",
+      before,
+      after
+    });
+
+    res.json({ ok: true, ...after });
+  } catch (error) {
+    next(error);
+  }
 });
 
 adminRouter.get("/integrations/anthropic", async (_req, res, next) => {

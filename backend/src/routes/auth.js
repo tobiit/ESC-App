@@ -7,6 +7,7 @@ import { z } from "zod";
 import { config } from "../config.js";
 import { pool, withTx } from "../db/pool.js";
 import { signAccessToken, signRefreshToken } from "../middleware/auth.js";
+import { getSessionSettings } from "../services/sessionSettings.js";
 
 export const authRouter = express.Router();
 
@@ -64,7 +65,7 @@ const generateUniqueDeletedUsername = async (conn) => {
 };
 
 const issueTokens = async (user) => {
-  const accessToken = signAccessToken(user);
+  const accessToken = await signAccessToken(user);
   const refreshToken = signRefreshToken(user);
   const payload = jwt.verify(refreshToken, config.jwt.refreshSecret);
   await pool.query("INSERT INTO refresh_tokens (user_id, token_hash, expires_at) VALUES (?, ?, ?)", [
@@ -74,6 +75,15 @@ const issueTokens = async (user) => {
   ]);
   return { accessToken, refreshToken };
 };
+
+authRouter.get("/session-config", async (_req, res, next) => {
+  try {
+    const settings = await getSessionSettings();
+    res.json(settings);
+  } catch (error) {
+    next(error);
+  }
+});
 
 const performLogin = async (req, res, expectedRole) => {
   const parsed = loginSchema.safeParse(req.body);
@@ -192,7 +202,7 @@ authRouter.post("/refresh", async (req, res, next) => {
     if (!user || !user.is_active) {
       return res.status(401).json({ message: "Benutzer ungültig" });
     }
-    const accessToken = signAccessToken(user);
+    const accessToken = await signAccessToken(user);
     return res.json({ accessToken });
   } catch (error) {
     next(error);

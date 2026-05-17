@@ -8,7 +8,10 @@ import androidx.lifecycle.viewModelScope
 import com.escapp.mobile.data.DraftStore
 import com.escapp.mobile.data.EscApi
 import com.escapp.mobile.data.TokenStore
+import com.escapp.mobile.data.CredentialStore
+import com.escapp.mobile.data.SavedLoginCredentials
 import com.escapp.mobile.model.*
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
@@ -31,13 +34,16 @@ data class UiState(
 class AppViewModel(
     private val api: EscApi,
     private val tokenStore: TokenStore,
-    private val draftStore: DraftStore
+    private val draftStore: DraftStore,
+    private val credentialStore: CredentialStore
 ) : ViewModel() {
 
     private val requiredEscPoints = setOf(1, 2, 3, 4, 5, 6, 7, 8, 10, 12)
 
     var ui by mutableStateOf(UiState())
         private set
+
+    private var sessionHeartbeatJob: Job? = null
 
     val isLoggedIn: Boolean get() = ui.user != null
 
@@ -50,23 +56,51 @@ class AppViewModel(
     private suspend fun tryRestoreSession() {
         val user = tokenStore.readUser() ?: return
         ui = ui.copy(user = user)
+        startSessionHeartbeat()
         loadEventData()
     }
 
-    fun login(username: String, password: String) {
+    fun login(username: String, password: String, rememberLogin: Boolean = false, fromSavedCredentials: Boolean = false) {
         viewModelScope.launch {
             ui = ui.copy(loading = true, error = null)
             runCatching {
                 api.login(LoginRequest(username, password))
             }.onSuccess { resp ->
                 tokenStore.save(resp.accessToken, resp.refreshToken, resp.user)
+                if (rememberLogin) {
+                    credentialStore.save(SavedLoginCredentials(username = username, password = password))
+                } else {
+                    credentialStore.clear()
+                }
                 ui = ui.copy(user = resp.user, loading = false, error = null)
+                startSessionHeartbeat()
                 loadEventData()
             }.onFailure { err ->
+                if (fromSavedCredentials) {
+                    credentialStore.clear()
+                }
                 ui = ui.copy(loading = false, error = parseError(err))
             }
         }
     }
+
+    fun loginWithSavedCredentials() {
+        val saved = credentialStore.read()
+        if (saved == null) {
+            ui = ui.copy(error = "Keine gespeicherte Anmeldung vorhanden")
+            return
+        }
+        login(
+            username = saved.username,
+            password = saved.password,
+            rememberLogin = true,
+            fromSavedCredentials = true
+        )
+    }
+
+    fun hasSavedLoginCredentials(): Boolean = credentialStore.hasSavedLogin()
+
+    fun getSavedLoginUsername(): String? = credentialStore.read()?.username
 
     fun register(
         displayName: String,
@@ -91,12 +125,12 @@ class AppViewModel(
 
     fun logout() {
         viewModelScope.launch {
+            sessionHeartbeatJob?.cancel()
             val refreshToken = tokenStore.readRefreshToken()
             if (refreshToken != null) {
                 runCatching { api.logout(LogoutRequest(refreshToken)) }
             }
             tokenStore.clear()
-            draftStore.clear()
             ui = UiState()
         }
     }
@@ -181,7 +215,11 @@ class AppViewModel(
                 syncOfflineDrafts(event.id)
 
             }.onFailure { err ->
-                ui = ui.copy(loading = false, error = parseError(err))
+                if (isUnauthorized(err)) {
+                    handleSessionExpired()
+                } else {
+                    ui = ui.copy(loading = false, error = parseError(err))
+                }
             }
         }
     }
@@ -231,8 +269,12 @@ class AppViewModel(
             }.onSuccess {
                 showMessage("Bewertung gespeichert")
             }.onFailure {
-                draftStore.writeRatingDraft(event.id, ui.ratingMap)
-                showMessage("Offline gespeichert")
+                if (isUnauthorized(it)) {
+                    handleSessionExpired()
+                } else {
+                    draftStore.writeRatingDraft(event.id, ui.ratingMap)
+                    showMessage("Offline gespeichert")
+                }
             }
         }
     }
@@ -253,7 +295,11 @@ class AppViewModel(
                 ui = ui.copy(ratingSubmitted = true)
                 showMessage("Bewertung eingereicht")
             }.onFailure { err ->
-                ui = ui.copy(error = parseError(err))
+                if (isUnauthorized(err)) {
+                    handleSessionExpired()
+                } else {
+                    ui = ui.copy(error = parseError(err))
+                }
             }
         }
     }
@@ -327,8 +373,12 @@ class AppViewModel(
             }.onSuccess {
                 showMessage("Tipp gespeichert")
             }.onFailure {
-                draftStore.writePredictionDraft(event.id, ui.predictionOrder)
-                showMessage("Offline gespeichert")
+                if (isUnauthorized(it)) {
+                    handleSessionExpired()
+                } else {
+                    draftStore.writePredictionDraft(event.id, ui.predictionOrder)
+                    showMessage("Offline gespeichert")
+                }
             }
         }
     }
@@ -348,8 +398,51 @@ class AppViewModel(
                 ui = ui.copy(predictionSubmitted = true)
                 showMessage("Tipp eingereicht")
             }.onFailure { err: Throwable ->
-                ui = ui.copy(error = parseError(err))
+                if (isUnauthorized(err)) {
+                    handleSessionExpired()
+                } else {
+                    ui = ui.copy(error = parseError(err))
+                }
             }
+        }
+    }
+
+    private fun startSessionHeartbeat() {
+        sessionHeartbeatJob?.cancel()
+        sessionHeartbeatJob = viewModelScope.launch {
+            while (ui.user != null) {
+                delay(60_000)
+                val refreshToken = tokenStore.readRefreshToken() ?: continue
+                runCatching {
+                    val refreshed = api.refresh(RefreshRequest(refreshToken))
+                    tokenStore.saveAccessToken(refreshed.accessToken)
+                }.onFailure { error ->
+                    if (isUnauthorized(error)) {
+                        handleSessionExpired()
+                    }
+                }
+            }
+        }
+    }
+
+    private fun isUnauthorized(err: Throwable): Boolean {
+        val status = (err as? HttpException)?.code()
+        return status == 401
+    }
+
+    private fun handleSessionExpired() {
+        viewModelScope.launch {
+            sessionHeartbeatJob?.cancel()
+            ui.event?.let { event ->
+                if (ui.ratingMap.isNotEmpty()) {
+                    draftStore.writeRatingDraft(event.id, ui.ratingMap)
+                }
+                if (ui.predictionOrder.isNotEmpty()) {
+                    draftStore.writePredictionDraft(event.id, ui.predictionOrder)
+                }
+            }
+            tokenStore.clear()
+            ui = UiState(error = "Sitzung abgelaufen. Entwurf wurde lokal gesichert.")
         }
     }
 
@@ -385,7 +478,7 @@ class AppViewModel(
     private fun parseError(err: Throwable): String {
         val msg = err.message ?: "Unbekannter Fehler"
         return when {
-            "401" in msg -> "Anmeldung fehlgeschlagen"
+            "401" in msg -> "Sitzung abgelaufen"
             "403" in msg -> "Keine Berechtigung"
             "409" in msg -> "Bereits eingereicht / Event nicht offen"
             "423" in msg -> "Konto vorübergehend gesperrt"

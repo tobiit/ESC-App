@@ -20,7 +20,7 @@ export const config = {
   jwt: {
     accessSecret: process.env.JWT_ACCESS_SECRET || "change-me-access",
     refreshSecret: process.env.JWT_REFRESH_SECRET || "change-me-refresh",
-    accessTtl: process.env.ACCESS_TOKEN_TTL || "15m",
+    accessTtl: process.env.ACCESS_TOKEN_TTL || "6h",
     refreshTtlDays: toInt(process.env.REFRESH_TOKEN_TTL_DAYS, 30)
   },
   corsOrigin: process.env.CORS_ORIGIN || "http://localhost:5173",

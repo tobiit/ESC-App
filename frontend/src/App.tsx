@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { onAuthExpired } from "./api";
 import { ParticipantLogin } from "./pages/ParticipantLogin";
 import { ParticipantRegister } from "./pages/ParticipantRegister";
 import { AdminLogin } from "./pages/AdminLogin";
@@ -24,6 +25,13 @@ const storedUser = (() => {
 
 export function App() {
   const [user, setUser] = useState<User | null>(storedUser);
+
+  useEffect(() => {
+    return onAuthExpired(() => {
+      localStorage.removeItem("esc_user");
+      setUser(null);
+    });
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("esc_user");
